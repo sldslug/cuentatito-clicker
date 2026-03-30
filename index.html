@@ -942,6 +942,9 @@
         cuentas, totalEarned, totalClics, totalBought,
         bestCombo, easterEggFound, diamonds, prestigeCount, isDayMode,
         turboCooldownEnd: turboCooldown > 0 ? Date.now() + turboCooldown * 1000 : 0,
+        autoclickRate,
+        comboTimeout,
+        talents: talents.map(t => ({ id: t.id, bought: !!t.bought })),
         shop: shopData.map(i => ({ id: i.id, owned: i.owned })),
         achievements: achievements.map(a => ({ id: a.id, unlocked: !!a.unlocked, claimed: !!a.claimed })),
         ownedCosmetics: [...ownedCosmetics],
@@ -1042,6 +1045,19 @@
         if (d.turboCooldownEnd) {
           const remaining = Math.floor((d.turboCooldownEnd - Date.now()) / 1000);
           turboCooldown = remaining > 0 ? remaining : 0;
+        }
+
+        if (d.autoclickRate) autoclickRate = d.autoclickRate;
+        if (d.comboTimeout) comboTimeout = d.comboTimeout;
+
+        if (d.talents) {
+          d.talents.forEach(s => {
+            const t = talents.find(x => x.id === s.id);
+            if (t && s.bought && !t.bought) {
+              t.bought = true;
+              t.bonus(); // réappliquer le bonus
+            }
+          });
         }
 
         recalcStats();
