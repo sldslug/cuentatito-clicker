@@ -138,13 +138,19 @@
       </div>
       <div class="click-hint">▼ Clique ici ▼</div>
       <div id="combo-display"></div>
-      <button id="prestige-btn" onclick="openPrestigePanel()">⭐ Prestige</button>
+      <button id="prestige-btn" onclick="openPrestigePanel()" title="Prestige" style="background:none;border:none;cursor:pointer;padding:0;margin-top:18px;">
+        <img src="boutondujeu/prestige.png" alt="Prestige" style="height:48px;object-fit:contain;display:block;" />
+      </button>
       <div id="prestige-info"></div>
       <div id="turbo-widget">
-        <button id="turbo-btn" onclick="activateTurbo()">⚡ TURBO</button>
+        <button id="turbo-btn" onclick="activateTurbo()" title="Turbo" style="background:none;border:none;cursor:pointer;padding:0;">
+          <img src="boutondujeu/turbo.png" alt="Turbo" id="turbo-img" style="height:48px;object-fit:contain;display:block;" />
+        </button>
         <div id="turbo-timer"></div>
       </div>
-      <button id="autoclick-btn" onclick="toggleAutoclick()" title="Autoclick (souris sur l'image)">🖱️</button>
+      <button id="autoclick-btn" onclick="toggleAutoclick()" title="Autoclick (souris sur l'image)" style="background:none;border:none;cursor:pointer;padding:0;margin-top:10px;">
+        <img src="boutondujeu/autoclick.png" alt="Autoclick" id="autoclick-img" style="height:48px;object-fit:contain;display:block;opacity:0.5;" />
+      </button>
     </div>
 
     <div id="shop">
@@ -516,8 +522,8 @@
 
     function toggleAutoclick() {
       autoclickEnabled = !autoclickEnabled;
-      const btn = document.getElementById("autoclick-btn");
-      btn.classList.toggle("active", autoclickEnabled);
+      const img = document.getElementById("autoclick-img");
+      if (img) img.style.opacity = autoclickEnabled ? "1" : "0.5";
     }
 
     setInterval(() => {
@@ -1207,24 +1213,23 @@
 
     function updateTurboWidget() {
       const btn = document.getElementById("turbo-btn");
+      const img = document.getElementById("turbo-img");
       const timer = document.getElementById("turbo-timer");
       if (turboActive) {
-        btn.textContent = "⚡ TURBO ACTIF";
-        btn.classList.add("active");
+        if (img) img.style.opacity = "1";
+        if (img) img.style.filter = "hue-rotate(0deg) brightness(1.3)";
         timer.textContent = `${turboRemaining}s restantes`;
         timer.style.color = "#f97316";
       } else if (turboCooldown > 0) {
+        if (img) img.style.opacity = "0.4";
+        if (img) img.style.filter = "grayscale(0.5)";
         const m = Math.floor(turboCooldown / 60);
         const s = turboCooldown % 60;
-        btn.textContent = "⚡ TURBO";
-        btn.classList.remove("active");
-        btn.disabled = true;
-        timer.textContent = `Prochain turbo dans ${m > 0 ? m+"m " : ""}${s}s`;
+        timer.textContent = `${m > 0 ? m+"m " : ""}${s}s`;
         timer.style.color = "#a78bfa";
       } else {
-        btn.textContent = "⚡ TURBO";
-        btn.classList.remove("active");
-        btn.disabled = false;
+        if (img) img.style.opacity = "1";
+        if (img) img.style.filter = "none";
         timer.textContent = "Prêt !";
         timer.style.color = "#86efac";
       }
