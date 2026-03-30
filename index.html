@@ -62,11 +62,6 @@
         <span class="nav-icon">💎</span>
         <span class="nav-label" id="diamond-count">0 diamants</span>
       </div>
-      <div class="nav-item" data-tooltip="Chat Global" onclick="openChat()">
-        <span class="nav-icon">💬</span>
-        <span class="nav-label">Chat</span>
-        <span id="chat-badge" class="nav-badge" style="display:none"></span>
-      </div>
       <div class="nav-item" data-tooltip="Amis" onclick="openFriends()">
         <span class="nav-icon">👥</span>
         <span class="nav-label">Amis</span>
@@ -108,10 +103,6 @@
         <span class="nav-icon">ℹ️</span>
         <span class="nav-label">A propos</span>
       </div>
-      <div class="nav-item" data-tooltip="Plein écran" onclick="toggleFullscreen()">
-        <span class="nav-icon">⛶</span>
-        <span class="nav-label">Plein écran</span>
-      </div>
       <div class="nav-divider"></div>
       <div class="nav-item" data-tooltip="Sauvegarder" onclick="saveGame()">
         <span class="nav-icon" id="save-icon">💾</span>
@@ -127,15 +118,6 @@
 
   <!-- TOGGLE THEME (gardé pour compat JS) -->
   <button id="theme-toggle" style="display:none" onclick="toggleTheme()">🌙</button>
-
-  <!-- BOSS COUNTDOWN FIXE -->
-  <div id="boss-fixed-widget">
-    <span id="boss-fixed-icon">💀</span>
-    <div id="boss-fixed-text">
-      <div id="boss-fixed-label">Boss dans</div>
-      <div id="boss-fixed-timer">--:--:--</div>
-    </div>
-  </div>
 
   <header>
     <h1>Cuenta dé Tomito Clicker</h1>
@@ -161,23 +143,6 @@
         <button id="turbo-btn" onclick="activateTurbo()">⚡ TURBO</button>
         <div id="turbo-timer"></div>
       </div>
-
-      <!-- BOSS -->
-      <div id="boss-widget" style="display:none">
-        <div id="boss-header">
-          <span id="boss-name">👹 Boss</span>
-          <span id="boss-timer-label"></span>
-        </div>
-        <div id="boss-hp-bar-wrap">
-          <div id="boss-hp-bar"></div>
-        </div>
-        <div id="boss-hp-text"></div>
-        <button id="boss-attack-btn" onclick="attackBoss()">⚔️ Attaquer !</button>
-      </div>
-      <div id="boss-next" style="display:none">⏳ Prochain boss dans <span id="boss-countdown"></span></div>
-
-      <!-- AUTOCLICK -->
-      <button id="autoclick-btn" onclick="toggleAutoclick()" title="Autoclick (souris sur l'image)">🖱️</button>
     </div>
 
     <div id="shop">
@@ -1675,283 +1640,23 @@
     }
     setInterval(updateLastSeen, 120000);
 
-    // ── BOSS ──
-    const BOSS_INTERVAL = 3600; // 1h en secondes
-    let bossActive = false;
-    let bossHp = 0;
-    let bossMaxHp = 0;
-    let bossCountdownSec = BOSS_INTERVAL;
-    let bossSpawned = false;
-
-    function spawnBoss() {
-      if (cuentas < 100) return; // pas assez de Cuentas
-      bossActive = true;
-      bossMaxHp = Math.floor(cuentas * 0.5);
-      bossHp = bossMaxHp;
-      bossSpawned = true;
-      document.getElementById("boss-widget").style.display = "block";
-      document.getElementById("boss-next").style.display = "none";
-      document.getElementById("boss-name").textContent = "👹 " + getBossName();
-      updateBossUI();
-    }
-
-    function getBossName() {
-      const names = ["Tomito Corrompu","Le Grand 7","Démon des Cuentas","Seigneur du Vide","Anti-Tomito"];
-      return names[Math.floor(Math.random() * names.length)];
-    }
-
-    function attackBoss() {
-      if (!bossActive) return;
-      const dmg = Math.max(1, Math.floor(cpc * (turboActive ? 3 : 1)));
-      bossHp = Math.max(0, bossHp - dmg);
-      updateBossUI();
-      if (bossHp <= 0) defeatBoss();
-    }
-
-    function defeatBoss() {
-      bossActive = false;
-      const reward = Math.floor(bossMaxHp * 0.8);
-      cuentas += reward;
-      totalEarned += reward;
-      updateUI();
-      spawnFloaty(window.innerWidth/2, window.innerHeight/2, "+" + formatNum(reward) + " 🏆");
-      document.getElementById("boss-widget").style.display = "none";
-      document.getElementById("boss-next").style.display = "block";
-      bossCountdownSec = BOSS_INTERVAL;
-      // Toast
-      const t = document.createElement("div");
-      t.className = "ach-toast";
-      t.innerHTML = `<span class="ach-toast-icon">🏆</span><div><div class="ach-toast-name">Boss vaincu !</div><div class="ach-toast-sub">+${formatNum(reward)} Cuentas</div></div>`;
-      document.body.appendChild(t);
-      setTimeout(() => t.classList.add("visible"), 50);
-      setTimeout(() => { t.classList.remove("visible"); setTimeout(() => t.remove(), 400); }, 4000);
-    }
-
-    function updateBossUI() {
-      if (!bossActive) return;
-      const pct = (bossHp / bossMaxHp) * 100;
-      document.getElementById("boss-hp-bar").style.width = pct.toFixed(1) + "%";
-      document.getElementById("boss-hp-bar").style.background = pct > 50 ? "#ef4444" : pct > 25 ? "#f97316" : "#fbbf24";
-      document.getElementById("boss-hp-text").textContent = formatNum(bossHp) + " / " + formatNum(bossMaxHp) + " HP";
-    }
-
-    // Countdown boss
-    setInterval(() => {
-      if (bossActive) {
-        document.getElementById("boss-fixed-label").textContent = "Boss actif !";
-        document.getElementById("boss-fixed-timer").textContent = formatNum(bossHp) + " HP";
-        document.getElementById("boss-fixed-icon").textContent = "👹";
-        return;
-      }
-      if (bossCountdownSec > 0) {
-        bossCountdownSec--;
-        const h = Math.floor(bossCountdownSec / 3600);
-        const m = Math.floor((bossCountdownSec % 3600) / 60);
-        const s = bossCountdownSec % 60;
-        const timeStr = h > 0 ? `${h}h ${m}m ${s}s` : m > 0 ? `${m}m ${s}s` : `${s}s`;
-        const el = document.getElementById("boss-countdown");
-        if (el) el.textContent = timeStr;
-        document.getElementById("boss-fixed-timer").textContent = timeStr;
-        document.getElementById("boss-fixed-label").textContent = "Boss dans";
-        document.getElementById("boss-fixed-icon").textContent = "💀";
-        document.getElementById("boss-next").style.display = bossSpawned ? "block" : "none";
-      } else {
-        spawnBoss();
-      }
-    }, 1000);
-
-    // ── AUTOCLICK ──
-    let autoclickEnabled = false;
-    let autoclickRate = 0.3; // CPS de base
-    let autoclickInterval = null;
-    let mouseOnImage = false;
-
-    document.getElementById("img-wrapper").addEventListener("mouseenter", () => { mouseOnImage = true; });
-    document.getElementById("img-wrapper").addEventListener("mouseleave", () => { mouseOnImage = false; });
-
-    function toggleAutoclick() {
-      autoclickEnabled = !autoclickEnabled;
-      const btn = document.getElementById("autoclick-btn");
-      btn.classList.toggle("active", autoclickEnabled);
-      btn.title = autoclickEnabled ? "Autoclick actif (souris sur l'image)" : "Autoclick désactivé";
-    }
-
-    setInterval(() => {
-      if (!autoclickEnabled || !mouseOnImage) return;
-      const img = document.getElementById("cuentatito");
-      img.classList.add("autoclick-pulse");
-      setTimeout(() => img.classList.remove("autoclick-pulse"), 80);
-      const gained = cpc * (turboActive ? 3 : 1);
-      cuentas += gained;
-      totalEarned += gained;
-      totalClics++;
-      updateUI();
-      checkAchievements();
-      // Floaty visible
-      const rect = img.getBoundingClientRect();
-      spawnFloaty(rect.left + rect.width/2, rect.top + 20, "+" + formatNum(gained));
-    }, Math.floor(1000 / autoclickRate));
-
-    // ── CHAT GLOBAL ──
-    let chatOpen = false;
-    let chatSub = null;
-    let chatUnread = 0;
-
-    function openChat() {
-      chatOpen = true;
-      chatUnread = 0;
-      document.getElementById("chat-badge").style.display = "none";
-      document.getElementById("chat-panel").classList.add("open");
-      loadChatHistory();
-      subscribeChatRealtime();
-    }
-
-    function closeChat() {
-      chatOpen = false;
-      document.getElementById("chat-panel").classList.remove("open");
-    }
-
-    async function loadChatHistory() {
-      const { data } = await sb.from("chat_messages")
-        .select("username, message, prestige_count, created_at")
-        .order("created_at", { ascending: false })
-        .limit(50);
-      if (!data) return;
-      const container = document.getElementById("chat-messages");
-      container.innerHTML = data.reverse().map(m => renderChatMsg(m)).join('');
-      container.scrollTop = container.scrollHeight;
-    }
-
-    function renderChatMsg(m) {
-      const time = new Date(m.created_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-      const presColor = m.prestige_count >= 10 ? "#fbbf24" : m.prestige_count >= 1 ? "#c084fc" : "#a78bfa";
-      const presLabel = m.prestige_count > 0 ? `<span class="chat-prestige" style="color:${presColor}">[${toRoman(m.prestige_count)}]</span> ` : "";
-      const isMe = m.username === currentUsername;
-      return `<div class="chat-msg ${isMe?'me':''}">
-        <span class="chat-time">${time}</span>
-        ${presLabel}<span class="chat-user" style="color:${presColor}">${m.username}</span>
-        <span class="chat-text">${escapeHtml(m.message)}</span>
-      </div>`;
-    }
-
-    function escapeHtml(s) {
-      return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-    }
-
-    function subscribeChatRealtime() {
-      if (chatSub) return;
-      // Polling toutes les 3s pour les nouveaux messages
-      let lastId = null;
-      chatSub = setInterval(async () => {
-        let query = sb.from("chat_messages")
-          .select("id, username, message, prestige_count, created_at")
-          .order("created_at", { ascending: false })
-          .limit(1);
-        const { data } = await query;
-        if (!data || data.length === 0) return;
-        const latest = data[0];
-        if (lastId === null) { lastId = latest.id; return; }
-        if (latest.id === lastId) return;
-        lastId = latest.id;
-        const container = document.getElementById("chat-messages");
-        if (!container) return;
-        const atBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 60;
-        container.innerHTML += renderChatMsg(latest);
-        if (atBottom) container.scrollTop = container.scrollHeight;
-        if (!chatOpen) {
-          chatUnread++;
-          const badge = document.getElementById("chat-badge");
-          badge.textContent = chatUnread > 9 ? "9+" : chatUnread;
-          badge.style.display = "inline-block";
-        }
-      }, 3000);
-    }
-
-    async function sendChat() {
-      if (!currentUser) return;
-      const input = document.getElementById("chat-input");
-      const msg = input.value.trim();
-      if (!msg) return;
-      input.value = "";
-      await sb.from("chat_messages").insert({
-        user_id: currentUser.id,
-        username: currentUsername,
-        message: msg,
-        prestige_count: prestigeCount
-      });
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      const inp = document.getElementById("chat-input");
-      if (inp) inp.addEventListener("keydown", e => { if (e.key === "Enter") sendChat(); });
-    });
-
-    // ── DRAG MINI PLAYER ──
-    window.addEventListener("load", () => {
-      const player = document.getElementById("mini-player");
-      const handle = document.getElementById("mp-drag-handle");
-      if (!handle) return;
-      let dragging = false, ox = 0, oy = 0, startX = 0, startY = 0;
-
-      handle.addEventListener("mousedown", e => {
-        if (e.target.tagName === "BUTTON") return;
-        dragging = true;
-        const rect = player.getBoundingClientRect();
-        player.style.position = "fixed";
-        player.style.bottom = "auto";
-        player.style.left = rect.left + "px";
-        player.style.top = rect.top + "px";
-        player.style.right = "auto";
-        ox = rect.left; oy = rect.top;
-        startX = e.clientX; startY = e.clientY;
-        e.preventDefault();
-      });
-
-      document.addEventListener("mousemove", e => {
-        if (!dragging) return;
-        const dx = e.clientX - startX, dy = e.clientY - startY;
-        const minLeft = 62, maxLeft = window.innerWidth - player.offsetWidth - 310;
-        const newLeft = Math.max(minLeft, Math.min(maxLeft, ox + dx));
-        const newTop  = Math.max(0, Math.min(window.innerHeight - player.offsetHeight, oy + dy));
-        player.style.left = newLeft + "px";
-        player.style.top  = newTop + "px";
-      });
-
-      document.addEventListener("mouseup", () => { dragging = false; });
-    });
-
-    // ── FULLSCREEN ──
-    function closePlayer() {
-      audio.pause();
-      isPlaying = false;
-      document.getElementById("mp-play").textContent = "\u25B6";
-      document.getElementById("mini-player").classList.add("hidden");
-    }
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(() => {});
-      } else {
-        document.exitFullscreen();
-      }
-    }
-
-    document.addEventListener("fullscreenchange", () => {
-      const btn = document.getElementById("mp-fullscreen-toggle");
-      if (btn) btn.textContent = document.fullscreenElement ? "⊡" : "⛶";
-    });
-
+    buildShop();
     loadGame().then(() => {
       updateUI();
       checkAchievements();
-      subscribeChatRealtime();
     });
   </script>
 
-  <!-- MINI PLAYER DRAGGABLE -->
+  <!-- MINI PLAYER -->
   <div id="mini-player" class="hidden">
-    <div id="mp-drag-handle">
+    <div id="mp-line1">
       <span id="mp-title">--</span>
-      <button id="mp-fullscreen-toggle" onclick="toggleFullscreen()" title="Plein écran">⛶</button>
-      <button id="mp-close-btn" onclick="closePlayer()" title="Fermer">✕</button>
+      <span id="mp-vol-wrap">
+        <button onclick="changeVolume(-0.1)">-</button>
+        <input id="mp-volume" type="range" min="0" max="1" step="0.05" value="0.5" oninput="musicVolume(this.value)" />
+        <button onclick="changeVolume(0.1)">+</button>
+        <span id="mp-vol-pct">50%</span>
+      </span>
     </div>
     <div id="mp-line2">
       <span id="mp-current">0:00</span>
@@ -1959,25 +1664,19 @@
       <span id="mp-duration">0:00</span>
     </div>
     <div id="mp-line3">
-      <button id="mp-prev" onclick="musicPrev()" title="Précédent">⏮</button>
-      <button id="mp-play" onclick="musicToggle()" title="Play/Pause">▶</button>
-      <button id="mp-next" onclick="musicNext()" title="Suivant">⏭</button>
-      <button id="mp-shuffle" onclick="toggleShuffle()" title="Aléatoire">🔀</button>
-      <button id="mp-repeat" onclick="toggleRepeat()" title="Répétition">🔁</button>
-      <select id="mp-speed" onchange="changeSpeed(this.value)" title="Vitesse">
+      <button id="mp-prev" onclick="musicPrev()">⏮</button>
+      <button id="mp-play" onclick="musicToggle()">▶</button>
+      <button id="mp-next" onclick="musicNext()">⏭</button>
+      <button id="mp-shuffle" onclick="toggleShuffle()">shuffle</button>
+      <button id="mp-repeat" onclick="toggleRepeat()">repeat</button>
+      <select id="mp-speed" onchange="changeSpeed(this.value)">
         <option value="0.75">0.75x</option>
         <option value="1" selected>1x</option>
         <option value="1.25">1.25x</option>
         <option value="1.5">1.5x</option>
         <option value="2">2x</option>
       </select>
-      <span id="mp-vol-wrap">
-        <button onclick="changeVolume(-0.1)" title="Baisser">🔉</button>
-        <input id="mp-volume" type="range" min="0" max="1" step="0.05" value="0.5" oninput="musicVolume(this.value)" />
-        <button onclick="changeVolume(0.1)" title="Monter">🔊</button>
-        <span id="mp-vol-pct">50%</span>
-      </span>
-      <button id="mp-open" onclick="openMusicPanel()" title="Playlist">🎵</button>
+      <button id="mp-open" onclick="openMusicPanel()">playlist</button>
     </div>
   </div>
 
@@ -1991,19 +1690,6 @@
         <button class="mf-btn" onclick="setMusicFilter('fav', this)">❤️ Favoris</button>
       </div>
       <div id="music-list"></div>
-    </div>
-  </div>
-
-  <!-- PANEL CHAT -->
-  <div id="chat-panel">
-    <div id="chat-panel-inner">
-      <button class="chat-close" onclick="closeChat()">✕</button>
-      <h2 class="chat-title">💬 Chat Global</h2>
-      <div id="chat-messages"></div>
-      <div id="chat-input-wrap">
-        <input id="chat-input" type="text" maxlength="200" placeholder="Écris un message..." />
-        <button id="chat-send-btn" onclick="sendChat()">Envoyer</button>
-      </div>
     </div>
   </div>
 
