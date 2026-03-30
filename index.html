@@ -1006,8 +1006,11 @@
         // Afficher le pseudo dans la sidebar
         const navUser = document.getElementById("nav-username");
         if (navUser) navUser.textContent = currentUsername || "Déconnexion";
+        console.log("USERNAME:", currentUsername);
         if (currentUsername === "Sluginho") {
+          console.log("ADMIN: showing button");
           const btn = document.getElementById("admin-open-btn");
+          console.log("ADMIN BTN:", btn);
           if (btn) btn.style.cssText = btn.style.cssText.replace("display:none", "display:block");
           const adminNavBtn = document.getElementById("admin-nav-btn");
           if (adminNavBtn) adminNavBtn.style.display = "flex";
