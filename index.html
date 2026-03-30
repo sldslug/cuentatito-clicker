@@ -451,11 +451,11 @@
           div.querySelector(".item-cost").textContent = `💰 ${formatNum(cost)} (x${qty})`;
         }
 
-        // Barre de progression désactivée pour perf
-        // const singleCost = getCost(item);
-        // const pct = canAfford ? 100 : Math.min(99, (cuentas / singleCost) * 100);
-        // div.querySelector(".item-prog-fill").style.width = pct.toFixed(1) + "%";
-        // div.querySelector(".item-prog-pct").textContent = canAfford ? "✓" : pct.toFixed(0) + "%";
+        // Barre de progression vers le prochain achat
+        const singleCost = getCost(item);
+        const pct = canAfford ? 100 : Math.min(99, (cuentas / singleCost) * 100);
+        div.querySelector(".item-prog-fill").style.width = pct.toFixed(1) + "%";
+        div.querySelector(".item-prog-pct").textContent = canAfford ? "✓" : pct.toFixed(0) + "%";
       });
     }
 
@@ -674,15 +674,25 @@
       setTimeout(() => el.remove(), 1100);
     }
 
+    // ── TICK CPS (calcul uniquement, pas de rendu) ──
+    let uiDirty = false;
     setInterval(() => {
       if (cps > 0) {
         const gained = (cps / 20) * (turboActive ? 3 : 1);
         cuentas += gained;
         totalEarned += gained;
+        uiDirty = true;
+      }
+    }, 50);
+
+    // Rendu UI à 4fps max (250ms) pour ne pas surcharger
+    setInterval(() => {
+      if (uiDirty) {
+        uiDirty = false;
         updateUI();
         checkAchievements();
       }
-    }, 50);
+    }, 250);
 
     // ── PRESTIGE ──
     let prestigeCount = 0;

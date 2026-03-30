@@ -1552,9 +1552,9 @@ body.sidebar-open #main {
 #theme-toggle  { display: none !important; }
 
 /* ── CURSEUR PERSONNALISE ── */
+* { cursor: none !important; }
 
-
-#custom-cursor { display: none !important; /*
+#custom-cursor {
   position: fixed;
   width: 18px;
   height: 18px;
@@ -2688,7 +2688,7 @@ body.sidebar-open #mini-player { left: 240px; }
 }
 
 /* FEUX D'ARTIFICE */
-#fireworks-canvas { display: none !important; /*
+#fireworks-canvas {
   position: fixed;
   inset: 0;
   pointer-events: none;
