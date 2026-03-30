@@ -160,7 +160,11 @@
 
     <div id="shop">
       <div id="shop-header">
-        <h2>✦ Boutique ✦</h2>
+        <div id="right-panel-tabs">
+          <button class="rp-tab active" onclick="switchRightPanel('shop', this)">🛒 Boutique</button>
+          <button class="rp-tab" onclick="switchRightPanel('tree', this)">🌳 Talents</button>
+        </div>
+        <h2 id="shop-title">✦ Boutique ✦</h2>
         <div id="qty-btns">
           <button class="qty-btn active" data-qty="1">x1</button>
           <button class="qty-btn" data-qty="10">x10</button>
@@ -170,6 +174,9 @@
         </div>
       </div>
       <div id="shop-items"></div>
+      <div id="talent-tree" style="display:none;overflow-y:auto;flex:1;padding:12px;">
+        <div id="talent-list"></div>
+      </div>
     </div>
 
   </div>
@@ -483,6 +490,7 @@
       updateUI();
       checkAchievements();
       checkMilestones();
+      checkTalents();
     }
 
     // ── COMBO DE CLICS ──
@@ -1742,6 +1750,88 @@
       await sb.from("profiles").update({ last_seen: new Date().toISOString() }).eq("id", currentUser.id);
     }
     setInterval(updateLastSeen, 120000);
+
+    // ── ARBRE DE TALENTS ──
+    const talents = [
+      // Clics
+      { id:"t_cpc1",  cat:"clic",    name:"Doigts agiles",      desc:"Débloqué à 100 clics → +1 Cuentas/clic",       req:()=>totalClics>=100,    bonus:()=>{ cpc += 1; },           icon:"👆", unlocked:false },
+      { id:"t_cpc2",  cat:"clic",    name:"Frappe puissante",   desc:"Débloqué à 1 000 clics → +5 Cuentas/clic",     req:()=>totalClics>=1000,   bonus:()=>{ cpc += 5; },           icon:"💪", unlocked:false },
+      { id:"t_cpc3",  cat:"clic",    name:"Poing de Tomito",    desc:"Débloqué à 10 000 clics → +20 Cuentas/clic",   req:()=>totalClics>=10000,  bonus:()=>{ cpc += 20; },          icon:"🥊", unlocked:false },
+      // Production
+      { id:"t_cps1",  cat:"prod",    name:"Jardinier",          desc:"Débloqué à 10 achats → CPS x1.1",              req:()=>totalBought>=10,    bonus:()=>{ cps *= 1.1; },         icon:"🌱", unlocked:false },
+      { id:"t_cps2",  cat:"prod",    name:"Industriel",         desc:"Débloqué à 50 achats → CPS x1.25",             req:()=>totalBought>=50,    bonus:()=>{ cps *= 1.25; },        icon:"🏭", unlocked:false },
+      { id:"t_cps3",  cat:"prod",    name:"Dieu de la prod",    desc:"Débloqué à 200 achats → CPS x1.5",             req:()=>totalBought>=200,   bonus:()=>{ cps *= 1.5; },         icon:"⚡", unlocked:false },
+      // Autoclick
+      { id:"t_ac1",   cat:"auto",    name:"Autoclick x2",       desc:"Débloqué à prestige I → Autoclick 0.6/s",      req:()=>prestigeCount>=1,   bonus:()=>{ autoclickRate = 0.6; },icon:"🖱️", unlocked:false },
+      { id:"t_ac2",   cat:"auto",    name:"Autoclick x5",       desc:"Débloqué à prestige V → Autoclick 1.5/s",      req:()=>prestigeCount>=5,   bonus:()=>{ autoclickRate = 1.5; },icon:"🖱️", unlocked:false },
+      { id:"t_ac3",   cat:"auto",    name:"Autoclick MAX",      desc:"Débloqué à prestige X → Autoclick 10/s",       req:()=>prestigeCount>=10,  bonus:()=>{ autoclickRate = 10; }, icon:"🖱️", unlocked:false },
+      // Combo
+      { id:"t_combo1",cat:"combo",   name:"Combo étendu",       desc:"Débloqué à 500 clics → Combo dure 3s",         req:()=>totalClics>=500,    bonus:()=>{ comboTimeout = 3000; },icon:"✨", unlocked:false },
+      // Prestige
+      { id:"t_pres1", cat:"prestige",name:"Héritage",           desc:"Débloqué à prestige I → Bonus prestige x1.2",  req:()=>prestigeCount>=1,   bonus:()=>{ /* appliqué via getPrestigeMult */ }, icon:"⭐", unlocked:false },
+    ];
+
+    let comboTimeout = 1500; // ms avant reset combo
+
+    function checkTalents() {
+      let newUnlock = false;
+      talents.forEach(t => {
+        if (!t.unlocked && t.req()) {
+          t.unlocked = true;
+          newUnlock = true;
+          t.bonus();
+          // Toast
+          const el = document.createElement("div");
+          el.className = "ach-toast";
+          el.innerHTML = `<span class="ach-toast-icon">${t.icon}</span><div><div class="ach-toast-name">${t.name}</div><div class="ach-toast-sub">Talent débloqué !</div></div>`;
+          document.body.appendChild(el);
+          setTimeout(() => el.classList.add("visible"), 50);
+          setTimeout(() => { el.classList.remove("visible"); setTimeout(() => el.remove(), 400); }, 3500);
+        }
+      });
+      if (newUnlock && document.getElementById("talent-tree").style.display !== "none") renderTalentTree();
+    }
+
+    const talentCatLabels = { clic:"👆 Clics", prod:"⚡ Production", auto:"🖱️ Autoclick", combo:"✨ Combo", prestige:"⭐ Prestige" };
+
+    function renderTalentTree() {
+      const container = document.getElementById("talent-list");
+      const cats = [...new Set(talents.map(t => t.cat))];
+      container.innerHTML = cats.map(cat => {
+        const items = talents.filter(t => t.cat === cat);
+        return `<div class="talent-cat-label">${talentCatLabels[cat]}</div>` +
+          items.map(t => `
+            <div class="talent-item ${t.unlocked ? 'unlocked' : 'locked'}">
+              <span class="talent-icon">${t.icon}</span>
+              <div class="talent-info">
+                <div class="talent-name">${t.name}</div>
+                <div class="talent-desc">${t.desc}</div>
+              </div>
+              <span class="talent-status">${t.unlocked ? '✓' : '🔒'}</span>
+            </div>`).join('');
+      }).join('');
+    }
+
+    function switchRightPanel(panel, btn) {
+      document.querySelectorAll(".rp-tab").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      const shopItems = document.getElementById("shop-items");
+      const qtyBtns = document.getElementById("qty-btns");
+      const tree = document.getElementById("talent-tree");
+      const title = document.getElementById("shop-title");
+      if (panel === "shop") {
+        shopItems.style.display = "";
+        qtyBtns.style.display = "";
+        tree.style.display = "none";
+        title.textContent = "✦ Boutique ✦";
+      } else {
+        shopItems.style.display = "none";
+        qtyBtns.style.display = "none";
+        tree.style.display = "flex";
+        title.textContent = "🌳 Arbre de Talents";
+        renderTalentTree();
+      }
+    }
 
     buildShop();
     loadGame().then(() => {
