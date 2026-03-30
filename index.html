@@ -1,0 +1,1838 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cuenta dé Tomito Clicker</title>
+  <link rel="icon" href="logosite/logosite.png" type="image/png" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://hfdbeiduutgxbbgryozh.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmZGJlaWR1dXRneGJiZ3J5b3poIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3OTgwOTcsImV4cCI6MjA5MDM3NDA5N30.P4aYHCN98H9CQUriRbtdqUgaVPau03H8uxyTz1nf2HA";
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let currentUser = null;
+    let currentUsername = "";
+
+    // Vérifier la session avant tout
+    (async () => {
+      const { data } = await sb.auth.getSession();
+      if (!data.session) {
+        window.location.href = "auth.html";
+        return;
+      }
+      currentUser = data.session.user;
+      const { data: profile } = await sb.from("profiles").select("username").eq("id", currentUser.id).single();
+      if (profile) currentUsername = profile.username;
+    })();
+  </script>
+</head>
+<body>
+
+  <!-- ECRAN DE CHARGEMENT -->
+  <div id="loading-screen">
+    <img id="loading-logo" src="logosite/logosite.png" alt="Logo" />
+    <h1 id="loading-title">Cuenta dé Tomito Clicker</h1>
+    <div id="loading-bar-wrap"><div id="loading-bar"></div></div>
+    <div id="loading-text">Chargement...</div>
+  </div>
+
+  <!-- Fond animé : étoiles + orbes -->
+  <div class="stars" id="stars"></div>
+  <div class="orb" style="width:500px;height:500px;background:#7c3aed;top:-100px;left:-150px;--dur:9s;--tx:40px;--ty:60px;"></div>
+  <div class="orb" style="width:400px;height:400px;background:#a855f7;bottom:-80px;right:-100px;--dur:11s;--tx:-50px;--ty:-40px;"></div>
+  <div class="orb" style="width:300px;height:300px;background:#4f46e5;top:40%;left:50%;--dur:13s;--tx:30px;--ty:-50px;"></div>
+
+  <div id="ac-banner"></div>
+
+  <!-- SIDEBAR STYLE YOUTUBE -->
+  <button id="sidebar-toggle" onclick="toggleSidebar()">
+    <span class="bar" style="display:block;width:20px;height:2px;background:#e9d5ff;border-radius:2px;margin:0 auto"></span>
+    <span class="bar" style="display:block;width:20px;height:2px;background:#e9d5ff;border-radius:2px;margin:0 auto"></span>
+    <span class="bar" style="display:block;width:20px;height:2px;background:#e9d5ff;border-radius:2px;margin:0 auto"></span>
+  </button>
+  <div id="sidebar" class="collapsed">
+    <nav id="sidebar-nav">
+      <div class="nav-item" data-tooltip="Achievements" onclick="openAchievements()">
+        <span class="nav-icon">🏆</span>
+        <span class="nav-label">Achievements</span>
+        <span id="ach-badge-side" class="nav-badge" style="display:none"></span>
+      </div>
+      <div class="nav-item" id="nav-diamonds" data-tooltip="Diamants">
+        <span class="nav-icon">💎</span>
+        <span class="nav-label" id="diamond-count">0 diamants</span>
+      </div>
+      <div class="nav-item" data-tooltip="Classement" onclick="openLeaderboard()">
+        <span class="nav-icon">🥇</span>
+        <span class="nav-label">Classement</span>
+      </div>
+      <div class="nav-item" data-tooltip="Boutique cosmétique" onclick="openCosmeticShop()">
+        <span class="nav-icon">🎨</span>
+        <span class="nav-label">Cosmétiques</span>
+      </div>
+      <div class="nav-item" data-tooltip="Statistiques" onclick="openStats()">
+        <span class="nav-icon">📊</span>
+        <span class="nav-label">Statistiques</span>
+      </div>
+      <div class="nav-item" data-tooltip="Prestige" onclick="openPrestigePanel()">
+        <span class="nav-icon">⭐</span>
+        <span class="nav-label">Prestige</span>
+        <span id="prestige-info-side" class="nav-sub"></span>
+      </div>
+      <div class="nav-item" data-tooltip="Changer le thème" onclick="toggleTheme()">
+        <span class="nav-icon" id="theme-toggle-icon">🌙</span>
+        <span class="nav-label" id="theme-toggle-label">Mode jour</span>
+      </div>
+      <div class="nav-divider"></div>
+      <div class="nav-item" data-tooltip="Musique" onclick="openMusicPanel()">
+        <span class="nav-icon">🎵</span>
+        <span class="nav-label">Musique</span>
+        <span id="music-nav-status" class="nav-sub"></span>
+      </div>
+      <div class="nav-divider"></div>
+      <div class="nav-item" data-tooltip="Partager mon score" onclick="openShare()">
+        <span class="nav-icon">📤</span>
+        <span class="nav-label">Partager</span>
+      </div>
+      <div class="nav-item" data-tooltip="A propos" onclick="openAbout()">
+        <span class="nav-icon">ℹ️</span>
+        <span class="nav-label">A propos</span>
+      </div>
+      <div class="nav-divider"></div>
+      <div class="nav-item" data-tooltip="Sauvegarder" onclick="saveGame()">
+        <span class="nav-icon" id="save-icon">💾</span>
+        <span class="nav-label">Sauvegarder</span>
+        <span id="save-status" class="nav-sub"></span>
+      </div>
+      <div class="nav-item" data-tooltip="Se déconnecter" onclick="logout()">
+        <span class="nav-icon">🚪</span>
+        <span class="nav-label" id="nav-username">Déconnexion</span>
+      </div>
+    </nav>
+  </div>
+
+  <!-- TOGGLE THEME (gardé pour compat JS) -->
+  <button id="theme-toggle" style="display:none" onclick="toggleTheme()">🌙</button>
+
+  <header>
+    <h1>Cuenta dé Tomito Clicker</h1>
+    <p class="subtitle">✦ Clique pour la gloire ✦</p>
+  </header>
+
+  <div id="counter-wrap">
+    <div id="counter">0 Cuentas</div>
+    <div id="cps-display">0 Cuentas / seconde</div>
+  </div>
+
+  <div id="main">
+
+    <div id="clicker-zone">
+      <div class="img-wrapper" id="img-wrapper">
+        <img id="cuentatito" src="Cuentatito.png" alt="Cuentatito" draggable="false" />
+      </div>
+      <div class="click-hint">▼ Clique ici ▼</div>
+      <div id="combo-display"></div>
+      <button id="prestige-btn" onclick="openPrestigePanel()">⭐ Prestige</button>
+      <div id="prestige-info"></div>
+      <div id="turbo-widget">
+        <button id="turbo-btn" onclick="activateTurbo()">⚡ TURBO</button>
+        <div id="turbo-timer"></div>
+      </div>
+    </div>
+
+    <div id="shop">
+      <div id="shop-header">
+        <h2>✦ Boutique ✦</h2>
+        <div id="qty-btns">
+          <button class="qty-btn active" data-qty="1">x1</button>
+          <button class="qty-btn" data-qty="10">x10</button>
+          <button class="qty-btn" data-qty="50">x50</button>
+          <button class="qty-btn" data-qty="100">x100</button>
+          <button class="qty-btn" data-qty="max">MAX</button>
+        </div>
+      </div>
+      <div id="shop-items"></div>
+    </div>
+
+  </div>
+
+  <script>
+    // ── ÉTOILES GÉNÉRÉES ──
+    const starsContainer = document.getElementById('stars');
+    for (let i = 0; i < 120; i++) {
+      const s = document.createElement('div');
+      s.className = 'star';
+      const size = Math.random() * 2.5 + 0.5;
+      s.style.cssText = `
+        width:${size}px; height:${size}px;
+        top:${Math.random()*100}%;
+        left:${Math.random()*100}%;
+        --dur:${(Math.random()*3+2).toFixed(1)}s;
+        --op:${(Math.random()*0.7+0.2).toFixed(2)};
+        animation-delay:${(Math.random()*4).toFixed(1)}s;
+      `;
+      starsContainer.appendChild(s);
+    }
+
+    // ── DONNÉES SHOP ──
+    // Chaque item coûte baseCost * 1.15^owned à l'achat suivant.
+    // Avec ~15 items et escalade x1.15, atteindre le dernier item
+    // demande plusieurs centaines d'achats au total.
+    const shopData = [
+      // --- CLICKERS (bonus /clic) ---
+      {
+        id: "doigt1",
+        name: "👆 Doigt agile",
+        desc: "Un doigt un peu plus rapide.",
+        baseCost: 50,
+        cpsBonus: 0,
+        cpcBonus: 1,
+        owned: 0
+      },
+      {
+        id: "doigt2",
+        name: "✌️ Double doigt",
+        desc: "Deux doigts valent mieux qu'un.",
+        baseCost: 500,
+        cpsBonus: 0,
+        cpcBonus: 5,
+        owned: 0
+      },
+      {
+        id: "doigt3",
+        name: "�️ Main de Tomito",
+        desc: "La main entiere de Tomito frappe.",
+        baseCost: 8000,
+        cpsBonus: 0,
+        cpcBonus: 20,
+        owned: 0
+      },
+      {
+        id: "doigt4",
+        name: "🥊 Poing Cosmique",
+        desc: "Un poing qui brise les dimensions.",
+        baseCost: 200000,
+        cpsBonus: 0,
+        cpcBonus: 100,
+        owned: 0
+      },
+
+      // --- GENERATEURS (bonus /s) ---
+      {
+        id: "cuenta7",
+        name: "� Cuenta du 7",
+        desc: "Le legendaire Cuenta du 7.",
+        baseCost: 15,
+        cpsBonus: 0.1,
+        cpcBonus: 0,
+        owned: 0
+      },
+      {
+        id: "tomito_mini",
+        name: "🍅 Mini Tomito",
+        desc: "Un tout petit Tomito productif.",
+        baseCost: 100,
+        cpsBonus: 0.5,
+        cpcBonus: 0,
+        owned: 0
+      },
+      {
+        id: "jardin",
+        name: "🌱 Jardin de Cuentas",
+        desc: "Les Cuentas poussent naturellement.",
+        baseCost: 400,
+        cpsBonus: 2,
+        cpcBonus: 0,
+        owned: 0
+      },
+      {
+        id: "ferme",
+        name: "🌾 Ferme a Cuentas",
+        desc: "Une ferme dediee a la production.",
+        baseCost: 1200,
+        cpsBonus: 6,
+        cpcBonus: 0,
+        owned: 0
+      },
+      {
+        id: "mine",
+        name: "⛏️ Mine de Cuentas",
+        desc: "On extrait les Cuentas du sol.",
+        baseCost: 4000,
+        cpsBonus: 18,
+        cpcBonus: 0,
+        owned: 0
+      },
+      {
+        id: "usine",
+        name: "🏭 Usine Cuentatique",
+        desc: "Production industrielle non-stop.",
+        baseCost: 15000,
+        cpsBonus: 60,
+        cpcBonus: 0,
+        owned: 0
+      },
+      {
+        id: "labo",
+        name: "🔬 Labo de Tomito",
+        desc: "La science au service des Cuentas.",
+        baseCost: 60000,
+        cpsBonus: 200,
+        cpcBonus: 0,
+        owned: 0
+      },
+      {
+        id: "temple",
+        name: "🏛️ Temple du 7",
+        desc: "Les fideles offrent des Cuentas.",
+        baseCost: 250000,
+        cpsBonus: 700,
+        cpcBonus: 0,
+        owned: 0
+      },
+      {
+        id: "portail",
+        name: "🌀 Portail du 7",
+        desc: "Portail vers la dimension des Cuentas.",
+        baseCost: 1000000,
+        cpsBonus: 2500,
+        cpcBonus: 0,
+        owned: 0
+      },
+      {
+        id: "planete",
+        name: "🪐 Planete Cuentas",
+        desc: "Une planete entiere qui produit.",
+        baseCost: 5000000,
+        cpsBonus: 10000,
+        cpcBonus: 0,
+        owned: 0
+      },
+      {
+        id: "dieu",
+        name: "⚡ Tomito Divin",
+        desc: "Tomito atteint l'eveil absolu.",
+        baseCost: 30000000,
+        cpsBonus: 50000,
+        cpcBonus: 500,
+        owned: 0
+      }
+    ];
+
+    // Tri par prix de base croissant
+    shopData.sort((a, b) => a.baseCost - b.baseCost);
+
+    let cuentas = 0;
+    let cpc = 1;
+    let cps = 0;
+    let buyQty = 1; // 1 | 10 | 50 | 100 | "max"
+
+    const itemEls = new Map();
+
+    // Boutons quantité
+    document.querySelectorAll('.qty-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.qty-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        buyQty = btn.dataset.qty === 'max' ? 'max' : parseInt(btn.dataset.qty);
+        updateShop();
+      });
+    });
+
+    function getCost(item) {
+      return Math.floor(item.baseCost * Math.pow(1.18, item.owned));
+    }
+
+    // Cout total pour acheter `n` exemplaires d'un item
+    function getCostN(item, n) {
+      let total = 0;
+      for (let i = 0; i < n; i++) {
+        total += Math.floor(item.baseCost * Math.pow(1.18, item.owned + i));
+      }
+      return total;
+    }
+
+    // Combien peut-on acheter au max ?
+    function getMaxBuy(item) {
+      let n = 0, total = 0;
+      while (true) {
+        const next = Math.floor(item.baseCost * Math.pow(1.18, item.owned + n));
+        if (total + next > cuentas) break;
+        total += next;
+        n++;
+        if (n > 10000) break;
+      }
+      return n;
+    }
+
+    function getEffectiveQty(item) {
+      if (buyQty === 'max') return getMaxBuy(item);
+      return buyQty;
+    }
+
+    function recalcStats() {
+      const pm = getPrestigeMult();
+      // Multiplicateur de milestone : x2 tous les 25 achats du meme item
+      cps = shopData.reduce((acc, i) => {
+        const mult = Math.pow(2, Math.floor(i.owned / 25));
+        return acc + i.cpsBonus * i.owned * mult;
+      }, 0) * pm;
+      cpc = (1 + shopData.reduce((acc, i) => {
+        const mult = Math.pow(2, Math.floor(i.owned / 25));
+        return acc + i.cpcBonus * i.owned * mult;
+      }, 0)) * pm;
+    }
+
+    function formatNum(n) {
+      n = Math.floor(n);
+      if (n >= 1e12) return (n / 1e12).toFixed(2) + " T";
+      if (n >= 1e9)  return (n / 1e9).toFixed(2)  + " B";
+      if (n >= 1e6)  return (n / 1e6).toFixed(2)  + " M";
+      if (n >= 1e3)  return (n / 1e3).toFixed(1)  + " K";
+      return n.toString();
+    }
+
+    function buildShop() {
+      const container = document.getElementById("shop-items");
+      shopData.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "item disabled";
+
+        let bonusBadge = '';
+        if (item.cpsBonus > 0 && item.cpcBonus > 0) {
+          bonusBadge = `<span class="item-bonus">+${item.cpsBonus}/s &amp; +${item.cpcBonus}/clic</span>`;
+        } else if (item.cpsBonus > 0) {
+          bonusBadge = `<span class="item-bonus">+${item.cpsBonus} Cuentas/seconde</span>`;
+        } else if (item.cpcBonus > 0) {
+          bonusBadge = `<span class="item-bonus">+${item.cpcBonus} Cuentas/clic</span>`;
+        }
+
+        div.innerHTML = `
+          <span class="item-name">${item.name}</span>
+          <span class="item-owned">0</span>
+          <span class="item-desc">${item.desc}</span>
+          ${bonusBadge}
+          <span class="item-milestone"></span>
+          <div class="item-prog-wrap">
+            <div class="item-prog-track"><div class="item-prog-fill"></div></div>
+            <span class="item-prog-pct">0%</span>
+          </div>
+          <span class="item-cost">💰 … Cuentas</span>
+        `;
+        div.addEventListener("click", () => buyItem(item));
+        container.appendChild(div);
+        itemEls.set(item.id, div);
+      });
+    }
+
+    function updateShop() {
+      shopData.forEach(item => {
+        const div = itemEls.get(item.id);
+        if (!div) return;
+        const qty = getEffectiveQty(item);
+        const cost = qty > 0 ? getCostN(item, qty) : getCost(item);
+        const canAfford = qty > 0 && cuentas >= cost;
+
+        div.classList.toggle("disabled", !canAfford);
+        div.querySelector(".item-owned").textContent = item.owned;
+
+        // Milestone : prochain palier x25
+        const nextMilestone = (Math.floor(item.owned / 25) + 1) * 25;
+        const milestoneEl = div.querySelector(".item-milestone");
+        if (item.owned > 0) {
+          milestoneEl.textContent = `x2 bonus a ${nextMilestone} (actuel: x${Math.pow(2, Math.floor(item.owned/25))})`;
+        } else {
+          milestoneEl.textContent = `x2 bonus a 25`;
+        }
+
+        if (qty === 0) {
+          div.querySelector(".item-cost").textContent = "💰 pas assez";
+        } else {
+          div.querySelector(".item-cost").textContent = `💰 ${formatNum(cost)} (x${qty})`;
+        }
+
+        // Barre de progression vers le prochain achat
+        const singleCost = getCost(item);
+        const pct = canAfford ? 100 : Math.min(99, (cuentas / singleCost) * 100);
+        div.querySelector(".item-prog-fill").style.width = pct.toFixed(1) + "%";
+        div.querySelector(".item-prog-pct").textContent = canAfford ? "✓" : pct.toFixed(0) + "%";
+      });
+    }
+
+    function updateUI() {
+      document.getElementById("counter").textContent = formatNum(cuentas) + " Cuentas";
+      document.getElementById("cps-display").textContent =
+        cps > 0 ? formatNum(cps) + " Cuentas / seconde" : "0 Cuentas / seconde";
+      updateShop();
+      updatePrestigeUI();
+    }
+
+    function buyItem(item) {
+      const qty = getEffectiveQty(item);
+      if (qty <= 0) return;
+      const cost = getCostN(item, qty);
+      if (cuentas < cost) return;
+      cuentas -= cost;
+      item.owned += qty;
+      totalBought += qty;
+      recalcStats();
+      updateUI();
+      checkAchievements();
+      checkMilestones();
+    }
+
+    // ── COMBO DE CLICS ──
+    const comboCounts = [1, 2, 3, 5]; // multiplicateurs par palier (max x5 au lieu de x10)
+    const comboThresholds = [0, 15, 40, 80]; // seuils relevés
+    let comboCount = 0;
+    let comboTimer = null;
+
+    function getComboMult() {
+      for (let i = comboCounts.length - 1; i >= 0; i--) {
+        if (comboCount >= comboThresholds[i]) return comboCounts[i];
+      }
+      return 1;
+    }
+
+    function updateComboUI() {
+      const el = document.getElementById("combo-display");
+      const mult = getComboMult();
+      if (comboCount === 0) {
+        el.classList.remove("visible");
+        return;
+      }
+      el.classList.add("visible");
+      const next = comboThresholds.find(t => t > comboCount);
+      el.innerHTML = `<span class="combo-mult">x${mult}</span> <span class="combo-count">${comboCount} clics${next ? ` → x${comboCounts[comboThresholds.indexOf(next)]} à ${next}` : " MAX"}</span>`;
+      // Couleur selon palier
+      el.style.setProperty('--combo-color', mult >= 10 ? '#f59e0b' : mult >= 5 ? '#f97316' : mult >= 3 ? '#a855f7' : mult >= 2 ? '#60a5fa' : '#86efac');
+    }
+
+    function resetCombo() {
+      comboCount = 0;
+      updateComboUI();
+    }
+
+    // ── EASTER EGG : maintien 30-35s ──
+    let holdStart = null;
+    let holdInterval = null;
+    let eggTriggered = false;
+
+    document.getElementById("img-wrapper").addEventListener("mousedown", () => {
+      if (eggTriggered) return;
+      holdStart = Date.now();
+      holdInterval = setInterval(() => {
+        const held = (Date.now() - holdStart) / 1000;
+        const img = document.getElementById("cuentatito");
+
+        if (held >= 35 && !eggTriggered) {
+          // EXPLOSION
+          eggTriggered = true;
+          clearInterval(holdInterval);
+          img.classList.remove("egg-grow");
+          img.classList.add("egg-explode");
+          spawnExplosion();
+          setTimeout(() => {
+            img.classList.remove("egg-explode");
+            img.style.transform = "";
+            eggTriggered = false;
+          }, 1200);
+        } else if (held >= 30) {
+          // Grossit seulement à partir de 30s
+          img.classList.add("egg-grow");
+        }
+      }, 100);
+    });
+
+    function stopHold() {
+      clearInterval(holdInterval);
+      holdStart = null;
+      if (!eggTriggered) {
+        document.getElementById("cuentatito").classList.remove("egg-grow");
+      }
+    }
+
+    document.getElementById("img-wrapper").addEventListener("mouseup", stopHold);
+    document.getElementById("img-wrapper").addEventListener("mouseleave", stopHold);
+
+    function spawnExplosion() {
+      const wrapper = document.getElementById("img-wrapper");
+      const rect = wrapper.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      // Particules
+      for (let i = 0; i < 30; i++) {
+        const p = document.createElement("div");
+        p.className = "egg-particle";
+        const angle = (i / 30) * 360;
+        const dist = 80 + Math.random() * 120;
+        const size = 8 + Math.random() * 14;
+        const colors = ["#c084fc","#f0abfc","#fbbf24","#f97316","#60a5fa","#fff"];
+        p.style.cssText = `
+          left:${cx}px; top:${cy}px;
+          width:${size}px; height:${size}px;
+          background:${colors[Math.floor(Math.random()*colors.length)]};
+          --dx:${Math.cos(angle*Math.PI/180)*dist}px;
+          --dy:${Math.sin(angle*Math.PI/180)*dist}px;
+        `;
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 1000);
+      }
+      // Flash
+      const flash = document.createElement("div");
+      flash.className = "egg-flash";
+      document.body.appendChild(flash);
+      setTimeout(() => flash.remove(), 400);
+      // Bonus Cuentas
+      easterEggFound = true;
+      cuentas += 777;
+      totalEarned += 777;
+      updateUI();
+      checkAchievements();
+      spawnFloaty(cx, cy, "+777 ✨");
+    }
+
+    // ── ANTI-AUTOCLICK ──
+    const clickTimes = [];
+    let blocked = false;
+    let blockTimer = null;
+
+    function checkAutoclick() {
+      const now = Date.now();
+      clickTimes.push(now);
+      // Garder seulement les 20 derniers clics
+      if (clickTimes.length > 20) clickTimes.shift();
+
+      // 1) Trop rapide : plus de 20 clics en 1 seconde
+      const recent = clickTimes.filter(t => now - t < 1000);
+      if (recent.length > 20) return triggerBlock("Trop rapide ! Ralentis un peu.");
+
+      // 2) Trop régulier : écarts quasi identiques sur 10 clics = bot
+      if (clickTimes.length >= 10) {
+        const intervals = [];
+        for (let i = 1; i < clickTimes.length; i++) {
+          intervals.push(clickTimes[i] - clickTimes[i - 1]);
+        }
+        const avg = intervals.reduce((a, b) => a + b, 0) / intervals.length;
+        const variance = intervals.reduce((a, b) => a + Math.pow(b - avg, 2), 0) / intervals.length;
+        // Variance très faible = clics mécaniquement réguliers
+        if (avg < 150 && variance < 100) return triggerBlock("Autoclick detecte ! Tomito te surveille.");
+      }
+
+      return false;
+    }
+
+    function triggerBlock(msg) {
+      if (blocked) return true;
+      blocked = true;
+      clickTimes.length = 0;
+      const banner = document.getElementById("ac-banner");
+      banner.textContent = "⚠️ " + msg;
+      banner.classList.add("visible");
+      clearTimeout(blockTimer);
+      blockTimer = setTimeout(() => {
+        blocked = false;
+        banner.classList.remove("visible");
+      }, 4000);
+      return true;
+    }
+
+    document.getElementById("img-wrapper").addEventListener("click", (e) => {
+      if (checkAutoclick()) return;
+
+      // Combo
+      comboCount++;
+      totalClics++;
+      clearTimeout(comboTimer);
+      comboTimer = setTimeout(resetCombo, 1500);
+      updateComboUI();
+
+      const mult = getComboMult();
+      if (mult > bestCombo) bestCombo = mult;
+      const gained = cpc * mult * (turboActive ? 3 : 1);
+      cuentas += gained;
+      totalEarned += gained;
+      updateUI();
+      checkAchievements();
+      spawnFloaty(e.clientX, e.clientY, "+" + formatNum(gained) + (mult > 1 ? ` x${mult}!` : ""));
+    });
+
+    function spawnFloaty(x, y, text) {
+      const el = document.createElement("div");
+      el.className = "floaty";
+      el.textContent = text;
+      const offsetX = (Math.random() - 0.5) * 40;
+      el.style.left = (x + offsetX - 20) + "px";
+      el.style.top  = (y - 10) + "px";
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 1100);
+    }
+
+    setInterval(() => {
+      if (cps > 0) {
+        const gained = (cps / 20) * (turboActive ? 3 : 1);
+        cuentas += gained;
+        totalEarned += gained;
+        updateUI();
+        checkAchievements();
+      }
+    }, 50);
+
+    // ── PRESTIGE ──
+    let prestigeCount = 0;
+
+    // Coût du prestige N+1 : 1M * 3^N (triple à chaque fois, jusqu'à prestige 100)
+    function getPrestigeCost() {
+      return Math.floor(1_000_000 * Math.pow(3, prestigeCount));
+    }
+
+    function getPrestigeMult() {
+      return parseFloat((1 + prestigeCount * 0.5).toFixed(1));
+    }
+
+    // Chiffres romains jusqu'à 100
+    function toRoman(n) {
+      const vals = [100,90,50,40,10,9,5,4,1];
+      const syms = ["C","XC","L","XL","X","IX","V","IV","I"];
+      let result = "";
+      for (let i = 0; i < vals.length; i++) {
+        while (n >= vals[i]) { result += syms[i]; n -= vals[i]; }
+      }
+      return result;
+    }
+
+    function openPrestigePanel() {
+      document.getElementById("prestige-panel").classList.add("open");
+      refreshPrestigePanel();
+    }
+
+    function closePrestigePanel() {
+      document.getElementById("prestige-panel").classList.remove("open");
+    }
+
+    function refreshPrestigePanel() {
+      if (prestigeCount >= 100) {
+        document.getElementById("prestige-panel-content").innerHTML = `
+          <div class="prestige-max">🏆 Prestige C atteint !<br>Tu es un dieu des Cuentas.</div>`;
+        return;
+      }
+      const cost = getPrestigeCost();
+      const pct = Math.min(100, (cuentas / cost) * 100);
+      const nextMult = parseFloat((1 + (prestigeCount + 1) * 0.5).toFixed(1));
+      const canAfford = cuentas >= cost;
+      document.getElementById("prestige-panel-content").innerHTML = `
+        <div class="pp-current">
+          Prestige actuel : <span>${prestigeCount > 0 ? toRoman(prestigeCount) : "—"}</span>
+          ${prestigeCount > 0 ? `<span class="pp-mult-badge">x${getPrestigeMult()}</span>` : ""}
+        </div>
+        <div class="pp-next">Prochain : Prestige <strong>${toRoman(prestigeCount + 1)}</strong> → multiplicateur <strong>x${nextMult}</strong></div>
+        <div class="pp-cost">Coût : <span class="${canAfford ? 'can-afford' : 'cant-afford'}">${formatNum(cost)} Cuentas</span>
+          <span class="pp-have">(tu as ${formatNum(Math.floor(cuentas))})</span>
+        </div>
+        <div class="pp-bar-wrap">
+          <div class="pp-bar-track">
+            <div class="pp-bar-fill" style="width:${pct.toFixed(1)}%"></div>
+          </div>
+          <div class="pp-pct">${pct.toFixed(1)}%</div>
+        </div>
+        <button class="pp-confirm-btn ${canAfford ? '' : 'disabled'}" onclick="triggerPrestige()">
+          ${canAfford ? '⭐ Confirmer le Prestige' : '🔒 Pas encore assez'}
+        </button>
+        <div class="pp-warning">⚠️ Tout sera remis à zéro (Cuentas + achats)</div>
+      `;
+    }
+
+    function triggerPrestige() {
+      if (cuentas < getPrestigeCost()) return;
+      if (prestigeCount >= 100) return;
+      prestigeCount++;
+      cuentas = 0;
+      cpc = 1;
+      cps = 0;
+      comboCount = 0;
+      updateComboUI();
+      shopData.forEach(i => { i.owned = 0; });
+      recalcStats();
+      updateUI();
+      refreshPrestigePanel();
+      document.body.classList.add("prestige-flash");
+      setTimeout(() => document.body.classList.remove("prestige-flash"), 800);
+    }
+
+    function updatePrestigeUI() {
+      const info = document.getElementById("prestige-info");
+      if (prestigeCount > 0) {
+        info.textContent = `✦ Prestige ${toRoman(prestigeCount)} — x${getPrestigeMult()}`;
+      } else {
+        const cost = getPrestigeCost();
+        const pct = Math.min(100, (cuentas / cost) * 100);
+        info.textContent = `Prestige I : ${pct.toFixed(1)}%`;
+      }
+      // Refresh panel si ouvert
+      if (document.getElementById("prestige-panel").classList.contains("open")) {
+        refreshPrestigePanel();
+      }
+    }
+
+    // ── ACHIEVEMENTS ──
+    let diamonds = 0;
+
+    const achievements = [
+      // Clics
+      { id:"c1", cat:"clic",    name:"Premier clic",        desc:"Clique une fois.",              icon:"👆", req:()=>totalClics>=1,                    prog:()=>({cur:Math.min(totalClics,1),       max:1}),       diamonds:1,   claimed:false },
+      { id:"c2", cat:"clic",    name:"Cliqueur",            desc:"100 clics au total.",            icon:"✌️", req:()=>totalClics>=100,                  prog:()=>({cur:Math.min(totalClics,100),     max:100}),     diamonds:2,   claimed:false },
+      { id:"c3", cat:"clic",    name:"Mains en feu",        desc:"1 000 clics au total.",          icon:"🔥", req:()=>totalClics>=1000,                 prog:()=>({cur:Math.min(totalClics,1000),    max:1000}),    diamonds:3,   claimed:false },
+      { id:"c4", cat:"clic",    name:"Cliqueur pro",        desc:"10 000 clics au total.",         icon:"💪", req:()=>totalClics>=10000,                prog:()=>({cur:Math.min(totalClics,10000),   max:10000}),   diamonds:5,   claimed:false },
+      { id:"c5", cat:"clic",    name:"Tomito approuve",     desc:"100 000 clics au total.",        icon:"🍅", req:()=>totalClics>=100000,               prog:()=>({cur:Math.min(totalClics,100000),  max:100000}),  diamonds:10,  claimed:false },
+      // Gains
+      { id:"g1", cat:"gain",    name:"Premiers sous",       desc:"Gagner 100 Cuentas.",            icon:"💰", req:()=>totalEarned>=100,                 prog:()=>({cur:Math.min(totalEarned,100),    max:100}),     diamonds:1,   claimed:false },
+      { id:"g2", cat:"gain",    name:"Millionnaire",        desc:"Gagner 1 000 000 Cuentas.",      icon:"🤑", req:()=>totalEarned>=1e6,                 prog:()=>({cur:Math.min(totalEarned,1e6),    max:1e6}),     diamonds:5,   claimed:false },
+      { id:"g3", cat:"gain",    name:"Milliardaire",        desc:"Gagner 1 000 000 000 Cuentas.",  icon:"🏦", req:()=>totalEarned>=1e9,                 prog:()=>({cur:Math.min(totalEarned,1e9),    max:1e9}),     diamonds:15,  claimed:false },
+      { id:"g4", cat:"gain",    name:"Dieu des Cuentas",    desc:"Gagner 1 000 000 000 000 Cuentas.", icon:"⚡", req:()=>totalEarned>=1e12,            prog:()=>({cur:Math.min(totalEarned,1e12),   max:1e12}),    diamonds:30,  claimed:false },
+      // Achats
+      { id:"s1", cat:"shop",    name:"Premier achat",       desc:"Acheter quelque chose.",         icon:"🛒", req:()=>totalBought>=1,                   prog:()=>({cur:Math.min(totalBought,1),      max:1}),       diamonds:1,   claimed:false },
+      { id:"s2", cat:"shop",    name:"Accro au shop",       desc:"50 achats au total.",            icon:"🏪", req:()=>totalBought>=50,                  prog:()=>({cur:Math.min(totalBought,50),     max:50}),      diamonds:3,   claimed:false },
+      { id:"s3", cat:"shop",    name:"Gros consommateur",   desc:"200 achats au total.",           icon:"📦", req:()=>totalBought>=200,                 prog:()=>({cur:Math.min(totalBought,200),    max:200}),     diamonds:6,   claimed:false },
+      { id:"s4", cat:"shop",    name:"Tout achete",         desc:"Posseder au moins 1 de chaque.", icon:"🌟", req:()=>shopData.every(i=>i.owned>=1),    prog:()=>({cur:shopData.filter(i=>i.owned>=1).length, max:shopData.length}), diamonds:10, claimed:false },
+      // Combo
+      { id:"k1", cat:"combo",   name:"Combo x2",            desc:"Atteindre un combo x2 (15 clics rapides).",  icon:"✨", req:()=>bestCombo>=2,        prog:()=>({cur:Math.min(bestCombo,2),        max:2}),       diamonds:2,   claimed:false },
+      { id:"k2", cat:"combo",   name:"Combo x3",            desc:"Atteindre un combo x3 (40 clics rapides).",  icon:"💫", req:()=>bestCombo>=3,        prog:()=>({cur:Math.min(bestCombo,3),        max:3}),       diamonds:4,   claimed:false },
+      { id:"k3", cat:"combo",   name:"Combo MAX",           desc:"Atteindre un combo x5 (80 clics rapides).",  icon:"🌀", req:()=>bestCombo>=5,        prog:()=>({cur:Math.min(bestCombo,5),        max:5}),       diamonds:8,   claimed:false },
+      // Prestige
+      { id:"p1", cat:"prestige",name:"Premiere renaissance",desc:"Faire son premier prestige.",    icon:"⭐", req:()=>prestigeCount>=1,                 prog:()=>({cur:Math.min(prestigeCount,1),    max:1}),       diamonds:10,  claimed:false },
+      { id:"p2", cat:"prestige",name:"Prestige X",          desc:"Atteindre le prestige X (10).",  icon:"🌠", req:()=>prestigeCount>=10,                prog:()=>({cur:Math.min(prestigeCount,10),   max:10}),      diamonds:25,  claimed:false },
+      { id:"p3", cat:"prestige",name:"Prestige L",          desc:"Atteindre le prestige L (50).",  icon:"💥", req:()=>prestigeCount>=50,                prog:()=>({cur:Math.min(prestigeCount,50),   max:50}),      diamonds:50,  claimed:false },
+      { id:"p4", cat:"prestige",name:"Prestige C",          desc:"Atteindre le prestige C (100).", icon:"👑", req:()=>prestigeCount>=100,               prog:()=>({cur:Math.min(prestigeCount,100),  max:100}),     diamonds:100, claimed:false },
+      // Easter egg
+      { id:"e1", cat:"secret",  name:"Le secret de Tomito",desc:"Maintenir le clic 35 secondes.", icon:"🥚", req:()=>easterEggFound,                   prog:()=>({cur:easterEggFound?1:0,           max:1}),       diamonds:20,  claimed:false },
+    ];
+
+    let totalClics = 0;
+    let totalEarned = 0;
+    let totalBought = 0;
+    let bestCombo = 0;
+    let easterEggFound = false;
+
+    function checkAchievements() {
+      let newUnlock = false;
+      achievements.forEach(a => {
+        if (!a.unlocked && a.req()) {
+          a.unlocked = true;
+          newUnlock = true;
+          showAchievementToast(a);
+        }
+      });
+      // Render complet seulement si nouveau unlock
+      if (newUnlock && document.getElementById("ach-panel").classList.contains("open")) {
+        renderAchievements();
+      } else if (document.getElementById("ach-panel").classList.contains("open")) {
+        // Sinon juste mettre à jour les barres de progression sans recréer les éléments
+        updateAchievementBars();
+      }
+      const claimable = achievements.filter(a => a.unlocked && !a.claimed).length;
+      const badge = document.getElementById("ach-badge-side");
+      if (badge) {
+        badge.textContent = claimable;
+        badge.style.display = claimable > 0 ? "inline-block" : "none";
+      }
+    }
+
+    function updateAchievementBars() {
+      achievements.forEach(a => {
+        const el = document.getElementById("ach-bar-" + a.id);
+        const elPct = document.getElementById("ach-pct-" + a.id);
+        if (!el || !elPct) return;
+        const p = a.prog();
+        const pct = Math.min(100, (p.cur / p.max) * 100);
+        el.style.width = pct.toFixed(1) + "%";
+        const progLabel = p.max === 1
+          ? (p.cur >= 1 ? "Accompli" : "Non accompli")
+          : `${formatNum(p.cur)} / ${formatNum(p.max)}`;
+        elPct.textContent = progLabel;
+      });
+    }
+
+    function showAchievementToast(a) {
+      const t = document.createElement("div");
+      t.className = "ach-toast";
+      t.innerHTML = `<span class="ach-toast-icon">${a.icon}</span><div><div class="ach-toast-name">${a.name}</div><div class="ach-toast-sub">Achievement debloque !</div></div>`;
+      document.body.appendChild(t);
+      // Repositionner tous les toasts existants vers le haut
+      const allToasts = [...document.querySelectorAll(".ach-toast")];
+      allToasts.forEach((el, i) => {
+        el.style.bottom = (24 + i * 72) + "px";
+      });
+      setTimeout(() => t.classList.add("visible"), 50);
+      setTimeout(() => {
+        t.classList.remove("visible");
+        setTimeout(() => {
+          t.remove();
+          // Réajuster les toasts restants
+          const remaining = [...document.querySelectorAll(".ach-toast")];
+          remaining.forEach((el, i) => { el.style.bottom = (24 + i * 72) + "px"; });
+        }, 400);
+      }, 3500);
+    }
+
+    function openAchievements() {
+      document.getElementById("ach-panel").classList.add("open");
+      renderAchievements();
+    }
+
+    function closeAchievements() {
+      document.getElementById("ach-panel").classList.remove("open");
+    }
+
+    function claimAchievement(id) {
+      const a = achievements.find(x => x.id === id);
+      if (!a || !a.unlocked || a.claimed) return;
+      a.claimed = true;
+      diamonds += a.diamonds;
+      document.getElementById("diamond-count").textContent = diamonds + " diamants";
+      document.getElementById("ach-diamond-display").textContent = diamonds;
+      renderAchievements();
+      checkAchievements();
+    }
+
+    const catLabels = { clic:"👆 Clics", gain:"💰 Gains", shop:"🛒 Boutique", combo:"✨ Combo", prestige:"⭐ Prestige", secret:"🥚 Secrets" };
+
+    function renderAchievements() {
+      const container = document.getElementById("ach-list");
+      document.getElementById("ach-diamond-display").textContent = diamonds;
+      const cats = [...new Set(achievements.map(a => a.cat))];
+      container.innerHTML = cats.map(cat => {
+        const items = achievements.filter(a => a.cat === cat);
+        return `<div class="ach-cat-label">${catLabels[cat]}</div>` +
+          items.map(a => {
+            const claimed = a.claimed;
+            const unlocked = a.unlocked;
+            const p = a.prog();
+            const pct = Math.min(100, (p.cur / p.max) * 100);
+            const progLabel = p.max === 1
+              ? (p.cur >= 1 ? "Accompli" : "Non accompli")
+              : `${formatNum(p.cur)} / ${formatNum(p.max)}`;
+            return `<div class="ach-item ${claimed?'claimed':''}">
+              <div class="ach-icon">${unlocked ? a.icon : '🔒'}</div>
+              <div class="ach-info">
+                <div class="ach-name">${unlocked ? a.name : a.name}</div>
+                <div class="ach-desc">${a.desc}</div>
+                <div class="ach-prog-wrap">
+                  <div class="ach-prog-track">
+                    <div id="ach-bar-${a.id}" class="ach-prog-fill ${unlocked?'done':''}" style="width:${pct.toFixed(1)}%"></div>
+                  </div>
+                  <span id="ach-pct-${a.id}" class="ach-prog-label">${progLabel}</span>
+                </div>
+              </div>
+              <div class="ach-reward">
+                <div class="ach-diamonds">💎 ${a.diamonds}</div>
+                ${unlocked && !claimed ? `<button class="ach-claim-btn" onclick="claimAchievement('${a.id}')">Claim</button>` : ''}
+                ${claimed ? `<span class="ach-done">✓</span>` : ''}
+              </div>
+            </div>`;
+          }).join('');
+      }).join('');
+    }
+
+    // ── THEME NUIT / JOUR ──
+    let isDayMode = false;
+
+    function toggleTheme() {
+      isDayMode = !isDayMode;
+      document.body.classList.toggle("day-mode", isDayMode);
+      document.getElementById("theme-toggle-icon").textContent = isDayMode ? "☀️" : "🌙";
+      document.getElementById("theme-toggle-label").textContent = isDayMode ? "Mode nuit" : "Mode jour";
+    }
+
+    function toggleSidebar() {
+      const sb = document.getElementById("sidebar");
+      sb.classList.toggle("collapsed");
+      document.body.classList.toggle("sidebar-open", !sb.classList.contains("collapsed"));
+    }
+
+    // ── SAUVEGARDE ──
+    function getSaveData() {
+      return {
+        cuentas, totalEarned, totalClics, totalBought,
+        bestCombo, easterEggFound, diamonds, prestigeCount, isDayMode,
+        shop: shopData.map(i => ({ id: i.id, owned: i.owned })),
+        achievements: achievements.map(a => ({ id: a.id, unlocked: !!a.unlocked, claimed: !!a.claimed })),
+        ownedCosmetics: [...ownedCosmetics],
+        equippedCosmetics
+      };
+    }
+
+    async function saveGame(silent = false) {
+      const saveData = getSaveData();
+      // Sauvegarde locale en backup
+      localStorage.setItem("cuentatito_save", JSON.stringify(saveData));
+
+      // Sauvegarde sur Supabase si connecté
+      if (currentUser) {
+        await sb.from("saves").upsert({ id: currentUser.id, data: saveData, updated_at: new Date().toISOString() });
+        // Mettre à jour le score global
+        await sb.from("scores").upsert({
+          id: currentUser.id,
+          username: currentUsername,
+          total_earned: Math.floor(totalEarned),
+          prestige_count: prestigeCount,
+          total_clics: totalClics,
+          diamonds,
+          updated_at: new Date().toISOString()
+        });
+      }
+
+      if (!silent) {
+        const icon = document.getElementById("save-icon");
+        const status = document.getElementById("save-status");
+        icon.textContent = "✅";
+        status.textContent = "Sauvegardé";
+        status.classList.add("visible");
+        clearTimeout(icon._t);
+        icon._t = setTimeout(() => {
+          icon.textContent = "💾";
+          status.textContent = "";
+          status.classList.remove("visible");
+        }, 2000);
+      }
+    }
+
+    async function loadGame() {
+      let d = null;
+
+      // Charger depuis Supabase en priorité
+      if (currentUser) {
+        const { data: remote } = await sb.from("saves").select("data").eq("id", currentUser.id).single();
+        if (remote) d = remote.data;
+        // Afficher le pseudo dans la sidebar
+        const navUser = document.getElementById("nav-username");
+        if (navUser) navUser.textContent = currentUsername || "Déconnexion";
+      }
+
+      // Fallback localStorage
+      if (!d) {
+        const raw = localStorage.getItem("cuentatito_save");
+        if (raw) try { d = JSON.parse(raw); } catch(e) {}
+      }
+
+      if (!d) return;
+
+      try {
+        cuentas        = d.cuentas        || 0;
+        totalEarned    = d.totalEarned    || 0;
+        totalClics     = d.totalClics     || 0;
+        totalBought    = d.totalBought    || 0;
+        bestCombo      = d.bestCombo      || 0;
+        easterEggFound = d.easterEggFound || false;
+        diamonds       = d.diamonds       || 0;
+        prestigeCount  = d.prestigeCount  || 0;
+        isDayMode      = d.isDayMode      || false;
+
+        if (d.shop) d.shop.forEach(s => {
+          const item = shopData.find(i => i.id === s.id);
+          if (item) item.owned = s.owned || 0;
+        });
+
+        if (d.achievements) d.achievements.forEach(s => {
+          const a = achievements.find(x => x.id === s.id);
+          if (a) { a.unlocked = s.unlocked; a.claimed = s.claimed; }
+        });
+
+        document.body.classList.toggle("day-mode", isDayMode);
+        document.getElementById("theme-toggle-icon").textContent = isDayMode ? "☀️" : "🌙";
+        document.getElementById("theme-toggle-label").textContent = isDayMode ? "Mode nuit" : "Mode jour";
+        document.getElementById("diamond-count").textContent = diamonds + " diamants";
+
+        if (d.ownedCosmetics) ownedCosmetics = new Set(d.ownedCosmetics);
+        if (d.equippedCosmetics) {
+          equippedCosmetics = d.equippedCosmetics;
+          Object.values(equippedCosmetics).forEach(id => {
+            const item = cosmeticItems.find(x => x.id === id);
+            if (item) item.apply();
+          });
+        }
+
+        recalcStats();
+      } catch(e) { console.warn("Erreur chargement save", e); }
+    }
+
+    async function logout() {
+      await saveGame(true);
+      await sb.auth.signOut();
+      window.location.href = "auth.html";
+    }
+
+    // Auto-save toutes les 30s
+    setInterval(() => saveGame(true), 30000);
+
+    // ── CURSEUR PERSONNALISE ──
+    const cursorEl = document.createElement("div");
+    cursorEl.id = "custom-cursor";
+    document.body.appendChild(cursorEl);
+    document.addEventListener("mousemove", e => {
+      cursorEl.style.left = e.clientX + "px";
+      cursorEl.style.top  = e.clientY + "px";
+    });
+    document.addEventListener("mousedown", () => cursorEl.classList.add("clicking"));
+    document.addEventListener("mouseup",   () => cursorEl.classList.remove("clicking"));
+
+    // ── BOUTIQUE COSMETIQUE ──
+    let ownedCosmetics = new Set();
+    let equippedCosmetics = {}; // track l'item équipé par type
+
+    const cosmeticItems = [
+      { id:"c_border_gold",    name:"Bordure Dorée",       desc:"Bordure de l'image en or.",           icon:"🟡", price:5,  type:"border",  apply:()=>{ document.getElementById("cuentatito").style.borderColor="#f59e0b"; document.getElementById("cuentatito").style.boxShadow="0 0 30px rgba(245,158,11,0.7), 0 0 80px rgba(245,158,11,0.3)"; } },
+      { id:"c_border_red",     name:"Bordure Rouge",        desc:"Bordure de l'image en rouge feu.",    icon:"🔴", price:5,  type:"border",  apply:()=>{ document.getElementById("cuentatito").style.borderColor="#ef4444"; document.getElementById("cuentatito").style.boxShadow="0 0 30px rgba(239,68,68,0.7), 0 0 80px rgba(239,68,68,0.3)"; } },
+      { id:"c_border_cyan",    name:"Bordure Cyan",         desc:"Bordure de l'image en cyan.",         icon:"🔵", price:5,  type:"border",  apply:()=>{ document.getElementById("cuentatito").style.borderColor="#06b6d4"; document.getElementById("cuentatito").style.boxShadow="0 0 30px rgba(6,182,212,0.7), 0 0 80px rgba(6,182,212,0.3)"; } },
+      { id:"c_bg_red",         name:"Fond Rouge Sombre",    desc:"Change la couleur du fond.",          icon:"🌋", price:10, type:"bg",      apply:()=>{ applyBgOverride("#200000","#3a0000","#200000","#500000"); } },
+      { id:"c_bg_green",       name:"Fond Vert Sombre",     desc:"Change la couleur du fond.",          icon:"🌿", price:10, type:"bg",      apply:()=>{ applyBgOverride("#001a00","#003300","#001a00","#004d00"); } },
+      { id:"c_bg_blue",        name:"Fond Bleu Ocean",      desc:"Change la couleur du fond.",          icon:"🌊", price:10, type:"bg",      apply:()=>{ applyBgOverride("#000d1a","#001a33","#000d1a","#002b4d"); } },
+      { id:"c_floaty_gold",    name:"Floaty Dores",         desc:"+N en or au lieu de violet.",         icon:"✨", price:8,  type:"floaty",  apply:()=>{ document.documentElement.style.setProperty("--floaty-color","#f59e0b"); document.documentElement.style.setProperty("--floaty-shadow","rgba(245,158,11,0.8)"); } },
+      { id:"c_floaty_green",   name:"Floaty Verts",         desc:"+N en vert.",                         icon:"💚", price:8,  type:"floaty",  apply:()=>{ document.documentElement.style.setProperty("--floaty-color","#34d399"); document.documentElement.style.setProperty("--floaty-shadow","rgba(52,211,153,0.8)"); } },
+      { id:"c_cursor_star",    name:"Curseur Etoile",       desc:"Curseur en forme d'etoile.",          icon:"⭐", price:6,  type:"cursor",  apply:()=>{ document.getElementById("custom-cursor").dataset.shape="star"; } },
+      { id:"c_cursor_diamond", name:"Curseur Diamant",      desc:"Curseur en forme de diamant.",        icon:"💎", price:6,  type:"cursor",  apply:()=>{ document.getElementById("custom-cursor").dataset.shape="diamond"; } },
+      // SKINS
+      { id:"s_chiotte",        name:"Tomito Chiotte",       desc:"Un Tomito... particulier.",            icon:"🚽", price:15, type:"skin",    preview:"skintomito/tomitochiotte.png",   apply:()=>{ document.getElementById("cuentatito").src="skintomito/tomitochiotte.png"; } },
+      { id:"s_souriant",       name:"Tomito Souriant",      desc:"Tomito de bonne humeur.",              icon:"😄", price:15, type:"skin",    preview:"skintomito/tomitosouriant.png",  apply:()=>{ document.getElementById("cuentatito").src="skintomito/tomitosouriant.png"; } },
+      { id:"s_vulgaire",       name:"Tomito Vulgaire",      desc:"Tomito dans son pire etat.",           icon:"😤", price:15, type:"skin",    preview:"skintomito/tomitovulgaire.png",  apply:()=>{ document.getElementById("cuentatito").src="skintomito/tomitovulgaire.png"; } },
+      { id:"s_default",        name:"Tomito Original",      desc:"Revenir au skin de base.",             icon:"🍅", price:0,  type:"skin",    preview:"Cuentatito.png",                 apply:()=>{ document.getElementById("cuentatito").src="Cuentatito.png"; } },
+    ];
+
+    function applyBgOverride(c1,c2,c3,c4,c5) {
+      document.body.style.background = c1;
+      const before = document.styleSheets[0];
+      // On injecte via une variable CSS custom
+      document.documentElement.style.setProperty("--bg-c1", c1);
+      document.documentElement.style.setProperty("--bg-c2", c2);
+      document.documentElement.style.setProperty("--bg-c3", c3);
+      document.documentElement.style.setProperty("--bg-c4", c4);
+    }
+
+    function openCosmeticShop() {
+      document.getElementById("cosm-panel").classList.add("open");
+      renderCosmeticShop();
+    }
+
+    function closeCosmeticShop() {
+      document.getElementById("cosm-panel").classList.remove("open");
+    }
+
+    function renderCosmeticShop() {
+      document.getElementById("cosm-diamond-display").textContent = diamonds;
+      const container = document.getElementById("cosm-items");
+      const types = [
+        { key:"skin",   label:"🎭 Skins" },
+        { key:"border", label:"🖼️ Bordures" },
+        { key:"bg",     label:"🌈 Fonds" },
+        { key:"floaty", label:"✨ Floaty" },
+        { key:"cursor", label:"🖱️ Curseurs" },
+      ];
+      container.innerHTML = types.map(t => {
+        const items = cosmeticItems.filter(i => i.type === t.key);
+        return `<div class="cosm-section-label">${t.label}</div>` +
+          items.map(item => {
+            const owned = ownedCosmetics.has(item.id);
+            const canAfford = diamonds >= item.price || item.price === 0;
+            const isSkin = item.type === "skin";
+            return `<div class="cosm-item ${owned?'owned':''} ${!owned&&!canAfford?'cant-afford':''}"
+              ${isSkin ? `onmouseenter="previewSkin('${item.preview}')" onmouseleave="resetSkinPreview()"` : ''}>
+              ${isSkin
+                ? `<img class="cosm-skin-thumb" src="${item.preview}" alt="${item.name}" />`
+                : `<span class="cosm-icon">${item.icon}</span>`
+              }
+              <div class="cosm-info">
+                <div class="cosm-name">${item.name}</div>
+                <div class="cosm-desc">${item.desc}</div>
+              </div>
+              <div class="cosm-action">
+                ${owned || item.price === 0
+                  ? equippedCosmetics[item.type] === item.id
+                    ? `<span class="cosm-active-badge">✓ Actif</span>`
+                    : `<button class="cosm-equip-btn" onclick="equipCosmetic('${item.id}')">Equiper</button>`
+                  : `<button class="cosm-buy-btn ${canAfford?'':'disabled'}" onclick="buyCosmetic('${item.id}')">💎 ${item.price}</button>`
+                }
+              </div>
+            </div>`;
+          }).join('');
+      }).join('');
+    }
+
+    let originalSrc = null;
+    function previewSkin(src) {
+      const img = document.getElementById("cuentatito");
+      if (!originalSrc) originalSrc = img.src;
+      img.src = src;
+    }
+    function resetSkinPreview() {
+      const img = document.getElementById("cuentatito");
+      if (originalSrc) { img.src = originalSrc; originalSrc = null; }
+    }
+
+    function buyCosmetic(id) {
+      const item = cosmeticItems.find(x => x.id === id);
+      if (!item || ownedCosmetics.has(id) || diamonds < item.price) return;
+      diamonds -= item.price;
+      ownedCosmetics.add(id);
+      equippedCosmetics[item.type] = id;
+      document.getElementById("diamond-count").textContent = diamonds + " diamants";
+      item.apply();
+      renderCosmeticShop();
+    }
+
+    function equipCosmetic(id) {
+      const item = cosmeticItems.find(x => x.id === id);
+      if (!item) return;
+      originalSrc = null;
+      equippedCosmetics[item.type] = id;
+      item.apply();
+      renderCosmeticShop();
+    }
+
+    // ── STATS ──
+    let gameStartTime = Date.now();
+
+    function openStats() {
+      document.getElementById("stats-panel").classList.add("open");
+      renderStats();
+    }
+
+    function closeStats() {
+      document.getElementById("stats-panel").classList.remove("open");
+    }
+
+    function renderStats() {
+      const elapsed = Math.floor((Date.now() - gameStartTime) / 1000);
+      const h = Math.floor(elapsed / 3600);
+      const m = Math.floor((elapsed % 3600) / 60);
+      const s = elapsed % 60;
+      const timeStr = `${h}h ${m}m ${s}s`;
+      const avgCpc = totalClics > 0 ? (totalEarned / totalClics).toFixed(1) : "0";
+
+      document.getElementById("stats-content").innerHTML = `
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-val">${formatNum(Math.floor(cuentas))}</div><div class="stat-label">Cuentas actuelles</div></div>
+          <div class="stat-card"><div class="stat-val">${formatNum(Math.floor(totalEarned))}</div><div class="stat-label">Total gagné</div></div>
+          <div class="stat-card"><div class="stat-val">${formatNum(Math.floor(cps))}/s</div><div class="stat-label">Production/sec</div></div>
+          <div class="stat-card"><div class="stat-val">${formatNum(Math.floor(cpc))}</div><div class="stat-label">Cuentas/clic</div></div>
+          <div class="stat-card"><div class="stat-val">${formatNum(totalClics)}</div><div class="stat-label">Total clics</div></div>
+          <div class="stat-card"><div class="stat-val">${avgCpc}</div><div class="stat-label">Moy. par clic</div></div>
+          <div class="stat-card"><div class="stat-val">${formatNum(totalBought)}</div><div class="stat-label">Achats totaux</div></div>
+          <div class="stat-card"><div class="stat-val">x${bestCombo}</div><div class="stat-label">Meilleur combo</div></div>
+          <div class="stat-card"><div class="stat-val">${prestigeCount > 0 ? toRoman(prestigeCount) : "—"}</div><div class="stat-label">Prestige</div></div>
+          <div class="stat-card"><div class="stat-val">x${getPrestigeMult()}</div><div class="stat-label">Multiplicateur</div></div>
+          <div class="stat-card"><div class="stat-val">${diamonds}</div><div class="stat-label">💎 Diamants</div></div>
+          <div class="stat-card"><div class="stat-val">${timeStr}</div><div class="stat-label">Temps de jeu</div></div>
+        </div>
+        <div class="stats-shop-title">Items possédés</div>
+        <div class="stats-shop-list">
+          ${shopData.map(i => `<div class="stats-shop-row">
+            <span>${i.name}</span>
+            <span class="stats-shop-owned">${i.owned}</span>
+          </div>`).join('')}
+        </div>
+      `;
+    }
+
+    // ── TURBO ──
+    const TURBO_COOLDOWN = 300; // 5 minutes en secondes
+    const TURBO_DURATION = 30;
+    let turboCooldown = 0; // secondes restantes avant dispo
+    let turboActive = false;
+    let turboRemaining = 0;
+
+    function activateTurbo() {
+      if (turboCooldown > 0 || turboActive) return;
+      turboActive = true;
+      turboRemaining = TURBO_DURATION;
+      turboCooldown = TURBO_COOLDOWN;
+      document.getElementById("turbo-btn").disabled = true;
+      document.getElementById("cuentatito").classList.add("turbo-on");
+    }
+
+    function updateTurboWidget() {
+      const btn = document.getElementById("turbo-btn");
+      const timer = document.getElementById("turbo-timer");
+      if (turboActive) {
+        btn.textContent = "⚡ TURBO ACTIF";
+        btn.classList.add("active");
+        timer.textContent = `${turboRemaining}s restantes`;
+        timer.style.color = "#f97316";
+      } else if (turboCooldown > 0) {
+        const m = Math.floor(turboCooldown / 60);
+        const s = turboCooldown % 60;
+        btn.textContent = "⚡ TURBO";
+        btn.classList.remove("active");
+        btn.disabled = true;
+        timer.textContent = `Prochain turbo dans ${m > 0 ? m+"m " : ""}${s}s`;
+        timer.style.color = "#a78bfa";
+      } else {
+        btn.textContent = "⚡ TURBO";
+        btn.classList.remove("active");
+        btn.disabled = false;
+        timer.textContent = "Prêt !";
+        timer.style.color = "#86efac";
+      }
+    }
+
+    // Tick turbo toutes les secondes
+    setInterval(() => {
+      if (turboActive) {
+        turboRemaining--;
+        if (turboRemaining <= 0) {
+          turboActive = false;
+          document.getElementById("cuentatito").classList.remove("turbo-on");
+        }
+      }
+      if (turboCooldown > 0) turboCooldown--;
+      updateTurboWidget();
+    }, 1000);
+
+    // ── CLASSEMENT LOCAL ──
+    function getScores() {
+      try { return JSON.parse(localStorage.getItem("cuentatito_scores") || "[]"); }
+      catch { return []; }
+    }
+
+    function saveScore() {
+      const name = document.getElementById("lb-name-input").value.trim();
+      if (!name) return;
+      const scores = getScores();
+      const existing = scores.findIndex(s => s.name === name);
+      const entry = { name, score: Math.floor(totalEarned), prestige: prestigeCount, date: new Date().toLocaleDateString() };
+      if (existing >= 0) { scores[existing] = entry; }
+      else { scores.push(entry); }
+      scores.sort((a, b) => b.score - a.score);
+      localStorage.setItem("cuentatito_scores", JSON.stringify(scores.slice(0, 20)));
+      renderLeaderboard();
+    }
+
+    function openLeaderboard() {
+      document.getElementById("lb-panel").classList.add("open");
+      renderLeaderboard();
+    }
+
+    function closeLeaderboard() {
+      document.getElementById("lb-panel").classList.remove("open");
+    }
+
+    async function renderLeaderboard() {
+      const container = document.getElementById("lb-list");
+      container.innerHTML = `<div class="lb-empty">Chargement...</div>`;
+
+      // Charger depuis Supabase
+      const { data: scores } = await sb.from("scores")
+        .select("username, total_earned, prestige_count, updated_at")
+        .order("total_earned", { ascending: false })
+        .limit(20);
+
+      if (!scores || scores.length === 0) {
+        container.innerHTML = `<div class="lb-empty">Aucun score enregistré encore.</div>`;
+        return;
+      }
+
+      container.innerHTML = scores.map((s, i) => {
+        const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i+1}.`;
+        const date = new Date(s.updated_at).toLocaleDateString();
+        return `<div class="lb-row ${i < 3 ? 'top'+i : ''}">
+          <span class="lb-rank">${medal}</span>
+          <span class="lb-name">${s.username}</span>
+          <span class="lb-prestige">${s.prestige_count > 0 ? toRoman(s.prestige_count) : "—"}</span>
+          <span class="lb-score">${formatNum(s.total_earned)}</span>
+          <span class="lb-date">${date}</span>
+        </div>`;
+      }).join('');
+    }
+
+    // ── FOND INTERACTIF ──
+    const starsArr = [];
+    document.querySelectorAll(".star").forEach(s => {
+      const rect = s.getBoundingClientRect();
+      starsArr.push({
+        el: s,
+        ox: parseFloat(s.style.left),
+        oy: parseFloat(s.style.top),
+        x: parseFloat(s.style.left),
+        y: parseFloat(s.style.top)
+      });
+    });
+
+    let mouseX = -9999, mouseY = -9999;
+    document.addEventListener("mousemove", e => { mouseX = e.clientX; mouseY = e.clientY; });
+
+    setInterval(() => {
+      starsArr.forEach(star => {
+        const vw = window.innerWidth, vh = window.innerHeight;
+        const sx = star.x / 100 * vw;
+        const sy = star.y / 100 * vh;
+        const dx = sx - mouseX;
+        const dy = sy - mouseY;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        const radius = 120;
+        if (dist < radius) {
+          const force = (radius - dist) / radius * 18;
+          const angle = Math.atan2(dy, dx);
+          const tx = star.x + (Math.cos(angle) * force / vw * 100);
+          const ty = star.y + (Math.sin(angle) * force / vh * 100);
+          star.x += (tx - star.x) * 0.3;
+          star.y += (ty - star.y) * 0.3;
+        } else {
+          // Retour à la position originale
+          star.x += (star.ox - star.x) * 0.05;
+          star.y += (star.oy - star.y) * 0.05;
+        }
+        star.el.style.left = star.x + "%";
+        star.el.style.top  = star.y + "%";
+      });
+    }, 30);
+
+    // ── LECTEUR MUSIQUE ──
+    const playlist = [
+      "A La Waneguaine.mp3",
+      "BAMBY X JAHYANAI - RUN DI PLACE  OFFICIAL AUDIO .mp3",
+      "BAMBY x KERCHAK – Pas Jalouse (Clip Officiel).mp3",
+      "buble up.mp3",
+      "Fanny J - Ancrée à ton port.mp3",
+      "Kybba X Basshall Mix #3 - 2023 Best Moombahton, Dancehall & Shatta.mp3",
+      "Kybba x Basshall Mix #5  Best of Dancehall, Shatta & Afro 2024.mp3",
+      "Kybba x Basshall Mix #6  Best of Dancehall, Shatta & Afro 2024.mp3",
+      "Kybba x Basshall Mix #7  Best of Dancehall, Shatta & Afro 2024.mp3",
+      "Le_Pet_Glorieux.mp3",
+      "PEACHY BABY 🍑 - COUNIA MANMANW.mp3",
+      "Shatta Dancehall Mix 2025  The Best of Shatta Dancehall 2025 by OSOCITY.mp3",
+      "TKS 2G - La Police (Official Lyrics Video).mp3",
+      "Triangle des bermudes - Charger (Clip officiel).mp3",
+      "wet pll.mp3"
+    ];
+
+    const audio = new Audio();
+    audio.volume = 0.5;
+    let currentTrack = -1;
+    let isPlaying = false;
+    let shuffleMode = false;
+    let repeatMode = 0; // 0=off 1=all 2=one
+    let favorites = new Set();
+    try { favorites = new Set(JSON.parse(localStorage.getItem("music_favs") || "[]")); } catch(e) {}
+    let musicFilter = "all";
+    let shuffleOrder = [];
+
+    // Visualiseur désactivé - cause des problèmes audio
+    function initVisualizer() {}
+    function drawVisualizer() {}
+
+    function getTrackName(f) { return f.replace(/\.mp3$/i, ""); }
+
+    function buildShuffleOrder() {
+      shuffleOrder = [...Array(playlist.length).keys()].sort(() => Math.random() - 0.5);
+    }
+
+    function loadTrack(index) {
+      currentTrack = ((index % playlist.length) + playlist.length) % playlist.length;
+      audio.src = "musique/" + encodeURIComponent(playlist[currentTrack]);
+      document.getElementById("mp-title").textContent = getTrackName(playlist[currentTrack]);
+      document.getElementById("music-nav-status").textContent = getTrackName(playlist[currentTrack]).substring(0, 18) + "…";
+      if (isPlaying) audio.play();
+      renderMusicList();
+    }
+
+    function musicToggle() {
+      if (currentTrack === -1) {
+        loadTrack(0); isPlaying = true;
+        var p = audio.play(); if (p) p.catch(function(){});
+      } else if (isPlaying) {
+        audio.pause(); isPlaying = false;
+      } else {
+        var p2 = audio.play();
+        if (p2) p2.catch(function() { audio.load(); audio.play().catch(function(){}); });
+        isPlaying = true;
+      }
+      document.getElementById("mp-play").textContent = isPlaying ? "\u23F8" : "\u25B6";
+      document.getElementById("mini-player").classList.remove("hidden");
+    }
+
+    function musicNext() {
+      isPlaying = true;
+      if (shuffleMode) {
+        if (!shuffleOrder.length) buildShuffleOrder();
+        const idx = shuffleOrder.shift();
+        loadTrack(idx);
+      } else {
+        loadTrack(currentTrack + 1);
+      }
+      audio.play();
+      document.getElementById("mp-play").textContent = "⏸";
+    }
+
+    function musicPrev() {
+      isPlaying = true;
+      if (audio.currentTime > 3) { audio.currentTime = 0; return; }
+      loadTrack(currentTrack - 1);
+      audio.play();
+      document.getElementById("mp-play").textContent = "⏸";
+    }
+
+    function toggleShuffle() {
+      shuffleMode = !shuffleMode;
+      if (shuffleMode) buildShuffleOrder();
+      document.getElementById("mp-shuffle").classList.toggle("active", shuffleMode);
+    }
+
+    function toggleRepeat() {
+      repeatMode = (repeatMode + 1) % 3;
+      const btn = document.getElementById("mp-repeat");
+      btn.textContent = repeatMode === 2 ? "🔂" : "🔁";
+      btn.classList.toggle("active", repeatMode > 0);
+    }
+
+    function changeSpeed(v) {
+      try {
+        const rate = parseFloat(v);
+        if (rate > 0) audio.playbackRate = rate;
+      } catch(e) {}
+    }
+
+    function musicVolume(v) {
+      audio.volume = Math.min(1, Math.max(0, parseFloat(v)));
+      document.getElementById("mp-volume").value = audio.volume;
+      document.getElementById("mp-vol-pct").textContent = Math.round(audio.volume * 100) + "%";
+    }
+
+    function changeVolume(delta) { musicVolume(audio.volume + delta); }
+
+    function musicSeek(v) { if (audio.duration) audio.currentTime = (v / 100) * audio.duration; }
+
+    function formatTime(s) {
+      if (isNaN(s)) return "0:00";
+      return Math.floor(s/60) + ":" + String(Math.floor(s%60)).padStart(2,"0");
+    }
+
+    setInterval(() => {
+      if (!audio.duration) return;
+      const pct = (audio.currentTime / audio.duration) * 100;
+      document.getElementById("mp-seek").value = pct;
+      document.getElementById("mp-current").textContent = formatTime(audio.currentTime);
+      document.getElementById("mp-duration").textContent = formatTime(audio.duration);
+    }, 500);
+
+    audio.addEventListener("ended", () => {
+      if (repeatMode === 2) { audio.currentTime = 0; audio.play(); }
+      else if (repeatMode === 1) musicNext();
+      else if (currentTrack < playlist.length - 1) musicNext();
+      else { isPlaying = false; document.getElementById("mp-play").textContent = "▶"; }
+    });
+
+    function toggleFavorite(index, e) {
+      e.stopPropagation();
+      if (favorites.has(index)) favorites.delete(index);
+      else favorites.add(index);
+      localStorage.setItem("music_favs", JSON.stringify([...favorites]));
+      renderMusicList();
+    }
+
+    function setMusicFilter(f, btn) {
+      musicFilter = f;
+      document.querySelectorAll(".mf-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      renderMusicList();
+    }
+
+    function openMusicPanel() {
+      document.getElementById("music-panel").classList.add("open");
+      renderMusicList();
+    }
+
+    function closeMusicPanel() { document.getElementById("music-panel").classList.remove("open"); }
+
+    function playTrack(index) {
+      isPlaying = true;
+      loadTrack(index);
+      audio.play();
+      document.getElementById("mp-play").textContent = "⏸";
+      document.getElementById("mini-player").classList.remove("hidden");
+    }
+
+    function renderMusicList() {
+      const container = document.getElementById("music-list");
+      const indices = musicFilter === "fav"
+        ? playlist.map((_,i)=>i).filter(i => favorites.has(i))
+        : playlist.map((_,i)=>i);
+      if (indices.length === 0) {
+        container.innerHTML = `<div class="music-empty">Aucun favori pour l'instant.<br>Clique sur ❤️ pour en ajouter.</div>`;
+        return;
+      }
+      container.innerHTML = indices.map(i => {
+        const active = i === currentTrack;
+        const isFav = favorites.has(i);
+        return `<div class="music-item ${active ? 'playing' : ''}" onclick="playTrack(${i})">
+          <span class="music-item-icon">${active && isPlaying ? '🎵' : '▶'}</span>
+          <span class="music-item-name">${getTrackName(playlist[i])}</span>
+          <button class="music-fav-btn ${isFav?'faved':''}" onclick="toggleFavorite(${i}, event)">${isFav?'❤️':'🤍'}</button>
+        </div>`;
+      }).join('');
+    }
+
+    // ── ECRAN DE CHARGEMENT ──
+    window.addEventListener("load", () => {
+      const bar = document.getElementById("loading-bar");
+      const screen = document.getElementById("loading-screen");
+      let p = 0;
+      const iv = setInterval(() => {
+        p += Math.random() * 18 + 5;
+        if (p >= 100) { p = 100; clearInterval(iv); }
+        bar.style.width = p + "%";
+        if (p === 100) setTimeout(() => {
+          screen.classList.add("done");
+          setTimeout(() => screen.remove(), 600);
+        }, 300);
+      }, 120);
+    });
+
+    // ── FEUX D'ARTIFICE ──
+    let fwCanvas, fwCtx;
+    let fwParticles = [];
+
+    function initFW() {
+      fwCanvas = document.getElementById("fireworks-canvas");
+      if (!fwCanvas) return;
+      fwCtx = fwCanvas.getContext("2d");
+      fwCanvas.width = window.innerWidth;
+      fwCanvas.height = window.innerHeight;
+      window.addEventListener("resize", () => {
+        fwCanvas.width = window.innerWidth;
+        fwCanvas.height = window.innerHeight;
+      });
+      animateFW();
+    }
+
+    function launchFireworks(x, y) {
+      for (let i = 0; i < 60; i++) {
+        const angle = (i / 60) * Math.PI * 2;
+        const speed = 2 + Math.random() * 5;
+        const colors = ["#c084fc","#f0abfc","#fbbf24","#f97316","#60a5fa","#34d399","#fff"];
+        fwParticles.push({
+          x, y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          life: 1,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          size: 2 + Math.random() * 3
+        });
+      }
+    }
+
+    function animateFW() {
+      if (!fwCanvas || !fwCtx) return;
+      requestAnimationFrame(animateFW);
+      fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
+      fwParticles = fwParticles.filter(p => p.life > 0);
+      fwParticles.forEach(p => {
+        p.x += p.vx; p.y += p.vy;
+        p.vy += 0.08;
+        p.life -= 0.018;
+        fwCtx.globalAlpha = p.life;
+        fwCtx.fillStyle = p.color;
+        fwCtx.beginPath();
+        fwCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        fwCtx.fill();
+      });
+      fwCtx.globalAlpha = 1;
+    }
+    animateFW();
+    // Init FW apres chargement du DOM
+    window.addEventListener("load", initFW);
+
+    // Déclencher feux d'artifice aux milestones
+    const milestonesSeen = new Set();
+    function checkMilestones() {
+      shopData.forEach(item => {
+        const milestones = [25, 50, 75, 100, 150, 200];
+        milestones.forEach(m => {
+          const key = item.id + "_" + m;
+          if (item.owned >= m && !milestonesSeen.has(key)) {
+            milestonesSeen.add(key);
+            const mult = Math.pow(2, Math.floor(m / 25));
+            showMilestoneNotif(item.name, m, mult);
+            for (let i = 0; i < 3; i++) setTimeout(() => launchFireworks(
+              Math.random() * window.innerWidth,
+              Math.random() * window.innerHeight * 0.6
+            ), i * 300);
+          }
+        });
+      });
+    }
+
+    function showMilestoneNotif(name, count, mult) {
+      const el = document.createElement("div");
+      el.className = "milestone-notif";
+      el.innerHTML = `<div class="ms-icon">🎆</div><div><div class="ms-name">${name}</div><div class="ms-text">${count} achetés ! Bonus x${mult} actif</div></div>`;
+      document.body.appendChild(el);
+      setTimeout(() => el.classList.add("visible"), 50);
+      setTimeout(() => { el.classList.remove("visible"); setTimeout(() => el.remove(), 500); }, 4000);
+    }
+
+    // ── PARTAGE ──
+    function openShare() {
+      document.getElementById("share-panel").classList.add("open");
+      const score = document.getElementById("share-card-score");
+      const details = document.getElementById("share-card-details");
+      score.textContent = formatNum(Math.floor(totalEarned)) + " Cuentas gagnées";
+      details.innerHTML = `Prestige ${prestigeCount > 0 ? toRoman(prestigeCount) : "I"} · ${totalClics} clics · 💎 ${diamonds}`;
+    }
+
+    function closeShare() { document.getElementById("share-panel").classList.remove("open"); }
+
+    function copyScore() {
+      const txt = `🎮 Cuenta dé Tomito Clicker\n💰 ${formatNum(Math.floor(totalEarned))} Cuentas gagnées\n⭐ Prestige ${prestigeCount > 0 ? toRoman(prestigeCount) : "—"}\n👆 ${totalClics} clics\n💎 ${diamonds} diamants`;
+      navigator.clipboard.writeText(txt).then(() => {
+        const el = document.getElementById("share-copied");
+        el.textContent = "✓ Copié !";
+        setTimeout(() => el.textContent = "", 2000);
+      });
+    }
+
+    // ── A PROPOS ──
+    function openAbout() { document.getElementById("about-panel").classList.add("open"); }
+    function closeAbout() { document.getElementById("about-panel").classList.remove("open"); }
+
+    buildShop();
+    loadGame();
+    updateUI();
+    checkAchievements();
+  </script>
+
+  <!-- MINI PLAYER -->
+  <div id="mini-player" class="hidden">
+    <div id="mp-line1">
+      <span id="mp-title">--</span>
+      <span id="mp-vol-wrap">
+        <button onclick="changeVolume(-0.1)">-</button>
+        <input id="mp-volume" type="range" min="0" max="1" step="0.05" value="0.5" oninput="musicVolume(this.value)" />
+        <button onclick="changeVolume(0.1)">+</button>
+        <span id="mp-vol-pct">50%</span>
+      </span>
+    </div>
+    <div id="mp-line2">
+      <span id="mp-current">0:00</span>
+      <input id="mp-seek" type="range" min="0" max="100" step="0.1" value="0" oninput="musicSeek(this.value)" />
+      <span id="mp-duration">0:00</span>
+    </div>
+    <div id="mp-line3">
+      <button id="mp-prev" onclick="musicPrev()">⏮</button>
+      <button id="mp-play" onclick="musicToggle()">▶</button>
+      <button id="mp-next" onclick="musicNext()">⏭</button>
+      <button id="mp-shuffle" onclick="toggleShuffle()">shuffle</button>
+      <button id="mp-repeat" onclick="toggleRepeat()">repeat</button>
+      <select id="mp-speed" onchange="changeSpeed(this.value)">
+        <option value="0.75">0.75x</option>
+        <option value="1" selected>1x</option>
+        <option value="1.25">1.25x</option>
+        <option value="1.5">1.5x</option>
+        <option value="2">2x</option>
+      </select>
+      <button id="mp-open" onclick="openMusicPanel()">playlist</button>
+    </div>
+  </div>
+
+    <!-- PANEL MUSIQUE -->
+  <div id="music-panel">
+    <div id="music-panel-inner">
+      <button class="music-close" onclick="closeMusicPanel()">✕</button>
+      <h2 class="music-title">🎵 Lecteur de musique</h2>
+      <div id="music-filter-btns">
+        <button class="mf-btn active" onclick="setMusicFilter('all', this)">Toutes</button>
+        <button class="mf-btn" onclick="setMusicFilter('fav', this)">❤️ Favoris</button>
+      </div>
+      <div id="music-list"></div>
+    </div>
+  </div>
+
+  <!-- PANEL CLASSEMENT -->
+  <div id="lb-panel">
+    <div id="lb-panel-inner">
+      <button class="lb-close" onclick="closeLeaderboard()">✕</button>
+      <h2 class="lb-title">🥇 Classement Global</h2>
+      <div id="lb-list"></div>
+    </div>
+  </div>
+
+  <!-- PANEL COSMETIQUES -->
+  <div id="cosm-panel">
+    <div id="cosm-panel-inner">
+      <button class="cosm-close" onclick="closeCosmeticShop()">✕</button>
+      <h2 class="cosm-title">🎨 Boutique Cosmétique</h2>
+      <div id="cosm-diamond-header">💎 <span id="cosm-diamond-display">0</span> diamants</div>
+      <div id="cosm-items"></div>
+    </div>
+  </div>
+
+  <!-- PANEL STATS -->
+  <div id="stats-panel">
+    <div id="stats-panel-inner">
+      <button class="stats-close" onclick="closeStats()">✕</button>
+      <h2 class="stats-title">📊 Statistiques</h2>
+      <div id="stats-content"></div>
+    </div>
+  </div>
+
+  <!-- PANEL ACHIEVEMENTS -->
+  <div id="ach-panel">
+    <div id="ach-panel-inner">
+      <button class="ach-close" onclick="closeAchievements()">✕</button>
+      <h2 class="ach-title">🏆 Achievements</h2>
+      <div id="ach-diamond-header">💎 <span id="ach-diamond-display">0</span> diamants</div>
+      <div id="ach-list"></div>
+    </div>
+  </div>
+
+  <!-- PANEL PARTAGE -->
+  <div id="share-panel">
+    <div id="share-panel-inner">
+      <button class="share-close" onclick="closeShare()">✕</button>
+      <h2 class="share-title">📤 Partager mon score</h2>
+      <div id="share-card">
+        <img src="logosite/logosite.png" id="share-logo" alt="logo"/>
+        <div id="share-card-title">Cuenta dé Tomito Clicker</div>
+        <div id="share-card-score"></div>
+        <div id="share-card-details"></div>
+      </div>
+      <button class="share-copy-btn" onclick="copyScore()">📋 Copier le texte</button>
+      <div id="share-copied"></div>
+    </div>
+  </div>
+
+  <!-- PANEL A PROPOS -->
+  <div id="about-panel">
+    <div id="about-panel-inner">
+      <button class="about-close" onclick="closeAbout()">✕</button>
+      <img src="logosite/logosite.png" id="about-logo" alt="logo"/>
+      <h2 class="about-title">Cuenta dé Tomito Clicker</h2>
+      <p class="about-version">Version 1.0</p>
+      <div class="about-section">
+        <div class="about-label">Créateur</div>
+        <div class="about-name">👑 Sluginho</div>
+      </div>
+      <div class="about-section">
+        <div class="about-label">Idées & contributions</div>
+        <div class="about-name">💡 antoine5549</div>
+        <div class="about-role">Compositeur & Auteur de la musique</div>
+      </div>
+      <div class="about-section">
+        <div class="about-label">Développé avec</div>
+        <div class="about-tech">HTML · CSS · JavaScript · Kiro AI</div>
+      </div>
+      <p class="about-desc">Un cookie clicker revisité autour de l'univers de Tomito. Clique, achète, prestige, et deviens le dieu des Cuentas.</p>
+    </div>
+  </div>
+
+  <!-- FEUX D'ARTIFICE -->
+  <canvas id="fireworks-canvas"></canvas>
+
+  <!-- PANEL PRESTIGE -->
+  <div id="prestige-panel">
+    <div id="prestige-panel-inner">
+      <button class="pp-close" onclick="closePrestigePanel()">✕</button>
+      <h2 class="pp-title">⭐ Prestige</h2>
+      <div id="prestige-panel-content"></div>
+    </div>
+  </div>
+
+</body>
+</html>
