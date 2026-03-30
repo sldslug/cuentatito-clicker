@@ -1304,7 +1304,7 @@
       currentTrack = ((index % playlist.length) + playlist.length) % playlist.length;
       audio.src = "musique/" + encodeURIComponent(playlist[currentTrack]);
       const name = getTrackName(playlist[currentTrack]);
-      document.getElementById("mp-title").innerHTML = `<span>${name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${name}</span>`;
+      document.getElementById("mp-title").textContent = name;
       document.getElementById("music-nav-status").textContent = getTrackName(playlist[currentTrack]).substring(0, 18) + "…";
       if (isPlaying) audio.play();
       renderMusicList();

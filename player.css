@@ -44,18 +44,9 @@
   color: #e9d5ff !important;
   white-space: nowrap !important;
   overflow: hidden !important;
+  text-overflow: ellipsis !important;
   pointer-events: none;
-}
-
-#mp-title span {
-  display: inline-block;
-  animation: marquee 12s linear infinite;
-  padding-right: 40px;
-}
-
-@keyframes marquee {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  max-width: 200px !important;
 }
 
 #mp-close-player {
