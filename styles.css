@@ -3300,3 +3300,29 @@ header, #counter-wrap, #main {
   justify-content: center;
   padding: 20px 0 40px;
 }
+
+/* ALIGNEMENT BOUTONS + SIDEBAR */
+#action-btns-row button {
+  width: 120px !important;
+  height: 120px !important;
+  min-width: 120px !important;
+  min-height: 120px !important;
+  max-width: 120px !important;
+  max-height: 120px !important;
+  flex-shrink: 0 !important;
+}
+
+/* Pas de decalage quand sidebar ouvre */
+body.sidebar-open header,
+body.sidebar-open #counter-wrap,
+body.sidebar-open #main {
+  padding-left: 0 !important;
+  margin-left: 0 !important;
+}
+
+body header,
+body #counter-wrap,
+body #main {
+  padding-left: 0 !important;
+  margin-left: 0 !important;
+}

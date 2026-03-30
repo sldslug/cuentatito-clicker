@@ -916,13 +916,10 @@
     function toggleSidebar() {
       const sb = document.getElementById("sidebar");
       sb.classList.toggle("collapsed");
-      const isOpen = !sb.classList.contains("collapsed");
-      document.body.classList.toggle("sidebar-open", isOpen);
-
       // Pousser le player si la sidebar l'écrase
       const player = document.getElementById("mini-player");
       if (player && !player.classList.contains("hidden")) {
-        const sidebarWidth = isOpen ? 240 : 62;
+        const sidebarWidth = sb.classList.contains("collapsed") ? 62 : 240;
         const rect = player.getBoundingClientRect();
         if (rect.left < sidebarWidth + 8) {
           player.style.setProperty("left",   (sidebarWidth + 8) + "px", "important");
