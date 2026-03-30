@@ -1627,9 +1627,10 @@
     function closeAbout() { document.getElementById("about-panel").classList.remove("open"); }
 
     buildShop();
-    loadGame();
-    updateUI();
-    checkAchievements();
+    loadGame().then(() => {
+      updateUI();
+      checkAchievements();
+    });
   </script>
 
   <!-- MINI PLAYER -->
