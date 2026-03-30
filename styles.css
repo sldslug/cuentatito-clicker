@@ -56,7 +56,7 @@ body::before {
   100% { transform: translate(var(--tx), var(--ty)) scale(1.15); }
 }
 
-header { text-align: center; padding: 28px 20px 10px 20px; margin-right: 310px; }
+header { text-align: center; padding: 28px 20px 10px 20px; }
 
 header h1 {
   font-family: 'Cinzel Decorative', cursive;
@@ -78,7 +78,7 @@ header h1 {
 
 header .subtitle { font-size: 0.85rem; color: #a78bfa; margin-top: 6px; letter-spacing: 3px; text-transform: uppercase; }
 
-#counter-wrap { text-align: center; margin: 14px 0 6px; margin-right: 310px; }
+#counter-wrap { text-align: center; margin: 14px 0 6px; }
 
 #counter {
   font-size: clamp(1.6rem, 4vw, 2.4rem);
@@ -90,7 +90,7 @@ header .subtitle { font-size: 0.85rem; color: #a78bfa; margin-top: 6px; letter-s
 
 #cps-display { font-size: 0.9rem; color: #a78bfa; margin-top: 4px; letter-spacing: 1px; }
 
-#main { margin-right: 310px; display: flex; align-items: stretch; justify-content: center; }
+#main { display: flex; align-items: stretch; justify-content: center; }
 
 #clicker-zone {
   display: flex;
@@ -279,7 +279,7 @@ header .subtitle { font-size: 0.85rem; color: #a78bfa; margin-top: 6px; letter-s
 
 @media (max-width: 700px) {
   #shop { position: fixed; top: auto; bottom: 0; right: 0; left: 0; width: 100%; height: 45vh; border-left: none; border-top: 1px solid rgba(124,58,237,0.35); }
-  header, #counter-wrap, #main { margin-right: 310px; display: flex; align-items: stretch; justify-content: center; }
+  header, #counter-wrap, #main { display: flex; align-items: stretch; justify-content: center; }
   #clicker-zone { padding-bottom: 48vh; }
 }
 .item {
@@ -3233,6 +3233,37 @@ body.sidebar-open header,
 body.sidebar-open #counter-wrap,
 body.sidebar-open #main {
   margin-left: 240px;
+}
+
+#clicker-zone {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 0 40px;
+}
+
+#clicker-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}
+
+/* CENTRAGE DEFINITIF */
+body {
+  padding-left: 62px;
+  padding-right: 310px;
+}
+
+body.sidebar-open {
+  padding-left: 240px;
+}
+
+header, #counter-wrap, #main {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
 }
 
 #clicker-zone {
