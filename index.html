@@ -2205,6 +2205,106 @@
       setTimeout(() => { overlay.remove(); }, 2400);
     }
 
+    // ── CHAT GLOBAL ──
+    let chatOpen = false;
+    let chatUnread = 0;
+    let chatPolling = null;
+    let chatLastId = null;
+
+    function toggleChat() {
+      chatOpen = !chatOpen;
+      const box = document.getElementById("chat-box");
+      box.classList.toggle("hidden", !chatOpen);
+      if (chatOpen) {
+        chatUnread = 0;
+        updateChatBadge();
+        loadChatHistory();
+        if (!chatPolling) startChatPolling();
+      }
+    }
+
+    function updateChatBadge() {
+      const badge = document.getElementById("chat-unread-badge");
+      if (chatUnread > 0) {
+        badge.style.display = "flex";
+        badge.textContent = chatUnread > 9 ? "9+" : chatUnread;
+      } else {
+        badge.style.display = "none";
+      }
+    }
+
+    async function loadChatHistory() {
+      const { data } = await sb.from("chat_messages")
+        .select("id, username, message, prestige_count, created_at")
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (!data) return;
+      const container = document.getElementById("chat-messages");
+      container.innerHTML = data.reverse().map(m => renderChatMsg(m)).join('');
+      container.scrollTop = container.scrollHeight;
+      if (data.length > 0) chatLastId = data[data.length - 1].id;
+    }
+
+    function renderChatMsg(m) {
+      const time = new Date(m.created_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+      const isMe = m.username === currentUsername;
+      const presColor = m.prestige_count >= 10 ? "#fbbf24" : m.prestige_count >= 1 ? "#c084fc" : "#a78bfa";
+      const presLabel = m.prestige_count > 0 ? `<span style="color:${presColor};font-size:0.68rem;font-weight:700;">[${toRoman(m.prestige_count)}]</span> ` : "";
+      return `<div class="chat-msg ${isMe?'me':''}">
+        <span class="chat-time">${time}</span>
+        ${presLabel}<span class="chat-user" style="color:${presColor}">${m.username}</span>
+        <span class="chat-text">${escapeHtml(m.message)}</span>
+      </div>`;
+    }
+
+    function escapeHtml(s) {
+      return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    }
+
+    async function sendChat() {
+      if (!currentUser) return;
+      const input = document.getElementById("chat-input");
+      const msg = input.value.trim();
+      if (!msg) return;
+      input.value = "";
+      await sb.from("chat_messages").insert({
+        user_id: currentUser.id,
+        username: currentUsername,
+        message: msg,
+        prestige_count: prestigeCount
+      });
+      loadChatHistory();
+    }
+
+    function startChatPolling() {
+      chatPolling = setInterval(async () => {
+        if (!chatLastId) return;
+        const { data } = await sb.from("chat_messages")
+          .select("id, username, message, prestige_count, created_at")
+          .gt("id", chatLastId)
+          .order("created_at", { ascending: true })
+          .limit(10);
+        if (!data || data.length === 0) return;
+        chatLastId = data[data.length - 1].id;
+        const container = document.getElementById("chat-messages");
+        if (!container) return;
+        data.forEach(m => {
+          container.innerHTML += renderChatMsg(m);
+        });
+        container.scrollTop = container.scrollHeight;
+        if (!chatOpen) {
+          chatUnread += data.length;
+          updateChatBadge();
+        }
+      }, 3000);
+    }
+
+    // Enter pour envoyer
+    window.addEventListener("load", () => {
+      const inp = document.getElementById("chat-input");
+      if (inp) inp.addEventListener("keydown", e => { if (e.key === "Enter") sendChat(); });
+    });
+
     buildShop();
     loadGame().then(async () => {
       // Restaurer les talents achetés
@@ -2458,6 +2558,24 @@
       <h2 class="pp-title">⭐ Prestige</h2>
       <div id="prestige-panel-content"></div>
     </div>
+  </div>
+  <!-- CHAT WIDGET -->
+  <div id="chat-widget">
+    <div id="chat-box" class="hidden">
+      <div id="chat-box-header">
+        <span>💬 Chat Global</span>
+        <button onclick="toggleChat()" style="background:none;border:none;color:#a78bfa;cursor:pointer;font-size:1rem;">✕</button>
+      </div>
+      <div id="chat-messages"></div>
+      <div id="chat-input-row">
+        <input id="chat-input" type="text" maxlength="200" placeholder="Message..." />
+        <button onclick="sendChat()">➤</button>
+      </div>
+    </div>
+    <button id="chat-toggle-btn" onclick="toggleChat()">
+      💬
+      <span id="chat-unread-badge" style="display:none">0</span>
+    </button>
   </div>
 
 </body>
