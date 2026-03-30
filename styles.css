@@ -3059,3 +3059,32 @@ body.sidebar-open #mini-player { left: 240px; }
 #autoclick-img { opacity: 0.45; transition: opacity 0.2s; }
 #autoclick-btn.active #autoclick-img { opacity: 1; }
 #turbo-img { transition: opacity 0.2s, filter 0.2s; }
+
+/* CENTRAGE CLICKER AVEC BOUTONS */
+#clicker-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+#clicker-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}
+
+#left-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+#clicker-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}

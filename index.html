@@ -135,14 +135,17 @@
     <div id="clicker-zone">
       <div id="clicker-main">
         <div id="left-btns">
-          <button id="prestige-btn" onclick="openPrestigePanel()" title="Prestige" style="background:rgba(20,5,45,0.7);border:2px solid rgba(124,58,237,0.5);border-radius:16px;cursor:pointer;padding:8px;width:120px;height:120px;display:flex;align-items:center;justify-content:center;transition:transform 0.1s;">
+          <button id="prestige-btn" onclick="openPrestigePanel()" title="Prestige" style="background:rgba(20,5,45,0.7);border:2px solid rgba(124,58,237,0.5);border-radius:16px;cursor:pointer;padding:0;width:120px;height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:transform 0.1s;">
             <img src="boutondujeu/prestige.png" alt="Prestige" style="width:100px;height:100px;object-fit:contain;" />
+            <span id="prestige-info" style="position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.62rem;color:#fbbf24;font-weight:700;text-shadow:0 0 6px #000;background:rgba(0,0,0,0.4);padding:1px 0;"></span>
           </button>
-          <button id="turbo-btn" onclick="activateTurbo()" title="Turbo" style="background:rgba(20,5,45,0.7);border:2px solid rgba(124,58,237,0.5);border-radius:16px;cursor:pointer;padding:8px;width:120px;height:120px;display:flex;align-items:center;justify-content:center;transition:transform 0.1s;">
+          <button id="turbo-btn" onclick="activateTurbo()" title="Turbo" style="background:rgba(20,5,45,0.7);border:2px solid rgba(124,58,237,0.5);border-radius:16px;cursor:pointer;padding:0;width:120px;height:120px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:transform 0.1s;">
             <img src="boutondujeu/turbo.png" alt="Turbo" id="turbo-img" style="width:100px;height:100px;object-fit:contain;" />
+            <span id="turbo-timer" style="position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.65rem;font-weight:700;color:#fff;text-shadow:0 0 6px #000;background:rgba(0,0,0,0.5);padding:1px 0;"></span>
           </button>
-          <button id="autoclick-btn" onclick="toggleAutoclick()" title="Autoclick" style="background:rgba(20,5,45,0.7);border:2px solid rgba(124,58,237,0.5);border-radius:16px;cursor:pointer;padding:8px;width:120px;height:120px;display:flex;align-items:center;justify-content:center;transition:transform 0.1s;">
-            <img src="boutondujeu/autoclick.png" alt="Autoclick" id="autoclick-img" style="width:100px;height:100px;object-fit:contain;opacity:0.45;" />
+          <button id="autoclick-btn" onclick="toggleAutoclick()" title="Autoclick (0.3 clics/s - souris sur l'image)" style="background:rgba(20,5,45,0.7);border:2px solid rgba(124,58,237,0.5);border-radius:16px;cursor:pointer;padding:0;width:120px;height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:transform 0.1s;">
+            <img src="boutondujeu/autoclick.png" alt="Autoclick" id="autoclick-img" style="width:100px;height:100px;object-fit:contain;opacity:0.45;transition:opacity 0.2s;" />
+            <span id="autoclick-label" style="position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.62rem;color:#a78bfa;font-weight:700;text-shadow:0 0 6px #000;background:rgba(0,0,0,0.4);padding:1px 0;">OFF</span>
           </button>
         </div>
         <div id="clicker-center">
@@ -153,8 +156,6 @@
           <div id="combo-display"></div>
         </div>
       </div>
-      <div id="prestige-info"></div>
-      <div id="turbo-timer"></div>
     </div>
 
     <div id="shop">
@@ -526,7 +527,12 @@
 
     function toggleAutoclick() {
       autoclickEnabled = !autoclickEnabled;
-      document.getElementById("autoclick-btn").classList.toggle("active", autoclickEnabled);
+      const img = document.getElementById("autoclick-img");
+      const lbl = document.getElementById("autoclick-label");
+      const btn = document.getElementById("autoclick-btn");
+      if (img) img.style.opacity = autoclickEnabled ? "1" : "0.45";
+      if (lbl) lbl.textContent = autoclickEnabled ? "ON 0.3/s" : "OFF";
+      if (btn) btn.style.borderColor = autoclickEnabled ? "#86efac" : "rgba(124,58,237,0.5)";
     }
 
     setInterval(() => {
@@ -1215,26 +1221,22 @@
     }
 
     function updateTurboWidget() {
-      const btn = document.getElementById("turbo-btn");
       const img = document.getElementById("turbo-img");
       const timer = document.getElementById("turbo-timer");
+      const btn = document.getElementById("turbo-btn");
       if (turboActive) {
-        if (img) img.style.opacity = "1";
-        if (img) img.style.filter = "hue-rotate(0deg) brightness(1.3)";
-        timer.textContent = `${turboRemaining}s restantes`;
-        timer.style.color = "#f97316";
+        if (img) { img.style.opacity = "1"; img.style.filter = "brightness(1.3)"; }
+        if (btn) btn.style.borderColor = "#f97316";
+        if (timer) { timer.textContent = turboRemaining + "s"; timer.style.color = "#f97316"; }
       } else if (turboCooldown > 0) {
-        if (img) img.style.opacity = "0.4";
-        if (img) img.style.filter = "grayscale(0.5)";
-        const m = Math.floor(turboCooldown / 60);
-        const s = turboCooldown % 60;
-        timer.textContent = `${m > 0 ? m+"m " : ""}${s}s`;
-        timer.style.color = "#a78bfa";
+        if (img) { img.style.opacity = "0.4"; img.style.filter = "grayscale(0.5)"; }
+        if (btn) btn.style.borderColor = "rgba(124,58,237,0.5)";
+        const m = Math.floor(turboCooldown / 60), s = turboCooldown % 60;
+        if (timer) { timer.textContent = (m > 0 ? m+"m " : "") + s + "s"; timer.style.color = "#a78bfa"; }
       } else {
-        if (img) img.style.opacity = "1";
-        if (img) img.style.filter = "none";
-        timer.textContent = "Prêt !";
-        timer.style.color = "#86efac";
+        if (img) { img.style.opacity = "1"; img.style.filter = "none"; }
+        if (btn) btn.style.borderColor = "#86efac";
+        if (timer) { timer.textContent = "Prêt !"; timer.style.color = "#86efac"; }
       }
     }
 
