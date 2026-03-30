@@ -813,7 +813,6 @@
       document.getElementById("ach-diamond-display").textContent = diamonds;
       renderAchievements();
       checkAchievements();
-      saveGame(true); // sauvegarder immédiatement après claim
     }
 
     const catLabels = { clic:"👆 Clics", gain:"💰 Gains", shop:"🛒 Boutique", combo:"✨ Combo", prestige:"⭐ Prestige", secret:"🥚 Secrets" };
@@ -1544,8 +1543,8 @@
         const sidebarWidth = document.getElementById("sidebar").classList.contains("collapsed") ? 62 : 240;
         const nx = Math.max(sidebarWidth + 8, Math.min(window.innerWidth - player.offsetWidth - 315, ox + e.clientX - sx));
         const ny = Math.max(0, Math.min(window.innerHeight - player.offsetHeight - 5, oy + e.clientY - sy));
-        player.style.left = nx + "px";
-        player.style.top  = ny + "px";
+        player.style.setProperty("left", nx + "px", "important");
+        player.style.setProperty("top",  ny + "px", "important");
       });
 
       document.addEventListener("mouseup", () => { isDragging = false; });
