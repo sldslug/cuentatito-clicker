@@ -1001,23 +1001,18 @@
 
       // Charger depuis Supabase en priorité
       if (currentUser) {
-        // S'assurer que le username est chargé
-        if (!currentUsername) {
-          const { data: prof } = await sb.from("profiles").select("username").eq("id", currentUser.id).single();
-          if (prof) currentUsername = prof.username;
-        }
         const { data: remote } = await sb.from("saves").select("data").eq("id", currentUser.id).single();
         if (remote) d = remote.data;
         // Afficher le pseudo dans la sidebar
         const navUser = document.getElementById("nav-username");
         if (navUser) navUser.textContent = currentUsername || "Déconnexion";
-        // Bouton admin pour Sluginho
         if (currentUsername === "Sluginho") {
           const btn = document.getElementById("admin-open-btn");
           if (btn) btn.style.cssText = btn.style.cssText.replace("display:none", "display:block");
           const adminNavBtn = document.getElementById("admin-nav-btn");
           if (adminNavBtn) adminNavBtn.style.display = "flex";
         }
+      }
 
       // Fallback localStorage
       if (!d) {
