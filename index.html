@@ -807,11 +807,10 @@
           showAchievementToast(a);
         }
       });
-      // Render complet seulement si nouveau unlock
-      if (newUnlock && document.getElementById("ach-panel").classList.contains("open")) {
+      const achPanel = document.getElementById("ach-panel");
+      if (newUnlock && achPanel && achPanel.classList.contains("open")) {
         renderAchievements();
-      } else if (document.getElementById("ach-panel").classList.contains("open")) {
-        // Sinon juste mettre à jour les barres de progression sans recréer les éléments
+      } else if (achPanel && achPanel.classList.contains("open")) {
         updateAchievementBars();
       }
       const claimable = achievements.filter(a => a.unlocked && !a.claimed).length;
@@ -1347,7 +1346,8 @@
 
     // Refresh classement toutes les 30s si panel ouvert
     setInterval(() => {
-      if (document.getElementById("lb-panel").classList.contains("open")) renderLeaderboard();
+      const lbp = document.getElementById("lb-panel");
+      if (lbp && lbp.classList.contains("open")) renderLeaderboard();
     }, 30000);
 
     let mouseX = -9999, mouseY = -9999;
