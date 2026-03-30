@@ -144,6 +144,7 @@
         <button id="turbo-btn" onclick="activateTurbo()">⚡ TURBO</button>
         <div id="turbo-timer"></div>
       </div>
+      <button id="autoclick-btn" onclick="toggleAutoclick()" title="Autoclick (souris sur l'image)">🖱️</button>
     </div>
 
     <div id="shop">
@@ -505,6 +506,35 @@
       updateComboUI();
     }
 
+    // ── AUTOCLICK ──
+    let autoclickEnabled = false;
+    const autoclickRate = 0.3;
+    let mouseOnImage = false;
+
+    document.getElementById("img-wrapper").addEventListener("mouseenter", () => { mouseOnImage = true; });
+    document.getElementById("img-wrapper").addEventListener("mouseleave", () => { mouseOnImage = false; });
+
+    function toggleAutoclick() {
+      autoclickEnabled = !autoclickEnabled;
+      const btn = document.getElementById("autoclick-btn");
+      btn.classList.toggle("active", autoclickEnabled);
+    }
+
+    setInterval(() => {
+      if (!autoclickEnabled || !mouseOnImage) return;
+      const img = document.getElementById("cuentatito");
+      img.classList.add("autoclick-pulse");
+      setTimeout(() => img.classList.remove("autoclick-pulse"), 80);
+      const gained = cpc * (turboActive ? 3 : 1);
+      cuentas += gained;
+      totalEarned += gained;
+      totalClics++;
+      updateUI();
+      checkAchievements();
+      const rect = img.getBoundingClientRect();
+      spawnFloaty(rect.left + rect.width/2, rect.top + 20, "+" + formatNum(gained));
+    }, Math.floor(1000 / autoclickRate));
+
     // ── ANTI-AUTOCLICK ──
     const clickTimes = [];
     let blocked = false;
@@ -813,6 +843,7 @@
       document.getElementById("ach-diamond-display").textContent = diamonds;
       renderAchievements();
       checkAchievements();
+      saveGame(true);
     }
 
     const catLabels = { clic:"👆 Clics", gain:"💰 Gains", shop:"🛒 Boutique", combo:"✨ Combo", prestige:"⭐ Prestige", secret:"🥚 Secrets" };
