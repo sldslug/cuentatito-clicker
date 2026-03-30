@@ -138,19 +138,19 @@
       </div>
       <div class="click-hint">▼ Clique ici ▼</div>
       <div id="combo-display"></div>
-      <button id="prestige-btn" onclick="openPrestigePanel()" title="Prestige" style="background:none;border:none;cursor:pointer;padding:0;margin-top:18px;">
-        <img src="boutondujeu/prestige.png" alt="Prestige" style="height:48px;object-fit:contain;display:block;" />
-      </button>
-      <div id="prestige-info"></div>
-      <div id="turbo-widget">
-        <button id="turbo-btn" onclick="activateTurbo()" title="Turbo" style="background:none;border:none;cursor:pointer;padding:0;">
-          <img src="boutondujeu/turbo.png" alt="Turbo" id="turbo-img" style="height:48px;object-fit:contain;display:block;" />
+      <div id="action-btns">
+        <button id="prestige-btn" onclick="openPrestigePanel()" title="Prestige">
+          <img src="boutondujeu/prestige.png" alt="Prestige" />
         </button>
-        <div id="turbo-timer"></div>
+        <button id="turbo-btn" onclick="activateTurbo()" title="Turbo">
+          <img src="boutondujeu/turbo.png" alt="Turbo" id="turbo-img" />
+        </button>
+        <button id="autoclick-btn" onclick="toggleAutoclick()" title="Autoclick">
+          <img src="boutondujeu/autoclick.png" alt="Autoclick" id="autoclick-img" />
+        </button>
       </div>
-      <button id="autoclick-btn" onclick="toggleAutoclick()" title="Autoclick (souris sur l'image)" style="background:none;border:none;cursor:pointer;padding:0;margin-top:10px;">
-        <img src="boutondujeu/autoclick.png" alt="Autoclick" id="autoclick-img" style="height:48px;object-fit:contain;display:block;opacity:0.5;" />
-      </button>
+      <div id="prestige-info"></div>
+      <div id="turbo-timer"></div>
     </div>
 
     <div id="shop">
@@ -522,8 +522,7 @@
 
     function toggleAutoclick() {
       autoclickEnabled = !autoclickEnabled;
-      const img = document.getElementById("autoclick-img");
-      if (img) img.style.opacity = autoclickEnabled ? "1" : "0.5";
+      document.getElementById("autoclick-btn").classList.toggle("active", autoclickEnabled);
     }
 
     setInterval(() => {

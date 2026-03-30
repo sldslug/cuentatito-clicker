@@ -2967,3 +2967,52 @@ body.sidebar-open #mini-player { left: 240px; }
 .friend-add-btn:disabled { opacity: 0.5; cursor: default; }
 
 .friends-empty { font-size: 0.8rem; color: #6b7280; padding: 8px 0; }
+
+/* BOUTONS ACTION */
+#action-btns {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+#action-btns button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.1s;
+}
+
+#action-btns button:hover { transform: scale(1.08); }
+#action-btns button:active { transform: scale(0.93); }
+
+#action-btns img {
+  height: 72px;
+  width: 72px;
+  object-fit: contain;
+  display: block;
+}
+
+#autoclick-img { opacity: 0.45; transition: opacity 0.2s; }
+#autoclick-btn.active #autoclick-img { opacity: 1; }
+
+#turbo-img { transition: opacity 0.2s, filter 0.2s; }
+
+#turbo-timer {
+  font-size: 0.78rem;
+  color: #a78bfa;
+  margin-top: 6px;
+  letter-spacing: 1px;
+  text-align: center;
+}
+
+#prestige-info {
+  margin-top: 6px;
+  font-size: 0.78rem;
+  color: #fbbf24;
+  letter-spacing: 1px;
+  text-shadow: 0 0 8px rgba(251,191,36,0.5);
+  text-align: center;
+}
