@@ -124,6 +124,15 @@
   <!-- TOGGLE THEME (gardé pour compat JS) -->
   <button id="theme-toggle" style="display:none" onclick="toggleTheme()">🌙</button>
 
+  <!-- BOSS COUNTDOWN FIXE -->
+  <div id="boss-fixed-widget">
+    <span id="boss-fixed-icon">💀</span>
+    <div id="boss-fixed-text">
+      <div id="boss-fixed-label">Boss dans</div>
+      <div id="boss-fixed-timer">--:--:--</div>
+    </div>
+  </div>
+
   <header>
     <h1>Cuenta dé Tomito Clicker</h1>
     <p class="subtitle">✦ Clique pour la gloire ✦</p>
@@ -1724,13 +1733,23 @@
 
     // Countdown boss
     setInterval(() => {
-      if (bossActive) return;
+      if (bossActive) {
+        document.getElementById("boss-fixed-label").textContent = "Boss actif !";
+        document.getElementById("boss-fixed-timer").textContent = formatNum(bossHp) + " HP";
+        document.getElementById("boss-fixed-icon").textContent = "👹";
+        return;
+      }
       if (bossCountdownSec > 0) {
         bossCountdownSec--;
-        const m = Math.floor(bossCountdownSec / 60);
+        const h = Math.floor(bossCountdownSec / 3600);
+        const m = Math.floor((bossCountdownSec % 3600) / 60);
         const s = bossCountdownSec % 60;
+        const timeStr = h > 0 ? `${h}h ${m}m ${s}s` : m > 0 ? `${m}m ${s}s` : `${s}s`;
         const el = document.getElementById("boss-countdown");
-        if (el) el.textContent = m + "m " + s + "s";
+        if (el) el.textContent = timeStr;
+        document.getElementById("boss-fixed-timer").textContent = timeStr;
+        document.getElementById("boss-fixed-label").textContent = "Boss dans";
+        document.getElementById("boss-fixed-icon").textContent = "💀";
         document.getElementById("boss-next").style.display = bossSpawned ? "block" : "none";
       } else {
         spawnBoss();
@@ -1755,11 +1774,17 @@
 
     setInterval(() => {
       if (!autoclickEnabled || !mouseOnImage) return;
-      const gained = cpc * autoclickRate * (turboActive ? 3 : 1);
+      // Simuler un vrai clic avec animation
+      const img = document.getElementById("cuentatito");
+      img.classList.add("autoclick-pulse");
+      setTimeout(() => img.classList.remove("autoclick-pulse"), 80);
+      const gained = cpc * (turboActive ? 3 : 1);
       cuentas += gained;
       totalEarned += gained;
       totalClics++;
-    }, 1000);
+      updateUI();
+      checkAchievements();
+    }, Math.floor(1000 / autoclickRate));
 
     // ── CHAT GLOBAL ──
     let chatOpen = false;
@@ -1843,11 +1868,10 @@
       const inp = document.getElementById("chat-input");
       if (inp) inp.addEventListener("keydown", e => { if (e.key === "Enter") sendChat(); });
     });
-
-    buildShop();
     loadGame().then(() => {
       updateUI();
       checkAchievements();
+      subscribeChatRealtime();
     });
   </script>
 

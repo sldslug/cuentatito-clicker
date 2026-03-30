@@ -3114,3 +3114,42 @@ body.sidebar-open #mini-player { left: 240px; }
   cursor: pointer; transition: transform 0.1s;
 }
 #chat-send-btn:hover { transform: scale(1.04); }
+
+/* BOSS WIDGET FIXE */
+#boss-fixed-widget {
+  position: fixed;
+  top: 14px;
+  right: 320px;
+  z-index: 200;
+  background: rgba(10,2,24,0.92);
+  border: 1px solid rgba(239,68,68,0.4);
+  border-radius: 12px;
+  padding: 7px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 16px rgba(239,68,68,0.15);
+}
+
+#boss-fixed-icon { font-size: 1.2rem; }
+
+#boss-fixed-label {
+  font-size: 0.68rem;
+  color: #f87171;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+#boss-fixed-timer {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fca5a5;
+  font-variant-numeric: tabular-nums;
+}
+
+/* AUTOCLICK PULSE */
+#cuentatito.autoclick-pulse {
+  transform: scale(0.93) !important;
+  filter: brightness(1.15) !important;
+}
