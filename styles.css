@@ -1552,7 +1552,7 @@ body.sidebar-open #main {
 #theme-toggle  { display: none !important; }
 
 /* ── CURSEUR PERSONNALISE ── */
-* { cursor: none !important; }
+/* cursor custom disabled */
 
 #custom-cursor {
   position: fixed;
