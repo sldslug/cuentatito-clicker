@@ -1656,7 +1656,8 @@
       title.addEventListener("mousedown", e => {
         dragging = true;
         const rect = player.getBoundingClientRect();
-        // Convertir en position fixed absolue
+        // Ajouter classe dragged pour libérer des contraintes CSS
+        player.classList.add("dragged");
         player.style.left   = rect.left + "px";
         player.style.top    = rect.top + "px";
         player.style.bottom = "auto";
