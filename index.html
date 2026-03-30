@@ -1880,47 +1880,72 @@
     const secretCodes = [
       {
         code: "AdminPanelSluginhoAbuseOfCarambarNoiretblancEnMemEtemps",
+        requiresPassword: true,
         password: "z2XhtnhmQiNrCjWOQEYJCDnCIRKbiyG",
-        action: () => {
-          closeCodesPanel();
-          openAdminPanel();
-        },
+        action: () => { closeCodesPanel(); openAdminPanel(); },
         msg: "✓ Accès admin accordé !"
       }
-      // Ajouter d'autres codes ici
+      // Ajouter d'autres codes ici (sans mot de passe : requiresPassword: false)
     ];
+
+    let pendingCode = null;
 
     function openCodesPanel() {
       document.getElementById("codes-panel").classList.add("open");
       document.getElementById("code-input").value = "";
       document.getElementById("code-password").value = "";
+      document.getElementById("code-password-wrap").style.display = "none";
       document.getElementById("code-result").textContent = "";
+      pendingCode = null;
     }
 
     function closeCodesPanel() {
       document.getElementById("codes-panel").classList.remove("open");
+      pendingCode = null;
     }
 
-    function submitCode() {
+    function checkCode() {
       const code = document.getElementById("code-input").value.trim();
+      const result = document.getElementById("code-result");
+      const found = secretCodes.find(c => c.code === code);
+      if (!found) {
+        result.style.color = "#f87171";
+        result.textContent = "Code invalide.";
+        return;
+      }
+      if (found.requiresPassword) {
+        pendingCode = found;
+        document.getElementById("code-password-wrap").style.display = "flex";
+        document.getElementById("code-input").disabled = true;
+        result.style.color = "#fbbf24";
+        result.textContent = "Code reconnu. Entre le mot de passe.";
+      } else {
+        result.style.color = "#86efac";
+        result.textContent = found.msg || "✓ Code appliqué !";
+        setTimeout(() => found.action(), 800);
+      }
+    }
+
+    function submitPassword() {
+      if (!pendingCode) return;
       const pass = document.getElementById("code-password").value.trim();
       const result = document.getElementById("code-result");
-      const found = secretCodes.find(c => c.code === code && c.password === pass);
-      if (found) {
+      if (pass === pendingCode.password) {
         result.style.color = "#86efac";
-        result.textContent = found.msg;
-        setTimeout(() => found.action(), 800);
+        result.textContent = pendingCode.msg;
+        setTimeout(() => pendingCode.action(), 800);
       } else {
         result.style.color = "#f87171";
-        result.textContent = "Code ou mot de passe incorrect.";
+        result.textContent = "Mot de passe incorrect.";
       }
     }
 
-    // Enter pour valider le code
     document.addEventListener("keydown", e => {
-      if (e.key === "Enter" && document.getElementById("codes-panel").classList.contains("open")) {
-        submitCode();
-      }
+      if (e.key !== "Enter") return;
+      const panel = document.getElementById("codes-panel");
+      if (!panel || !panel.classList.contains("open")) return;
+      if (pendingCode) submitPassword();
+      else checkCode();
     });
 
     // ── PANEL ADMIN (Sluginho only) ──
@@ -2253,8 +2278,11 @@
       <h2 style="font-family:'Cinzel Decorative',cursive;font-size:1rem;color:#c084fc;text-align:center;margin-bottom:20px;text-shadow:0 0 10px #a855f7;">🔑 Entrer un code</h2>
       <div style="display:flex;flex-direction:column;gap:10px;">
         <input id="code-input" type="text" placeholder="Code..." style="background:rgba(30,10,60,0.8);border:1px solid rgba(124,58,237,0.4);border-radius:10px;color:#e9d5ff;font-family:'Nunito',sans-serif;font-size:0.88rem;padding:10px 14px;outline:none;width:100%;" />
-        <input id="code-password" type="password" placeholder="Mot de passe (si requis)..." style="background:rgba(30,10,60,0.8);border:1px solid rgba(124,58,237,0.4);border-radius:10px;color:#e9d5ff;font-family:'Nunito',sans-serif;font-size:0.88rem;padding:10px 14px;outline:none;width:100%;" />
-        <button onclick="submitCode()" style="padding:11px;background:linear-gradient(135deg,#7c3aed,#a855f7);border:none;border-radius:10px;color:#fff;font-family:'Cinzel Decorative',cursive;font-size:0.85rem;cursor:pointer;box-shadow:0 0 16px rgba(168,85,247,0.3);">Valider</button>
+        <button onclick="checkCode()" style="padding:11px;background:linear-gradient(135deg,#7c3aed,#a855f7);border:none;border-radius:10px;color:#fff;font-family:'Cinzel Decorative',cursive;font-size:0.85rem;cursor:pointer;box-shadow:0 0 16px rgba(168,85,247,0.3);">Valider</button>
+        <div id="code-password-wrap" style="display:none;flex-direction:column;gap:8px;">
+          <input id="code-password" type="password" placeholder="Mot de passe..." style="background:rgba(30,10,60,0.8);border:1px solid rgba(249,115,22,0.5);border-radius:10px;color:#e9d5ff;font-family:'Nunito',sans-serif;font-size:0.88rem;padding:10px 14px;outline:none;width:100%;" />
+          <button onclick="submitPassword()" style="padding:11px;background:linear-gradient(135deg,#f97316,#ef4444);border:none;border-radius:10px;color:#fff;font-family:'Cinzel Decorative',cursive;font-size:0.85rem;cursor:pointer;">Confirmer</button>
+        </div>
         <div id="code-result" style="text-align:center;font-size:0.82rem;min-height:20px;"></div>
       </div>
     </div>
