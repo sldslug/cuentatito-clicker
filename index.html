@@ -133,28 +133,23 @@
   <div id="main">
 
     <div id="clicker-zone">
-      <div id="clicker-main">
-        <div id="left-btns">
-          <button id="prestige-btn" onclick="openPrestigePanel()" title="Prestige" style="background:rgba(20,5,45,0.7);border:2px solid rgba(124,58,237,0.5);border-radius:16px;cursor:pointer;padding:0;width:120px;height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:transform 0.1s;">
-            <img src="boutondujeu/prestige.png" alt="Prestige" style="width:100px;height:100px;object-fit:contain;" />
-            <span id="prestige-info" style="position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.62rem;color:#fbbf24;font-weight:700;text-shadow:0 0 6px #000;background:rgba(0,0,0,0.4);padding:1px 0;"></span>
-          </button>
-          <button id="turbo-btn" onclick="activateTurbo()" title="Turbo" style="background:rgba(20,5,45,0.7);border:2px solid rgba(124,58,237,0.5);border-radius:16px;cursor:pointer;padding:0;width:120px;height:120px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:transform 0.1s;">
-            <img src="boutondujeu/turbo.png" alt="Turbo" id="turbo-img" style="width:100px;height:100px;object-fit:contain;" />
-            <span id="turbo-timer" style="position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.65rem;font-weight:700;color:#fff;text-shadow:0 0 6px #000;background:rgba(0,0,0,0.5);padding:1px 0;"></span>
-          </button>
-          <button id="autoclick-btn" onclick="toggleAutoclick()" title="Autoclick (0.3 clics/s - souris sur l'image)" style="background:rgba(20,5,45,0.7);border:2px solid rgba(124,58,237,0.5);border-radius:16px;cursor:pointer;padding:0;width:120px;height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:transform 0.1s;">
-            <img src="boutondujeu/autoclick.png" alt="Autoclick" id="autoclick-img" style="width:100px;height:100px;object-fit:contain;opacity:0.45;transition:opacity 0.2s;" />
-            <span id="autoclick-label" style="position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.62rem;color:#a78bfa;font-weight:700;text-shadow:0 0 6px #000;background:rgba(0,0,0,0.4);padding:1px 0;">OFF</span>
-          </button>
-        </div>
-        <div id="clicker-center">
-          <div class="img-wrapper" id="img-wrapper">
-            <img id="cuentatito" src="Cuentatito.png" alt="Cuentatito" draggable="false" />
-          </div>
-      <div class="click-hint" style="display:none">▼ Clique ici ▼</div>
-          <div id="combo-display"></div>
-        </div>
+      <div class="img-wrapper" id="img-wrapper">
+        <img id="cuentatito" src="Cuentatito.png" alt="Cuentatito" draggable="false" />
+      </div>
+      <div id="combo-display"></div>
+      <div id="action-btns-row">
+        <button id="prestige-btn" onclick="openPrestigePanel()" title="Prestige" style="background:rgba(20,5,45,0.7);border:2px solid rgba(124,58,237,0.5);border-radius:16px;cursor:pointer;padding:0;width:120px;height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:transform 0.1s;">
+          <img src="boutondujeu/prestige.png" alt="Prestige" style="width:100px;height:100px;object-fit:contain;" />
+          <span id="prestige-info" style="position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.62rem;color:#fbbf24;font-weight:700;text-shadow:0 0 6px #000;background:rgba(0,0,0,0.4);padding:1px 0;"></span>
+        </button>
+        <button id="turbo-btn" onclick="activateTurbo()" title="Turbo" style="background:rgba(20,5,45,0.7);border:2px solid rgba(124,58,237,0.5);border-radius:16px;cursor:pointer;padding:0;width:120px;height:120px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:transform 0.1s;">
+          <img src="boutondujeu/turbo.png" alt="Turbo" id="turbo-img" style="width:100px;height:100px;object-fit:contain;" />
+          <span id="turbo-timer" style="position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.65rem;font-weight:700;color:#fff;text-shadow:0 0 6px #000;background:rgba(0,0,0,0.5);padding:1px 0;"></span>
+        </button>
+        <button id="autoclick-btn" onclick="toggleAutoclick()" title="Autoclick" style="background:rgba(20,5,45,0.7);border:2px solid rgba(124,58,237,0.5);border-radius:16px;cursor:pointer;padding:0;width:120px;height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:transform 0.1s;">
+          <img src="boutondujeu/autoclick.png" alt="Autoclick" id="autoclick-img" style="width:100px;height:100px;object-fit:contain;opacity:0.45;transition:opacity 0.2s;" />
+          <span id="autoclick-label" style="position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:0.62rem;color:#a78bfa;font-weight:700;text-shadow:0 0 6px #000;background:rgba(0,0,0,0.4);padding:1px 0;">OFF</span>
+        </button>
       </div>
     </div>
 

@@ -3281,3 +3281,22 @@ header, #counter-wrap, #main {
   justify-content: center;
   gap: 24px;
 }
+
+#action-btns-row {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+#action-btns-row button:hover { transform: scale(1.06) !important; }
+#action-btns-row button:active { transform: scale(0.93) !important; }
+
+#clicker-zone {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 0 40px;
+}
