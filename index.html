@@ -6,6 +6,7 @@
   <title>Cuenta dé Tomito Clicker</title>
   <link rel="icon" href="logosite/logosite.png" type="image/png" />
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="player.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const SUPABASE_URL = "https://hfdbeiduutgxbbgryozh.supabase.co";
@@ -1374,6 +1375,13 @@
 
     function musicSeek(v) { if (audio.duration) audio.currentTime = (v / 100) * audio.duration; }
 
+    function closePlayer() {
+      audio.pause();
+      isPlaying = false;
+      document.getElementById("mp-play").textContent = "\u25B6";
+      document.getElementById("mini-player").classList.add("hidden");
+    }
+
     function formatTime(s) {
       if (isNaN(s)) return "0:00";
       return Math.floor(s/60) + ":" + String(Math.floor(s%60)).padStart(2,"0");
@@ -1647,25 +1655,21 @@
 
       // DRAG MINI PLAYER - JS only, no CSS changes
       const player = document.getElementById("mini-player");
-      const title  = document.getElementById("mp-title");
-      if (!player || !title) return;
+      const dragBar = document.getElementById("mp-drag-bar");
+      if (!player || !dragBar) return;
 
       let isDragging = false, ox = 0, oy = 0, sx = 0, sy = 0;
 
-      title.style.cursor = "grab";
-
-      title.addEventListener("mousedown", e => {
-        if (e.button !== 0) return;
+      dragBar.addEventListener("mousedown", e => {
+        if (e.target.tagName === "BUTTON") return;
         isDragging = true;
         const r = player.getBoundingClientRect();
         ox = r.left; oy = r.top;
         sx = e.clientX; sy = e.clientY;
-        // Figer la position en inline style
         player.style.setProperty("left",   ox + "px", "important");
         player.style.setProperty("top",    oy + "px", "important");
         player.style.setProperty("bottom", "auto",    "important");
         player.style.setProperty("right",  "auto",    "important");
-        title.style.cursor = "grabbing";
         e.preventDefault();
       });
 
@@ -1677,35 +1681,28 @@
         player.style.setProperty("top",  ny + "px", "important");
       });
 
-      document.addEventListener("mouseup", () => {
-        isDragging = false;
-        title.style.cursor = "grab";
-      });
+      document.addEventListener("mouseup", () => { isDragging = false; });
     });
   </script>
 
   <!-- MINI PLAYER -->
   <div id="mini-player" class="hidden">
-    <div id="mp-line1">
+    <div id="mp-drag-bar">
+      <span id="mp-drag-icon">⠿</span>
       <span id="mp-title">--</span>
-      <span id="mp-vol-wrap">
-        <button onclick="changeVolume(-0.1)">-</button>
-        <input id="mp-volume" type="range" min="0" max="1" step="0.05" value="0.5" oninput="musicVolume(this.value)" />
-        <button onclick="changeVolume(0.1)">+</button>
-        <span id="mp-vol-pct">50%</span>
-      </span>
+      <button id="mp-close-player" onclick="closePlayer()" title="Fermer">✕</button>
     </div>
-    <div id="mp-line2">
+    <div id="mp-seek-row">
       <span id="mp-current">0:00</span>
       <input id="mp-seek" type="range" min="0" max="100" step="0.1" value="0" oninput="musicSeek(this.value)" />
       <span id="mp-duration">0:00</span>
     </div>
-    <div id="mp-line3">
-      <button id="mp-prev" onclick="musicPrev()">⏮</button>
-      <button id="mp-play" onclick="musicToggle()">▶</button>
-      <button id="mp-next" onclick="musicNext()">⏭</button>
-      <button id="mp-shuffle" onclick="toggleShuffle()">shuffle</button>
-      <button id="mp-repeat" onclick="toggleRepeat()">repeat</button>
+    <div id="mp-controls-row">
+      <button id="mp-prev" onclick="musicPrev()" title="Précédent">⏮</button>
+      <button id="mp-play" onclick="musicToggle()" title="Play/Pause">▶</button>
+      <button id="mp-next" onclick="musicNext()" title="Suivant">⏭</button>
+      <button id="mp-shuffle" onclick="toggleShuffle()" title="Aléatoire">🔀</button>
+      <button id="mp-repeat" onclick="toggleRepeat()" title="Répétition">🔁</button>
       <select id="mp-speed" onchange="changeSpeed(this.value)">
         <option value="0.75">0.75x</option>
         <option value="1" selected>1x</option>
@@ -1713,7 +1710,13 @@
         <option value="1.5">1.5x</option>
         <option value="2">2x</option>
       </select>
-      <button id="mp-open" onclick="openMusicPanel()">playlist</button>
+      <div id="mp-vol-row">
+        <button onclick="changeVolume(-0.1)">🔉</button>
+        <input id="mp-volume" type="range" min="0" max="1" step="0.05" value="0.5" oninput="musicVolume(this.value)" />
+        <button onclick="changeVolume(0.1)">🔊</button>
+        <span id="mp-vol-pct">50%</span>
+      </div>
+      <button id="mp-open" onclick="openMusicPanel()" title="Playlist">🎵</button>
     </div>
   </div>
 
