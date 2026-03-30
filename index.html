@@ -159,7 +159,7 @@
   <script>
     // ── ÉTOILES GÉNÉRÉES ──
     const starsContainer = document.getElementById('stars');
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < 30; i++) {
       const s = document.createElement('div');
       s.className = 'star';
       const size = Math.random() * 2.5 + 0.5;
@@ -554,6 +554,12 @@
 
     document.getElementById("img-wrapper").addEventListener("mouseup", stopHold);
     document.getElementById("img-wrapper").addEventListener("mouseleave", stopHold);
+
+    // Stopper l'easter egg si on quitte la page
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) stopHold();
+    });
+    window.addEventListener("blur", stopHold);
 
     function spawnExplosion() {
       const wrapper = document.getElementById("img-wrapper");
@@ -1074,16 +1080,7 @@
     // Auto-save toutes les 30s
     setInterval(() => saveGame(true), 30000);
 
-    // ── CURSEUR PERSONNALISE ──
-    const cursorEl = document.createElement("div");
-    cursorEl.id = "custom-cursor";
-    document.body.appendChild(cursorEl);
-    document.addEventListener("mousemove", e => {
-      cursorEl.style.left = e.clientX + "px";
-      cursorEl.style.top  = e.clientY + "px";
-    });
-    document.addEventListener("mousedown", () => cursorEl.classList.add("clicking"));
-    document.addEventListener("mouseup",   () => cursorEl.classList.remove("clicking"));
+
 
     // ── BOUTIQUE COSMETIQUE ──
     let ownedCosmetics = new Set();
@@ -1352,39 +1349,7 @@
       }).join('');
     }
 
-    // ── FOND INTERACTIF (throttle 20fps) ──
-    const starsArr = [];
-    document.querySelectorAll(".star").forEach(s => {
-      starsArr.push({ el:s, ox:parseFloat(s.style.left), oy:parseFloat(s.style.top), x:parseFloat(s.style.left), y:parseFloat(s.style.top) });
-    });
-
     let mouseX = -9999, mouseY = -9999;
-    document.addEventListener("mousemove", e => { mouseX = e.clientX; mouseY = e.clientY; });
-
-    const vwCache = { w: window.innerWidth, h: window.innerHeight };
-    window.addEventListener("resize", () => { vwCache.w = window.innerWidth; vwCache.h = window.innerHeight; });
-
-    setInterval(() => {
-      starsArr.forEach(star => {
-        const sx = star.x / 100 * vwCache.w;
-        const sy = star.y / 100 * vwCache.h;
-        const dx = sx - mouseX, dy = sy - mouseY;
-        const dist = Math.sqrt(dx*dx + dy*dy);
-        if (dist < 120) {
-          const force = (120 - dist) / 120 * 18;
-          const angle = Math.atan2(dy, dx);
-          star.x += (Math.cos(angle) * force / vwCache.w * 100) * 0.3;
-          star.y += (Math.sin(angle) * force / vwCache.h * 100) * 0.3;
-          star.el.style.left = star.x.toFixed(2) + "%";
-          star.el.style.top  = star.y.toFixed(2) + "%";
-        } else if (Math.abs(star.x - star.ox) > 0.05 || Math.abs(star.y - star.oy) > 0.05) {
-          star.x += (star.ox - star.x) * 0.05;
-          star.y += (star.oy - star.y) * 0.05;
-          star.el.style.left = star.x.toFixed(2) + "%";
-          star.el.style.top  = star.y.toFixed(2) + "%";
-        }
-      });
-    }, 50);
 
     // ── LECTEUR MUSIQUE ──
     const playlist = [
@@ -1605,7 +1570,7 @@
     }
 
     function launchFireworks(x, y) {
-      for (let i = 0; i < 60; i++) {
+      for (let i = 0; i < 30; i++) {
         const angle = (i / 60) * Math.PI * 2;
         const speed = 2 + Math.random() * 5;
         const colors = ["#c084fc","#f0abfc","#fbbf24","#f97316","#60a5fa","#34d399","#fff"];
@@ -1620,27 +1585,8 @@
       }
     }
 
-    function animateFW() {
-      if (!fwCanvas || !fwCtx) return;
-      requestAnimationFrame(animateFW);
-      fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
-      fwParticles = fwParticles.filter(p => p.life > 0);
-      fwParticles.forEach(p => {
-        p.x += p.vx; p.y += p.vy;
-        p.vy += 0.08;
-        p.life -= 0.018;
-        fwCtx.globalAlpha = p.life;
-        fwCtx.fillStyle = p.color;
-        fwCtx.beginPath();
-        fwCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        fwCtx.fill();
-      });
-      fwCtx.globalAlpha = 1;
-    }
-    animateFW();
-    // Init FW apres chargement du DOM
+    function animateFW() { /* desactive pour perf */ }
     window.addEventListener("load", initFW);
-
     // Déclencher feux d'artifice aux milestones
     const milestonesSeen = new Set();
     function checkMilestones() {
