@@ -1644,6 +1644,43 @@
     loadGame().then(() => {
       updateUI();
       checkAchievements();
+
+      // ── DRAG MINI PLAYER ──
+      const player = document.getElementById("mini-player");
+      const title = document.getElementById("mp-title");
+      if (!player || !title) return;
+      let dragging = false, startX = 0, startY = 0, origLeft = 0, origTop = 0;
+
+      title.style.cursor = "grab";
+
+      title.addEventListener("mousedown", e => {
+        dragging = true;
+        const rect = player.getBoundingClientRect();
+        // Convertir en position fixed absolue
+        player.style.left   = rect.left + "px";
+        player.style.top    = rect.top + "px";
+        player.style.bottom = "auto";
+        player.style.right  = "auto";
+        origLeft = rect.left;
+        origTop  = rect.top;
+        startX = e.clientX;
+        startY = e.clientY;
+        title.style.cursor = "grabbing";
+        e.preventDefault();
+      });
+
+      document.addEventListener("mousemove", e => {
+        if (!dragging) return;
+        const newLeft = Math.max(70, Math.min(window.innerWidth  - player.offsetWidth  - 315, origLeft + e.clientX - startX));
+        const newTop  = Math.max(0,  Math.min(window.innerHeight - player.offsetHeight - 10,  origTop  + e.clientY - startY));
+        player.style.left = newLeft + "px";
+        player.style.top  = newTop  + "px";
+      });
+
+      document.addEventListener("mouseup", () => {
+        dragging = false;
+        title.style.cursor = "grab";
+      });
     });
   </script>
 
