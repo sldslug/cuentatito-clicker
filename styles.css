@@ -2863,3 +2863,14 @@ body.sidebar-open #mini-player { left: 240px; }
   background: rgba(6,78,59,0.25);
   box-shadow: 0 0 10px rgba(134,239,172,0.1);
 }
+
+.about-perf-tip {
+  margin-top: 12px;
+  font-size: 0.75rem;
+  color: #fbbf24;
+  background: rgba(251,191,36,0.08);
+  border: 1px solid rgba(251,191,36,0.2);
+  border-radius: 8px;
+  padding: 8px 12px;
+  line-height: 1.6;
+}
