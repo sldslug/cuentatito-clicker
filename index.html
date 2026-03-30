@@ -1050,14 +1050,9 @@
         if (d.autoclickRate) autoclickRate = d.autoclickRate;
         if (d.comboTimeout) comboTimeout = d.comboTimeout;
 
+        // Talents restaurés après que le tableau talents soit défini
         if (d.talents) {
-          d.talents.forEach(s => {
-            const t = talents.find(x => x.id === s.id);
-            if (t && s.bought && !t.bought) {
-              t.bought = true;
-              t.bonus(); // réappliquer le bonus
-            }
-          });
+          window._pendingTalents = d.talents;
         }
 
         recalcStats();
@@ -1785,6 +1780,15 @@
     ];
 
     let comboTimeout = 1500;
+
+    // Appliquer les talents sauvegardés si en attente
+    if (window._pendingTalents) {
+      window._pendingTalents.forEach(s => {
+        const t = talents.find(x => x.id === s.id);
+        if (t && s.bought && !t.bought) { t.bought = true; t.bonus(); }
+      });
+      window._pendingTalents = null;
+    }
 
     function buyTalent(id) {
       const t = talents.find(x => x.id === id);
