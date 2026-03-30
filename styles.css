@@ -3384,3 +3384,61 @@ body #main {
   text-overflow: ellipsis !important;
   max-width: 120px !important;
 }
+
+/* PANEL ADMIN */
+#admin-panel {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+  z-index: 9010; display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.25s;
+}
+#admin-panel.open { opacity: 1; pointer-events: all; }
+
+#admin-panel-inner {
+  background: rgba(8,2,18,0.99);
+  border: 2px solid rgba(249,115,22,0.5);
+  border-radius: 20px;
+  padding: 32px 28px 24px;
+  width: min(520px, 94vw);
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 0 60px rgba(249,115,22,0.2);
+}
+#admin-panel.open #admin-panel-inner { animation: panelIn 0.3s cubic-bezier(0.22,1,0.36,1); }
+
+.admin-section {
+  background: rgba(20,5,40,0.6);
+  border: 1px solid rgba(249,115,22,0.2);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.admin-section-title {
+  font-size: 0.8rem; font-weight: 700; color: #f97316;
+  letter-spacing: 1px; margin-bottom: 10px;
+}
+
+.admin-row {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; align-items: center;
+}
+
+.admin-row input, .admin-select {
+  background: rgba(30,10,60,0.8);
+  border: 1px solid rgba(124,58,237,0.4);
+  border-radius: 8px; color: #e9d5ff;
+  font-family: 'Nunito', sans-serif; font-size: 0.82rem;
+  padding: 7px 10px; outline: none; flex: 1; min-width: 80px;
+}
+
+.admin-btn {
+  padding: 7px 14px; border: none; border-radius: 8px;
+  font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 700;
+  cursor: pointer; transition: transform 0.1s; white-space: nowrap;
+}
+.admin-btn:hover { transform: scale(1.04); }
+.admin-btn.orange { background: linear-gradient(135deg,#f97316,#ef4444); color:#fff; }
+.admin-btn.red    { background: rgba(239,68,68,0.2); border:1px solid rgba(239,68,68,0.4); color:#f87171; }
+.admin-btn.green  { background: linear-gradient(135deg,#059669,#34d399); color:#fff; }
+.admin-btn.purple { background: linear-gradient(135deg,#7c3aed,#a855f7); color:#fff; }

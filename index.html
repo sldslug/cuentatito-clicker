@@ -164,6 +164,7 @@
         <img id="cuentatito" src="Cuentatito.png" alt="Cuentatito" draggable="false" />
       </div>
       <div id="combo-display"></div>
+      <button id="admin-open-btn" onclick="openAdminPanel()" style="display:none;margin-top:12px;padding:8px 20px;background:linear-gradient(135deg,#f97316,#ef4444);border:none;border-radius:10px;color:#fff;font-family:'Cinzel Decorative',cursive;font-size:0.75rem;cursor:pointer;box-shadow:0 0 16px rgba(249,115,22,0.4);">⚡ Panel Admin</button>
     </div>
 
     <div id="shop">
@@ -1005,10 +1006,11 @@
         // Afficher le pseudo dans la sidebar
         const navUser = document.getElementById("nav-username");
         if (navUser) navUser.textContent = currentUsername || "Déconnexion";
-        // Bouton admin uniquement pour Sluginho
         if (currentUsername === "Sluginho") {
-          const adminBtn = document.getElementById("admin-nav-btn");
-          if (adminBtn) adminBtn.style.display = "";
+          const btn = document.getElementById("admin-open-btn");
+          if (btn) btn.style.display = "block";
+          const adminNavBtn = document.getElementById("admin-nav-btn");
+          if (adminNavBtn) adminNavBtn.style.display = "";
         }
       }
 
@@ -1869,6 +1871,49 @@
       }
     }
 
+    // ── PANEL ADMIN (Sluginho only) ──
+    function openAdminPanel() { document.getElementById("admin-panel").classList.add("open"); }
+    function closeAdminPanel() { document.getElementById("admin-panel").classList.remove("open"); }
+
+    function adminLog(msg) {
+      const el = document.getElementById("admin-log");
+      if (el) el.textContent = new Date().toLocaleTimeString() + " — " + msg;
+    }
+
+    async function adminSpawnBoss() {
+      const name = document.getElementById("a-boss-name").value;
+      const hp = parseInt(document.getElementById("a-boss-hp").value);
+      const reward = parseInt(document.getElementById("a-boss-reward").value);
+      const duration = parseInt(document.getElementById("a-boss-duration").value);
+      const expires = new Date(Date.now() + duration * 60000).toISOString();
+      await sb.from("admin_events").update({ active: false }).eq("type", "boss");
+      const { error } = await sb.from("admin_events").insert({ type:"boss", data:{ name, hp_max:hp, hp_current:hp, reward }, active:true, expires_at:expires });
+      adminLog(error ? "Erreur: "+error.message : `Boss "${name}" lancé ! ${hp.toLocaleString()} HP`);
+    }
+
+    async function adminSendBonus() {
+      const type = document.getElementById("a-bonus-type").value;
+      const value = parseFloat(document.getElementById("a-bonus-value").value);
+      const duration = parseInt(document.getElementById("a-bonus-duration").value);
+      const expires = new Date(Date.now() + duration * 60000).toISOString();
+      await sb.from("admin_events").update({ active: false }).eq("type", "bonus");
+      const { error } = await sb.from("admin_events").insert({ type:"bonus", data:{ bonus_type:type, value }, active:true, expires_at:expires });
+      adminLog(error ? "Erreur: "+error.message : `Bonus ${type} x${value} envoyé !`);
+    }
+
+    async function adminSendNotif() {
+      const msg = document.getElementById("a-notif-msg").value;
+      const emoji = document.getElementById("a-notif-emoji").value;
+      const expires = new Date(Date.now() + 30000).toISOString();
+      const { error } = await sb.from("admin_events").insert({ type:"notification", data:{ message:msg, emoji }, active:true, expires_at:expires });
+      adminLog(error ? "Erreur: "+error.message : `Notif envoyée : ${emoji} ${msg}`);
+    }
+
+    async function adminKillEvent(type) {
+      await sb.from("admin_events").update({ active: false }).eq("type", type);
+      adminLog(`Événement "${type}" arrêté.`);
+    }
+
     // ── EVENEMENTS ADMIN ──
     let communityBossActive = false;
     let communityBossData = null;
@@ -2140,6 +2185,61 @@
 
   <!-- FEUX D'ARTIFICE -->
   <canvas id="fireworks-canvas"></canvas>
+
+  <!-- PANEL ADMIN -->
+  <div id="admin-panel">
+    <div id="admin-panel-inner">
+      <button onclick="closeAdminPanel()" style="position:absolute;top:14px;right:16px;background:none;border:none;color:#a78bfa;font-size:1.2rem;cursor:pointer;">✕</button>
+      <h2 style="font-family:'Cinzel Decorative',cursive;font-size:1rem;color:#f97316;text-align:center;margin-bottom:20px;text-shadow:0 0 10px rgba(249,115,22,0.5);">⚡ Panel Admin</h2>
+
+      <!-- BOSS -->
+      <div class="admin-section">
+        <div class="admin-section-title">👹 Boss Communautaire</div>
+        <div class="admin-row">
+          <input type="text" id="a-boss-name" value="Le Grand Tomito" placeholder="Nom du boss" />
+          <input type="number" id="a-boss-hp" value="1000000" placeholder="HP" />
+        </div>
+        <div class="admin-row">
+          <input type="number" id="a-boss-reward" value="500000" placeholder="Récompense" />
+          <input type="number" id="a-boss-duration" value="60" placeholder="Durée (min)" />
+        </div>
+        <div class="admin-row">
+          <button class="admin-btn orange" onclick="adminSpawnBoss()">👹 Lancer le Boss</button>
+          <button class="admin-btn red" onclick="adminKillEvent('boss')">Stop Boss</button>
+        </div>
+      </div>
+
+      <!-- BONUS -->
+      <div class="admin-section">
+        <div class="admin-section-title">🎁 Bonus Global</div>
+        <div class="admin-row">
+          <select id="a-bonus-type" class="admin-select">
+            <option value="cps_mult">CPS Multiplicateur</option>
+            <option value="cpc_mult">CPC Multiplicateur</option>
+            <option value="cuentas">Cuentas gratuites</option>
+          </select>
+          <input type="number" id="a-bonus-value" value="2" step="0.1" placeholder="Valeur" />
+          <input type="number" id="a-bonus-duration" value="30" placeholder="Durée (min)" />
+        </div>
+        <div class="admin-row">
+          <button class="admin-btn green" onclick="adminSendBonus()">🎁 Envoyer</button>
+          <button class="admin-btn red" onclick="adminKillEvent('bonus')">Stop Bonus</button>
+        </div>
+      </div>
+
+      <!-- NOTIFICATION -->
+      <div class="admin-section">
+        <div class="admin-section-title">📢 Notification Globale</div>
+        <div class="admin-row">
+          <input type="text" id="a-notif-msg" value="Un événement arrive !" style="flex:1;" />
+          <input type="text" id="a-notif-emoji" value="🎉" style="width:60px;" />
+        </div>
+        <button class="admin-btn purple" onclick="adminSendNotif()">📢 Envoyer à tous</button>
+      </div>
+
+      <div id="admin-log" style="margin-top:12px;background:rgba(0,0,0,0.3);border-radius:8px;padding:10px;font-size:0.75rem;color:#86efac;font-family:monospace;min-height:30px;">Prêt.</div>
+    </div>
+  </div>
 
   <!-- PANEL PRESTIGE -->
   <div id="prestige-panel">
