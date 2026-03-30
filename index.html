@@ -451,11 +451,11 @@
           div.querySelector(".item-cost").textContent = `💰 ${formatNum(cost)} (x${qty})`;
         }
 
-        // Barre de progression vers le prochain achat
-        const singleCost = getCost(item);
-        const pct = canAfford ? 100 : Math.min(99, (cuentas / singleCost) * 100);
-        div.querySelector(".item-prog-fill").style.width = pct.toFixed(1) + "%";
-        div.querySelector(".item-prog-pct").textContent = canAfford ? "✓" : pct.toFixed(0) + "%";
+        // Barre de progression désactivée pour perf
+        // const singleCost = getCost(item);
+        // const pct = canAfford ? 100 : Math.min(99, (cuentas / singleCost) * 100);
+        // div.querySelector(".item-prog-fill").style.width = pct.toFixed(1) + "%";
+        // div.querySelector(".item-prog-pct").textContent = canAfford ? "✓" : pct.toFixed(0) + "%";
       });
     }
 
@@ -678,21 +678,24 @@
     let uiDirty = false;
     setInterval(() => {
       if (cps > 0) {
-        const gained = (cps / 20) * (turboActive ? 3 : 1);
+        const gained = (cps / 10) * (turboActive ? 3 : 1);
         cuentas += gained;
         totalEarned += gained;
         uiDirty = true;
       }
-    }, 50);
+    }, 100);
 
-    // Rendu UI à 4fps max (250ms) pour ne pas surcharger
+    // Rendu UI a 2fps max (500ms)
     setInterval(() => {
       if (uiDirty) {
         uiDirty = false;
-        updateUI();
+        document.getElementById("counter").textContent = formatNum(Math.floor(cuentas)) + " Cuentas";
+        document.getElementById("cps-display").textContent = cps > 0 ? formatNum(Math.floor(cps)) + " Cuentas / seconde" : "0 Cuentas / seconde";
+        updateShop();
+        updatePrestigeUI();
         checkAchievements();
       }
-    }, 250);
+    }, 500);
 
     // ── PRESTIGE ──
     let prestigeCount = 0;
