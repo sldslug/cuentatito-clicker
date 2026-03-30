@@ -531,7 +531,7 @@
 
     // ── AUTOCLICK ──
     let autoclickEnabled = false;
-    const autoclickRate = 0.3;
+    let autoclickRate = 0.3;
     let mouseOnImage = false;
 
     document.getElementById("img-wrapper").addEventListener("mouseenter", () => { mouseOnImage = true; });
@@ -741,8 +741,9 @@
 
     function updatePrestigeUI() {
       const info = document.getElementById("prestige-info");
+      if (!info) return;
       if (prestigeCount > 0) {
-        info.textContent = `✦ Prestige ${toRoman(prestigeCount)} — x${getPrestigeMult()}`;
+        info.textContent = `Prestige ${toRoman(prestigeCount)} x${getPrestigeMult()}`;
       } else {
         const cost = getPrestigeCost();
         const pct = Math.min(100, (cuentas / cost) * 100);
