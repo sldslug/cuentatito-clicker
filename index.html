@@ -157,22 +157,8 @@
   </div>
 
   <script>
-    // ── ÉTOILES GÉNÉRÉES ──
+    // Etoiles désactivées pour les performances
     const starsContainer = document.getElementById('stars');
-    for (let i = 0; i < 30; i++) {
-      const s = document.createElement('div');
-      s.className = 'star';
-      const size = Math.random() * 2.5 + 0.5;
-      s.style.cssText = `
-        width:${size}px; height:${size}px;
-        top:${Math.random()*100}%;
-        left:${Math.random()*100}%;
-        --dur:${(Math.random()*3+2).toFixed(1)}s;
-        --op:${(Math.random()*0.7+0.2).toFixed(2)};
-        animation-delay:${(Math.random()*4).toFixed(1)}s;
-      `;
-      starsContainer.appendChild(s);
-    }
 
     // ── DONNÉES SHOP ──
     // Chaque item coûte baseCost * 1.15^owned à l'achat suivant.
