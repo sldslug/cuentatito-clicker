@@ -15,6 +15,7 @@
   flex-direction: column !important;
   gap: 7px !important;
   user-select: none;
+  will-change: left, top;
 }
 
 #mini-player.hidden { display: none !important; }

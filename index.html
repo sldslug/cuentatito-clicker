@@ -1540,14 +1540,24 @@
 
       document.addEventListener("mousemove", e => {
         if (!isDragging) return;
-        const sidebarWidth = document.getElementById("sidebar").classList.contains("collapsed") ? 62 : 240;
-        const nx = Math.max(sidebarWidth + 8, Math.min(window.innerWidth - player.offsetWidth - 315, ox + e.clientX - sx));
-        const ny = Math.max(0, Math.min(window.innerHeight - player.offsetHeight - 5, oy + e.clientY - sy));
+        const nx = ox + e.clientX - sx;
+        const ny = oy + e.clientY - sy;
         player.style.setProperty("left", nx + "px", "important");
         player.style.setProperty("top",  ny + "px", "important");
       });
 
-      document.addEventListener("mouseup", () => { isDragging = false; });
+      document.addEventListener("mouseup", () => {
+        if (isDragging) {
+          // Corriger les limites seulement au relâchement
+          const sidebarWidth = document.getElementById("sidebar").classList.contains("collapsed") ? 62 : 240;
+          const rect = player.getBoundingClientRect();
+          const clampedLeft = Math.max(sidebarWidth + 8, Math.min(window.innerWidth - player.offsetWidth - 315, rect.left));
+          const clampedTop  = Math.max(0, Math.min(window.innerHeight - player.offsetHeight - 5, rect.top));
+          player.style.setProperty("left", clampedLeft + "px", "important");
+          player.style.setProperty("top",  clampedTop  + "px", "important");
+        }
+        isDragging = false;
+      });
 
       initFW();
     });
