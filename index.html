@@ -1778,7 +1778,6 @@
 
     setInterval(() => {
       if (!autoclickEnabled || !mouseOnImage) return;
-      // Simuler un vrai clic avec animation
       const img = document.getElementById("cuentatito");
       img.classList.add("autoclick-pulse");
       setTimeout(() => img.classList.remove("autoclick-pulse"), 80);
@@ -1788,6 +1787,9 @@
       totalClics++;
       updateUI();
       checkAchievements();
+      // Floaty visible
+      const rect = img.getBoundingClientRect();
+      spawnFloaty(rect.left + rect.width/2, rect.top + 20, "+" + formatNum(gained));
     }, Math.floor(1000 / autoclickRate));
 
     // ── CHAT GLOBAL ──
@@ -1838,12 +1840,23 @@
 
     function subscribeChatRealtime() {
       if (chatSub) return;
-      chatSub = sb.channel("chat").on("postgres_changes", {
-        event: "INSERT", schema: "public", table: "chat_messages"
-      }, payload => {
+      // Polling toutes les 3s pour les nouveaux messages
+      let lastId = null;
+      chatSub = setInterval(async () => {
+        let query = sb.from("chat_messages")
+          .select("id, username, message, prestige_count, created_at")
+          .order("created_at", { ascending: false })
+          .limit(1);
+        const { data } = await query;
+        if (!data || data.length === 0) return;
+        const latest = data[0];
+        if (lastId === null) { lastId = latest.id; return; }
+        if (latest.id === lastId) return;
+        lastId = latest.id;
         const container = document.getElementById("chat-messages");
+        if (!container) return;
         const atBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 60;
-        container.innerHTML += renderChatMsg(payload.new);
+        container.innerHTML += renderChatMsg(latest);
         if (atBottom) container.scrollTop = container.scrollHeight;
         if (!chatOpen) {
           chatUnread++;
@@ -1851,7 +1864,7 @@
           badge.textContent = chatUnread > 9 ? "9+" : chatUnread;
           badge.style.display = "inline-block";
         }
-      }).subscribe();
+      }, 3000);
     }
 
     async function sendChat() {
@@ -1908,7 +1921,12 @@
     });
 
     // ── FULLSCREEN ──
-    function toggleFullscreen() {
+    function closePlayer() {
+      audio.pause();
+      isPlaying = false;
+      document.getElementById("mp-play").textContent = "\u25B6";
+      document.getElementById("mini-player").classList.add("hidden");
+    }
       if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen().catch(() => {});
       } else {
@@ -1933,6 +1951,7 @@
     <div id="mp-drag-handle">
       <span id="mp-title">--</span>
       <button id="mp-fullscreen-toggle" onclick="toggleFullscreen()" title="Plein écran">⛶</button>
+      <button id="mp-close-btn" onclick="closePlayer()" title="Fermer">✕</button>
     </div>
     <div id="mp-line2">
       <span id="mp-current">0:00</span>
