@@ -108,6 +108,10 @@
         <span class="nav-icon">ℹ️</span>
         <span class="nav-label">A propos</span>
       </div>
+      <div class="nav-item" data-tooltip="Plein écran" onclick="toggleFullscreen()">
+        <span class="nav-icon">⛶</span>
+        <span class="nav-label">Plein écran</span>
+      </div>
       <div class="nav-divider"></div>
       <div class="nav-item" data-tooltip="Sauvegarder" onclick="saveGame()">
         <span class="nav-icon" id="save-icon">💾</span>
@@ -1868,6 +1872,55 @@
       const inp = document.getElementById("chat-input");
       if (inp) inp.addEventListener("keydown", e => { if (e.key === "Enter") sendChat(); });
     });
+
+    // ── DRAG MINI PLAYER ──
+    window.addEventListener("load", () => {
+      const player = document.getElementById("mini-player");
+      const handle = document.getElementById("mp-drag-handle");
+      if (!handle) return;
+      let dragging = false, ox = 0, oy = 0, startX = 0, startY = 0;
+
+      handle.addEventListener("mousedown", e => {
+        if (e.target.tagName === "BUTTON") return;
+        dragging = true;
+        const rect = player.getBoundingClientRect();
+        player.style.position = "fixed";
+        player.style.bottom = "auto";
+        player.style.left = rect.left + "px";
+        player.style.top = rect.top + "px";
+        player.style.right = "auto";
+        ox = rect.left; oy = rect.top;
+        startX = e.clientX; startY = e.clientY;
+        e.preventDefault();
+      });
+
+      document.addEventListener("mousemove", e => {
+        if (!dragging) return;
+        const dx = e.clientX - startX, dy = e.clientY - startY;
+        const minLeft = 62, maxLeft = window.innerWidth - player.offsetWidth - 310;
+        const newLeft = Math.max(minLeft, Math.min(maxLeft, ox + dx));
+        const newTop  = Math.max(0, Math.min(window.innerHeight - player.offsetHeight, oy + dy));
+        player.style.left = newLeft + "px";
+        player.style.top  = newTop + "px";
+      });
+
+      document.addEventListener("mouseup", () => { dragging = false; });
+    });
+
+    // ── FULLSCREEN ──
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    document.addEventListener("fullscreenchange", () => {
+      const btn = document.getElementById("mp-fullscreen-toggle");
+      if (btn) btn.textContent = document.fullscreenElement ? "⊡" : "⛶";
+    });
+
     loadGame().then(() => {
       updateUI();
       checkAchievements();
@@ -1875,16 +1928,11 @@
     });
   </script>
 
-  <!-- MINI PLAYER -->
+  <!-- MINI PLAYER DRAGGABLE -->
   <div id="mini-player" class="hidden">
-    <div id="mp-line1">
+    <div id="mp-drag-handle">
       <span id="mp-title">--</span>
-      <span id="mp-vol-wrap">
-        <button onclick="changeVolume(-0.1)">-</button>
-        <input id="mp-volume" type="range" min="0" max="1" step="0.05" value="0.5" oninput="musicVolume(this.value)" />
-        <button onclick="changeVolume(0.1)">+</button>
-        <span id="mp-vol-pct">50%</span>
-      </span>
+      <button id="mp-fullscreen-toggle" onclick="toggleFullscreen()" title="Plein écran">⛶</button>
     </div>
     <div id="mp-line2">
       <span id="mp-current">0:00</span>
@@ -1892,19 +1940,25 @@
       <span id="mp-duration">0:00</span>
     </div>
     <div id="mp-line3">
-      <button id="mp-prev" onclick="musicPrev()">⏮</button>
-      <button id="mp-play" onclick="musicToggle()">▶</button>
-      <button id="mp-next" onclick="musicNext()">⏭</button>
-      <button id="mp-shuffle" onclick="toggleShuffle()">shuffle</button>
-      <button id="mp-repeat" onclick="toggleRepeat()">repeat</button>
-      <select id="mp-speed" onchange="changeSpeed(this.value)">
+      <button id="mp-prev" onclick="musicPrev()" title="Précédent">⏮</button>
+      <button id="mp-play" onclick="musicToggle()" title="Play/Pause">▶</button>
+      <button id="mp-next" onclick="musicNext()" title="Suivant">⏭</button>
+      <button id="mp-shuffle" onclick="toggleShuffle()" title="Aléatoire">🔀</button>
+      <button id="mp-repeat" onclick="toggleRepeat()" title="Répétition">🔁</button>
+      <select id="mp-speed" onchange="changeSpeed(this.value)" title="Vitesse">
         <option value="0.75">0.75x</option>
         <option value="1" selected>1x</option>
         <option value="1.25">1.25x</option>
         <option value="1.5">1.5x</option>
         <option value="2">2x</option>
       </select>
-      <button id="mp-open" onclick="openMusicPanel()">playlist</button>
+      <span id="mp-vol-wrap">
+        <button onclick="changeVolume(-0.1)" title="Baisser">🔉</button>
+        <input id="mp-volume" type="range" min="0" max="1" step="0.05" value="0.5" oninput="musicVolume(this.value)" />
+        <button onclick="changeVolume(0.1)" title="Monter">🔊</button>
+        <span id="mp-vol-pct">50%</span>
+      </span>
+      <button id="mp-open" onclick="openMusicPanel()" title="Playlist">🎵</button>
     </div>
   </div>
 
