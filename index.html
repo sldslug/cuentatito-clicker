@@ -755,7 +755,8 @@
         info.textContent = `Prestige I : ${pct.toFixed(1)}%`;
       }
       // Refresh panel si ouvert
-      if (document.getElementById("prestige-panel").classList.contains("open")) {
+      const pp = document.getElementById("prestige-panel");
+      if (pp && pp.classList.contains("open")) {
         refreshPrestigePanel();
       }
     }
@@ -1008,9 +1009,9 @@
         if (navUser) navUser.textContent = currentUsername || "Déconnexion";
         if (currentUsername === "Sluginho") {
           const btn = document.getElementById("admin-open-btn");
-          if (btn) btn.style.display = "block";
+          if (btn) btn.style.cssText = btn.style.cssText.replace("display:none", "display:block");
           const adminNavBtn = document.getElementById("admin-nav-btn");
-          if (adminNavBtn) adminNavBtn.style.display = "";
+          if (adminNavBtn) adminNavBtn.style.display = "flex";
         }
       }
 
