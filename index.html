@@ -159,7 +159,7 @@
   <script>
     // ── ÉTOILES GÉNÉRÉES ──
     const starsContainer = document.getElementById('stars');
-    for (let i = 0; i < 120; i++) {
+    for (let i = 0; i < 60; i++) {
       const s = document.createElement('div');
       s.className = 'star';
       const size = Math.random() * 2.5 + 0.5;
@@ -668,15 +668,25 @@
       setTimeout(() => el.remove(), 1100);
     }
 
+    // ── TICK CPS (calcul uniquement, pas de rendu) ──
+    let uiDirty = false;
     setInterval(() => {
       if (cps > 0) {
         const gained = (cps / 20) * (turboActive ? 3 : 1);
         cuentas += gained;
         totalEarned += gained;
+        uiDirty = true;
+      }
+    }, 50);
+
+    // Rendu UI à 4fps max (250ms) pour ne pas surcharger
+    setInterval(() => {
+      if (uiDirty) {
+        uiDirty = false;
         updateUI();
         checkAchievements();
       }
-    }, 50);
+    }, 250);
 
     // ── PRESTIGE ──
     let prestigeCount = 0;
@@ -1342,47 +1352,39 @@
       }).join('');
     }
 
-    // ── FOND INTERACTIF ──
+    // ── FOND INTERACTIF (throttle 20fps) ──
     const starsArr = [];
     document.querySelectorAll(".star").forEach(s => {
-      const rect = s.getBoundingClientRect();
-      starsArr.push({
-        el: s,
-        ox: parseFloat(s.style.left),
-        oy: parseFloat(s.style.top),
-        x: parseFloat(s.style.left),
-        y: parseFloat(s.style.top)
-      });
+      starsArr.push({ el:s, ox:parseFloat(s.style.left), oy:parseFloat(s.style.top), x:parseFloat(s.style.left), y:parseFloat(s.style.top) });
     });
 
     let mouseX = -9999, mouseY = -9999;
     document.addEventListener("mousemove", e => { mouseX = e.clientX; mouseY = e.clientY; });
 
+    const vwCache = { w: window.innerWidth, h: window.innerHeight };
+    window.addEventListener("resize", () => { vwCache.w = window.innerWidth; vwCache.h = window.innerHeight; });
+
     setInterval(() => {
       starsArr.forEach(star => {
-        const vw = window.innerWidth, vh = window.innerHeight;
-        const sx = star.x / 100 * vw;
-        const sy = star.y / 100 * vh;
-        const dx = sx - mouseX;
-        const dy = sy - mouseY;
+        const sx = star.x / 100 * vwCache.w;
+        const sy = star.y / 100 * vwCache.h;
+        const dx = sx - mouseX, dy = sy - mouseY;
         const dist = Math.sqrt(dx*dx + dy*dy);
-        const radius = 120;
-        if (dist < radius) {
-          const force = (radius - dist) / radius * 18;
+        if (dist < 120) {
+          const force = (120 - dist) / 120 * 18;
           const angle = Math.atan2(dy, dx);
-          const tx = star.x + (Math.cos(angle) * force / vw * 100);
-          const ty = star.y + (Math.sin(angle) * force / vh * 100);
-          star.x += (tx - star.x) * 0.3;
-          star.y += (ty - star.y) * 0.3;
-        } else {
-          // Retour à la position originale
+          star.x += (Math.cos(angle) * force / vwCache.w * 100) * 0.3;
+          star.y += (Math.sin(angle) * force / vwCache.h * 100) * 0.3;
+          star.el.style.left = star.x.toFixed(2) + "%";
+          star.el.style.top  = star.y.toFixed(2) + "%";
+        } else if (Math.abs(star.x - star.ox) > 0.05 || Math.abs(star.y - star.oy) > 0.05) {
           star.x += (star.ox - star.x) * 0.05;
           star.y += (star.oy - star.y) * 0.05;
+          star.el.style.left = star.x.toFixed(2) + "%";
+          star.el.style.top  = star.y.toFixed(2) + "%";
         }
-        star.el.style.left = star.x + "%";
-        star.el.style.top  = star.y + "%";
       });
-    }, 30);
+    }, 50);
 
     // ── LECTEUR MUSIQUE ──
     const playlist = [
