@@ -133,21 +133,25 @@
   <div id="main">
 
     <div id="clicker-zone">
-      <div class="img-wrapper" id="img-wrapper">
-        <img id="cuentatito" src="Cuentatito.png" alt="Cuentatito" draggable="false" />
-      </div>
-      <div class="click-hint">▼ Clique ici ▼</div>
-      <div id="combo-display"></div>
-      <div id="action-btns">
-        <button id="prestige-btn" onclick="openPrestigePanel()" title="Prestige">
-          <img src="boutondujeu/prestige.png" alt="Prestige" />
-        </button>
-        <button id="turbo-btn" onclick="activateTurbo()" title="Turbo">
-          <img src="boutondujeu/turbo.png" alt="Turbo" id="turbo-img" />
-        </button>
-        <button id="autoclick-btn" onclick="toggleAutoclick()" title="Autoclick">
-          <img src="boutondujeu/autoclick.png" alt="Autoclick" id="autoclick-img" />
-        </button>
+      <div id="clicker-main">
+        <div id="left-btns">
+          <button id="prestige-btn" onclick="openPrestigePanel()" title="Prestige">
+            <img src="boutondujeu/prestige.png" alt="Prestige" />
+          </button>
+          <button id="turbo-btn" onclick="activateTurbo()" title="Turbo">
+            <img src="boutondujeu/turbo.png" alt="Turbo" id="turbo-img" />
+          </button>
+          <button id="autoclick-btn" onclick="toggleAutoclick()" title="Autoclick">
+            <img src="boutondujeu/autoclick.png" alt="Autoclick" id="autoclick-img" />
+          </button>
+        </div>
+        <div id="clicker-center">
+          <div class="img-wrapper" id="img-wrapper">
+            <img id="cuentatito" src="Cuentatito.png" alt="Cuentatito" draggable="false" />
+          </div>
+          <div class="click-hint">▼ Clique ici ▼</div>
+          <div id="combo-display"></div>
+        </div>
       </div>
       <div id="prestige-info"></div>
       <div id="turbo-timer"></div>
