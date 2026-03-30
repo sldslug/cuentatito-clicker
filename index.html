@@ -1644,6 +1644,43 @@
     loadGame().then(() => {
       updateUI();
       checkAchievements();
+
+      // DRAG MINI PLAYER - JS only, no CSS changes
+      const player = document.getElementById("mini-player");
+      const title  = document.getElementById("mp-title");
+      if (!player || !title) return;
+
+      let isDragging = false, ox = 0, oy = 0, sx = 0, sy = 0;
+
+      title.style.cursor = "grab";
+
+      title.addEventListener("mousedown", e => {
+        if (e.button !== 0) return;
+        isDragging = true;
+        const r = player.getBoundingClientRect();
+        ox = r.left; oy = r.top;
+        sx = e.clientX; sy = e.clientY;
+        // Figer la position en inline style
+        player.style.setProperty("left",   ox + "px", "important");
+        player.style.setProperty("top",    oy + "px", "important");
+        player.style.setProperty("bottom", "auto",    "important");
+        player.style.setProperty("right",  "auto",    "important");
+        title.style.cursor = "grabbing";
+        e.preventDefault();
+      });
+
+      document.addEventListener("mousemove", e => {
+        if (!isDragging) return;
+        const nx = Math.max(70, Math.min(window.innerWidth  - player.offsetWidth  - 315, ox + e.clientX - sx));
+        const ny = Math.max(0,  Math.min(window.innerHeight - player.offsetHeight - 5,   oy + e.clientY - sy));
+        player.style.setProperty("left", nx + "px", "important");
+        player.style.setProperty("top",  ny + "px", "important");
+      });
+
+      document.addEventListener("mouseup", () => {
+        isDragging = false;
+        title.style.cursor = "grab";
+      });
     });
   </script>
 
