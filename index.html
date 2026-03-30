@@ -957,7 +957,7 @@
 
     async function saveGame(silent = false) {
       const saveData = getSaveData();
-      // Sauvegarde locale en backup
+      console.log("SAVE talents:", saveData.talents);
       localStorage.setItem("cuentatito_save", JSON.stringify(saveData));
 
       // Sauvegarde sur Supabase si connecté
@@ -1861,10 +1861,12 @@
 
     buildShop();
     loadGame().then(() => {
+      console.log("LOAD _savedTalents:", window._savedTalents);
       // Restaurer les talents achetés
       if (window._savedTalents) {
         window._savedTalents.forEach(s => {
           const t = talents.find(x => x.id === s.id);
+          console.log("Restoring talent:", s.id, "bought:", s.bought, "found:", !!t);
           if (t && s.bought && !t.bought) { t.bought = true; t.bonus(); }
         });
         recalcStats();
