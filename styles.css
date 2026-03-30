@@ -3178,3 +3178,48 @@ body.sidebar-open #mini-player { left: 240px; }
 .talent-name { font-size: 0.85rem; font-weight: 700; color: #e9d5ff; }
 .talent-desc { font-size: 0.7rem; color: #9f7aea; margin-top: 2px; line-height: 1.4; }
 .talent-status { margin-left: auto; font-size: 0.9rem; flex-shrink: 0; }
+
+.talent-item.available {
+  border-color: rgba(168,85,247,0.5);
+  background: rgba(49,10,100,0.4);
+}
+
+.talent-item.bought {
+  border-color: rgba(134,239,172,0.4);
+  background: rgba(6,78,59,0.2);
+  opacity: 0.7;
+}
+
+.talent-bonus-label {
+  font-size: 0.72rem;
+  color: #86efac;
+  font-weight: 700;
+  margin-left: 6px;
+}
+
+.talent-cost {
+  font-size: 0.72rem;
+  color: #fbbf24;
+  margin-top: 3px;
+}
+
+.talent-action { flex-shrink: 0; margin-left: auto; }
+
+.talent-buy-btn {
+  padding: 5px 10px;
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.1s;
+}
+.talent-buy-btn:hover:not(.disabled) { transform: scale(1.05); }
+.talent-buy-btn.disabled { background: rgba(80,80,80,0.4); cursor: not-allowed; font-size: 0.65rem; }
+
+.talent-done { color: #86efac; font-size: 1rem; }
+.talent-locked { color: #4b5563; font-size: 1rem; }

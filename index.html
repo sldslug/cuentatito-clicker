@@ -1754,45 +1754,49 @@
     // ── ARBRE DE TALENTS ──
     const talents = [
       // Clics
-      { id:"t_cpc1",  cat:"clic",    name:"Doigts agiles",      desc:"Débloqué à 100 clics → +1 Cuentas/clic",       req:()=>totalClics>=100,    bonus:()=>{ cpc += 1; },           icon:"👆", unlocked:false },
-      { id:"t_cpc2",  cat:"clic",    name:"Frappe puissante",   desc:"Débloqué à 1 000 clics → +5 Cuentas/clic",     req:()=>totalClics>=1000,   bonus:()=>{ cpc += 5; },           icon:"💪", unlocked:false },
-      { id:"t_cpc3",  cat:"clic",    name:"Poing de Tomito",    desc:"Débloqué à 10 000 clics → +20 Cuentas/clic",   req:()=>totalClics>=10000,  bonus:()=>{ cpc += 20; },          icon:"🥊", unlocked:false },
+      { id:"t_cpc1",  cat:"clic",    name:"Doigts agiles",      desc:"Condition : 100 clics",       cost:500,     req:()=>totalClics>=100,    bonus:()=>{ cpc += 1; },            bonusLabel:"+1/clic",   icon:"👆", bought:false },
+      { id:"t_cpc2",  cat:"clic",    name:"Frappe puissante",   desc:"Condition : 1 000 clics",     cost:5000,    req:()=>totalClics>=1000,   bonus:()=>{ cpc += 5; },            bonusLabel:"+5/clic",   icon:"💪", bought:false },
+      { id:"t_cpc3",  cat:"clic",    name:"Poing de Tomito",    desc:"Condition : 10 000 clics",    cost:50000,   req:()=>totalClics>=10000,  bonus:()=>{ cpc += 20; },           bonusLabel:"+20/clic",  icon:"🥊", bought:false },
       // Production
-      { id:"t_cps1",  cat:"prod",    name:"Jardinier",          desc:"Débloqué à 10 achats → CPS x1.1",              req:()=>totalBought>=10,    bonus:()=>{ cps *= 1.1; },         icon:"🌱", unlocked:false },
-      { id:"t_cps2",  cat:"prod",    name:"Industriel",         desc:"Débloqué à 50 achats → CPS x1.25",             req:()=>totalBought>=50,    bonus:()=>{ cps *= 1.25; },        icon:"🏭", unlocked:false },
-      { id:"t_cps3",  cat:"prod",    name:"Dieu de la prod",    desc:"Débloqué à 200 achats → CPS x1.5",             req:()=>totalBought>=200,   bonus:()=>{ cps *= 1.5; },         icon:"⚡", unlocked:false },
+      { id:"t_cps1",  cat:"prod",    name:"Jardinier",          desc:"Condition : 10 achats",       cost:2000,    req:()=>totalBought>=10,    bonus:()=>{ cps *= 1.1; },          bonusLabel:"CPS x1.1",  icon:"🌱", bought:false },
+      { id:"t_cps2",  cat:"prod",    name:"Industriel",         desc:"Condition : 50 achats",       cost:20000,   req:()=>totalBought>=50,    bonus:()=>{ cps *= 1.25; },         bonusLabel:"CPS x1.25", icon:"🏭", bought:false },
+      { id:"t_cps3",  cat:"prod",    name:"Dieu de la prod",    desc:"Condition : 200 achats",      cost:200000,  req:()=>totalBought>=200,   bonus:()=>{ cps *= 1.5; },          bonusLabel:"CPS x1.5",  icon:"⚡", bought:false },
       // Autoclick
-      { id:"t_ac1",   cat:"auto",    name:"Autoclick x2",       desc:"Débloqué à prestige I → Autoclick 0.6/s",      req:()=>prestigeCount>=1,   bonus:()=>{ autoclickRate = 0.6; },icon:"🖱️", unlocked:false },
-      { id:"t_ac2",   cat:"auto",    name:"Autoclick x5",       desc:"Débloqué à prestige V → Autoclick 1.5/s",      req:()=>prestigeCount>=5,   bonus:()=>{ autoclickRate = 1.5; },icon:"🖱️", unlocked:false },
-      { id:"t_ac3",   cat:"auto",    name:"Autoclick MAX",      desc:"Débloqué à prestige X → Autoclick 10/s",       req:()=>prestigeCount>=10,  bonus:()=>{ autoclickRate = 10; }, icon:"🖱️", unlocked:false },
+      { id:"t_ac1",   cat:"auto",    name:"Autoclick x2",       desc:"Condition : prestige I",      cost:10000,   req:()=>prestigeCount>=1,   bonus:()=>{ autoclickRate = 0.6; }, bonusLabel:"0.6/s",     icon:"🖱️", bought:false },
+      { id:"t_ac2",   cat:"auto",    name:"Autoclick x5",       desc:"Condition : prestige V",      cost:100000,  req:()=>prestigeCount>=5,   bonus:()=>{ autoclickRate = 1.5; }, bonusLabel:"1.5/s",     icon:"🖱️", bought:false },
+      { id:"t_ac3",   cat:"auto",    name:"Autoclick MAX",      desc:"Condition : prestige X",      cost:1000000, req:()=>prestigeCount>=10,  bonus:()=>{ autoclickRate = 10; },  bonusLabel:"10/s",      icon:"🖱️", bought:false },
       // Combo
-      { id:"t_combo1",cat:"combo",   name:"Combo étendu",       desc:"Débloqué à 500 clics → Combo dure 3s",         req:()=>totalClics>=500,    bonus:()=>{ comboTimeout = 3000; },icon:"✨", unlocked:false },
-      // Prestige
-      { id:"t_pres1", cat:"prestige",name:"Héritage",           desc:"Débloqué à prestige I → Bonus prestige x1.2",  req:()=>prestigeCount>=1,   bonus:()=>{ /* appliqué via getPrestigeMult */ }, icon:"⭐", unlocked:false },
+      { id:"t_combo1",cat:"combo",   name:"Combo étendu",       desc:"Condition : 500 clics",       cost:3000,    req:()=>totalClics>=500,    bonus:()=>{ comboTimeout = 3000; }, bonusLabel:"Durée 3s",  icon:"✨", bought:false },
+      { id:"t_combo2",cat:"combo",   name:"Combo persistant",   desc:"Condition : 5 000 clics",     cost:30000,   req:()=>totalClics>=5000,   bonus:()=>{ comboTimeout = 5000; }, bonusLabel:"Durée 5s",  icon:"💫", bought:false },
     ];
 
-    let comboTimeout = 1500; // ms avant reset combo
+    let comboTimeout = 1500;
 
-    function checkTalents() {
-      let newUnlock = false;
-      talents.forEach(t => {
-        if (!t.unlocked && t.req()) {
-          t.unlocked = true;
-          newUnlock = true;
-          t.bonus();
-          // Toast
-          const el = document.createElement("div");
-          el.className = "ach-toast";
-          el.innerHTML = `<span class="ach-toast-icon">${t.icon}</span><div><div class="ach-toast-name">${t.name}</div><div class="ach-toast-sub">Talent débloqué !</div></div>`;
-          document.body.appendChild(el);
-          setTimeout(() => el.classList.add("visible"), 50);
-          setTimeout(() => { el.classList.remove("visible"); setTimeout(() => el.remove(), 400); }, 3500);
-        }
-      });
-      if (newUnlock && document.getElementById("talent-tree").style.display !== "none") renderTalentTree();
+    function buyTalent(id) {
+      const t = talents.find(x => x.id === id);
+      if (!t || t.bought) return;
+      if (!t.req()) return;
+      if (cuentas < t.cost) return;
+      cuentas -= t.cost;
+      t.bought = true;
+      t.bonus();
+      recalcStats();
+      updateUI();
+      renderTalentTree();
+      // Toast
+      const el = document.createElement("div");
+      el.className = "ach-toast";
+      el.innerHTML = `<span class="ach-toast-icon">${t.icon}</span><div><div class="ach-toast-name">${t.name}</div><div class="ach-toast-sub">Talent acheté ! ${t.bonusLabel}</div></div>`;
+      document.body.appendChild(el);
+      setTimeout(() => el.classList.add("visible"), 50);
+      setTimeout(() => { el.classList.remove("visible"); setTimeout(() => el.remove(), 400); }, 3500);
     }
 
-    const talentCatLabels = { clic:"👆 Clics", prod:"⚡ Production", auto:"🖱️ Autoclick", combo:"✨ Combo", prestige:"⭐ Prestige" };
+    function checkTalents() {
+      if (document.getElementById("talent-tree").style.display !== "none") renderTalentTree();
+    }
+
+    const talentCatLabels = { clic:"👆 Clics", prod:"⚡ Production", auto:"🖱️ Autoclick", combo:"✨ Combo" };
 
     function renderTalentTree() {
       const container = document.getElementById("talent-list");
@@ -1800,15 +1804,27 @@
       container.innerHTML = cats.map(cat => {
         const items = talents.filter(t => t.cat === cat);
         return `<div class="talent-cat-label">${talentCatLabels[cat]}</div>` +
-          items.map(t => `
-            <div class="talent-item ${t.unlocked ? 'unlocked' : 'locked'}">
+          items.map(t => {
+            const condOk = t.req();
+            const canBuy = condOk && cuentas >= t.cost && !t.bought;
+            const state = t.bought ? "bought" : condOk ? "available" : "locked";
+            return `<div class="talent-item ${state}">
               <span class="talent-icon">${t.icon}</span>
               <div class="talent-info">
-                <div class="talent-name">${t.name}</div>
+                <div class="talent-name">${t.name} <span class="talent-bonus-label">${t.bonusLabel}</span></div>
                 <div class="talent-desc">${t.desc}</div>
+                <div class="talent-cost">💰 ${formatNum(t.cost)} Cuentas</div>
               </div>
-              <span class="talent-status">${t.unlocked ? '✓' : '🔒'}</span>
-            </div>`).join('');
+              <div class="talent-action">
+                ${t.bought
+                  ? `<span class="talent-done">✓</span>`
+                  : condOk
+                    ? `<button class="talent-buy-btn ${canBuy?'':'disabled'}" onclick="buyTalent('${t.id}')">${canBuy ? 'Acheter' : 'Manque de Cuentas'}</button>`
+                    : `<span class="talent-locked">🔒</span>`
+                }
+              </div>
+            </div>`;
+          }).join('');
       }).join('');
     }
 
