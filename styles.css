@@ -2967,3 +2967,150 @@ body.sidebar-open #mini-player { left: 240px; }
 .friend-add-btn:disabled { opacity: 0.5; cursor: default; }
 
 .friends-empty { font-size: 0.8rem; color: #6b7280; padding: 8px 0; }
+
+/* BOSS */
+#boss-widget {
+  margin-top: 14px;
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.4);
+  border-radius: 14px;
+  padding: 14px 16px;
+  width: 320px;
+  text-align: center;
+}
+
+#boss-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+#boss-name { font-weight: 700; font-size: 0.95rem; color: #fca5a5; }
+#boss-timer-label { font-size: 0.72rem; color: #f87171; }
+
+#boss-hp-bar-wrap {
+  height: 10px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+#boss-hp-bar {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.2s ease, background 0.3s;
+  box-shadow: 0 0 8px rgba(239,68,68,0.5);
+}
+
+#boss-hp-text { font-size: 0.75rem; color: #fca5a5; margin-bottom: 10px; }
+
+#boss-attack-btn {
+  padding: 8px 20px;
+  background: linear-gradient(135deg, #dc2626, #ef4444);
+  border: none; border-radius: 10px; color: #fff;
+  font-family: 'Cinzel Decorative', cursive;
+  font-size: 0.8rem; font-weight: 700; cursor: pointer;
+  box-shadow: 0 0 16px rgba(239,68,68,0.4);
+  transition: transform 0.08s;
+}
+#boss-attack-btn:active { transform: scale(0.92); }
+
+#boss-next {
+  margin-top: 10px;
+  font-size: 0.78rem;
+  color: #a78bfa;
+  letter-spacing: 1px;
+}
+
+/* AUTOCLICK BTN */
+#autoclick-btn {
+  margin-top: 10px;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: rgba(239,68,68,0.15);
+  border: 2px solid rgba(239,68,68,0.5);
+  color: #f87171;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+}
+
+#autoclick-btn.active {
+  background: rgba(134,239,172,0.15);
+  border-color: rgba(134,239,172,0.5);
+  color: #86efac;
+  box-shadow: 0 0 12px rgba(134,239,172,0.3);
+}
+
+/* CHAT */
+#chat-panel {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+  z-index: 9003; display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.25s;
+}
+#chat-panel.open { opacity: 1; pointer-events: all; }
+
+#chat-panel-inner {
+  background: rgba(8,4,20,0.98);
+  border: 1px solid rgba(99,102,241,0.4);
+  border-radius: 20px;
+  padding: 28px 24px 20px;
+  width: min(500px, 94vw);
+  height: min(600px, 90vh);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: 0 0 60px rgba(99,102,241,0.15);
+}
+#chat-panel.open #chat-panel-inner { animation: panelIn 0.3s cubic-bezier(0.22,1,0.36,1); }
+
+.chat-close { position: absolute; top: 14px; right: 16px; background: none; border: none; color: #a78bfa; font-size: 1.2rem; cursor: pointer; }
+.chat-close:hover { color: #fff; }
+
+.chat-title {
+  font-family: 'Cinzel Decorative', cursive;
+  font-size: 1rem; color: #c084fc; text-align: center;
+  text-shadow: 0 0 10px #a855f7; margin-bottom: 14px; flex-shrink: 0;
+}
+
+#chat-messages {
+  flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px;
+  padding-right: 4px; margin-bottom: 12px;
+  scrollbar-width: thin; scrollbar-color: #4338ca transparent;
+}
+
+.chat-msg {
+  display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap;
+  padding: 4px 8px; border-radius: 6px; font-size: 0.82rem;
+  background: rgba(30,10,60,0.3);
+}
+.chat-msg.me { background: rgba(124,58,237,0.15); }
+
+.chat-time { font-size: 0.68rem; color: #4b5563; flex-shrink: 0; }
+.chat-prestige { font-size: 0.72rem; font-weight: 700; }
+.chat-user { font-weight: 700; flex-shrink: 0; }
+.chat-text { color: #e9d5ff; word-break: break-word; }
+
+#chat-input-wrap { display: flex; gap: 8px; flex-shrink: 0; }
+
+#chat-input {
+  flex: 1; padding: 9px 12px;
+  background: rgba(30,10,60,0.8);
+  border: 1px solid rgba(124,58,237,0.4);
+  border-radius: 10px; color: #e9d5ff;
+  font-family: 'Nunito', sans-serif; font-size: 0.88rem; outline: none;
+}
+#chat-input:focus { border-color: #a855f7; }
+
+#chat-send-btn {
+  padding: 9px 16px;
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  border: none; border-radius: 10px; color: #fff;
+  font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 700;
+  cursor: pointer; transition: transform 0.1s;
+}
+#chat-send-btn:hover { transform: scale(1.04); }

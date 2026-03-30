@@ -62,6 +62,11 @@
         <span class="nav-icon">💎</span>
         <span class="nav-label" id="diamond-count">0 diamants</span>
       </div>
+      <div class="nav-item" data-tooltip="Chat Global" onclick="openChat()">
+        <span class="nav-icon">💬</span>
+        <span class="nav-label">Chat</span>
+        <span id="chat-badge" class="nav-badge" style="display:none"></span>
+      </div>
       <div class="nav-item" data-tooltip="Amis" onclick="openFriends()">
         <span class="nav-icon">👥</span>
         <span class="nav-label">Amis</span>
@@ -143,6 +148,23 @@
         <button id="turbo-btn" onclick="activateTurbo()">⚡ TURBO</button>
         <div id="turbo-timer"></div>
       </div>
+
+      <!-- BOSS -->
+      <div id="boss-widget" style="display:none">
+        <div id="boss-header">
+          <span id="boss-name">👹 Boss</span>
+          <span id="boss-timer-label"></span>
+        </div>
+        <div id="boss-hp-bar-wrap">
+          <div id="boss-hp-bar"></div>
+        </div>
+        <div id="boss-hp-text"></div>
+        <button id="boss-attack-btn" onclick="attackBoss()">⚔️ Attaquer !</button>
+      </div>
+      <div id="boss-next" style="display:none">⏳ Prochain boss dans <span id="boss-countdown"></span></div>
+
+      <!-- AUTOCLICK -->
+      <button id="autoclick-btn" onclick="toggleAutoclick()" title="Autoclick (souris sur l'image)">🖱️</button>
     </div>
 
     <div id="shop">
@@ -1640,6 +1662,188 @@
     }
     setInterval(updateLastSeen, 120000);
 
+    // ── BOSS ──
+    const BOSS_INTERVAL = 3600; // 1h en secondes
+    let bossActive = false;
+    let bossHp = 0;
+    let bossMaxHp = 0;
+    let bossCountdownSec = BOSS_INTERVAL;
+    let bossSpawned = false;
+
+    function spawnBoss() {
+      if (cuentas < 100) return; // pas assez de Cuentas
+      bossActive = true;
+      bossMaxHp = Math.floor(cuentas * 0.5);
+      bossHp = bossMaxHp;
+      bossSpawned = true;
+      document.getElementById("boss-widget").style.display = "block";
+      document.getElementById("boss-next").style.display = "none";
+      document.getElementById("boss-name").textContent = "👹 " + getBossName();
+      updateBossUI();
+    }
+
+    function getBossName() {
+      const names = ["Tomito Corrompu","Le Grand 7","Démon des Cuentas","Seigneur du Vide","Anti-Tomito"];
+      return names[Math.floor(Math.random() * names.length)];
+    }
+
+    function attackBoss() {
+      if (!bossActive) return;
+      const dmg = Math.max(1, Math.floor(cpc * (turboActive ? 3 : 1)));
+      bossHp = Math.max(0, bossHp - dmg);
+      updateBossUI();
+      if (bossHp <= 0) defeatBoss();
+    }
+
+    function defeatBoss() {
+      bossActive = false;
+      const reward = Math.floor(bossMaxHp * 0.8);
+      cuentas += reward;
+      totalEarned += reward;
+      updateUI();
+      spawnFloaty(window.innerWidth/2, window.innerHeight/2, "+" + formatNum(reward) + " 🏆");
+      document.getElementById("boss-widget").style.display = "none";
+      document.getElementById("boss-next").style.display = "block";
+      bossCountdownSec = BOSS_INTERVAL;
+      // Toast
+      const t = document.createElement("div");
+      t.className = "ach-toast";
+      t.innerHTML = `<span class="ach-toast-icon">🏆</span><div><div class="ach-toast-name">Boss vaincu !</div><div class="ach-toast-sub">+${formatNum(reward)} Cuentas</div></div>`;
+      document.body.appendChild(t);
+      setTimeout(() => t.classList.add("visible"), 50);
+      setTimeout(() => { t.classList.remove("visible"); setTimeout(() => t.remove(), 400); }, 4000);
+    }
+
+    function updateBossUI() {
+      if (!bossActive) return;
+      const pct = (bossHp / bossMaxHp) * 100;
+      document.getElementById("boss-hp-bar").style.width = pct.toFixed(1) + "%";
+      document.getElementById("boss-hp-bar").style.background = pct > 50 ? "#ef4444" : pct > 25 ? "#f97316" : "#fbbf24";
+      document.getElementById("boss-hp-text").textContent = formatNum(bossHp) + " / " + formatNum(bossMaxHp) + " HP";
+    }
+
+    // Countdown boss
+    setInterval(() => {
+      if (bossActive) return;
+      if (bossCountdownSec > 0) {
+        bossCountdownSec--;
+        const m = Math.floor(bossCountdownSec / 60);
+        const s = bossCountdownSec % 60;
+        const el = document.getElementById("boss-countdown");
+        if (el) el.textContent = m + "m " + s + "s";
+        document.getElementById("boss-next").style.display = bossSpawned ? "block" : "none";
+      } else {
+        spawnBoss();
+      }
+    }, 1000);
+
+    // ── AUTOCLICK ──
+    let autoclickEnabled = false;
+    let autoclickRate = 0.3; // CPS de base
+    let autoclickInterval = null;
+    let mouseOnImage = false;
+
+    document.getElementById("img-wrapper").addEventListener("mouseenter", () => { mouseOnImage = true; });
+    document.getElementById("img-wrapper").addEventListener("mouseleave", () => { mouseOnImage = false; });
+
+    function toggleAutoclick() {
+      autoclickEnabled = !autoclickEnabled;
+      const btn = document.getElementById("autoclick-btn");
+      btn.classList.toggle("active", autoclickEnabled);
+      btn.title = autoclickEnabled ? "Autoclick actif (souris sur l'image)" : "Autoclick désactivé";
+    }
+
+    setInterval(() => {
+      if (!autoclickEnabled || !mouseOnImage) return;
+      const gained = cpc * autoclickRate * (turboActive ? 3 : 1);
+      cuentas += gained;
+      totalEarned += gained;
+      totalClics++;
+    }, 1000);
+
+    // ── CHAT GLOBAL ──
+    let chatOpen = false;
+    let chatSub = null;
+    let chatUnread = 0;
+
+    function openChat() {
+      chatOpen = true;
+      chatUnread = 0;
+      document.getElementById("chat-badge").style.display = "none";
+      document.getElementById("chat-panel").classList.add("open");
+      loadChatHistory();
+      subscribeChatRealtime();
+    }
+
+    function closeChat() {
+      chatOpen = false;
+      document.getElementById("chat-panel").classList.remove("open");
+    }
+
+    async function loadChatHistory() {
+      const { data } = await sb.from("chat_messages")
+        .select("username, message, prestige_count, created_at")
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (!data) return;
+      const container = document.getElementById("chat-messages");
+      container.innerHTML = data.reverse().map(m => renderChatMsg(m)).join('');
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function renderChatMsg(m) {
+      const time = new Date(m.created_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+      const presColor = m.prestige_count >= 10 ? "#fbbf24" : m.prestige_count >= 1 ? "#c084fc" : "#a78bfa";
+      const presLabel = m.prestige_count > 0 ? `<span class="chat-prestige" style="color:${presColor}">[${toRoman(m.prestige_count)}]</span> ` : "";
+      const isMe = m.username === currentUsername;
+      return `<div class="chat-msg ${isMe?'me':''}">
+        <span class="chat-time">${time}</span>
+        ${presLabel}<span class="chat-user" style="color:${presColor}">${m.username}</span>
+        <span class="chat-text">${escapeHtml(m.message)}</span>
+      </div>`;
+    }
+
+    function escapeHtml(s) {
+      return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    }
+
+    function subscribeChatRealtime() {
+      if (chatSub) return;
+      chatSub = sb.channel("chat").on("postgres_changes", {
+        event: "INSERT", schema: "public", table: "chat_messages"
+      }, payload => {
+        const container = document.getElementById("chat-messages");
+        const atBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 60;
+        container.innerHTML += renderChatMsg(payload.new);
+        if (atBottom) container.scrollTop = container.scrollHeight;
+        if (!chatOpen) {
+          chatUnread++;
+          const badge = document.getElementById("chat-badge");
+          badge.textContent = chatUnread > 9 ? "9+" : chatUnread;
+          badge.style.display = "inline-block";
+        }
+      }).subscribe();
+    }
+
+    async function sendChat() {
+      if (!currentUser) return;
+      const input = document.getElementById("chat-input");
+      const msg = input.value.trim();
+      if (!msg) return;
+      input.value = "";
+      await sb.from("chat_messages").insert({
+        user_id: currentUser.id,
+        username: currentUsername,
+        message: msg,
+        prestige_count: prestigeCount
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const inp = document.getElementById("chat-input");
+      if (inp) inp.addEventListener("keydown", e => { if (e.key === "Enter") sendChat(); });
+    });
+
     buildShop();
     loadGame().then(() => {
       updateUI();
@@ -1690,6 +1894,19 @@
         <button class="mf-btn" onclick="setMusicFilter('fav', this)">❤️ Favoris</button>
       </div>
       <div id="music-list"></div>
+    </div>
+  </div>
+
+  <!-- PANEL CHAT -->
+  <div id="chat-panel">
+    <div id="chat-panel-inner">
+      <button class="chat-close" onclick="closeChat()">✕</button>
+      <h2 class="chat-title">💬 Chat Global</h2>
+      <div id="chat-messages"></div>
+      <div id="chat-input-wrap">
+        <input id="chat-input" type="text" maxlength="200" placeholder="Écris un message..." />
+        <button id="chat-send-btn" onclick="sendChat()">Envoyer</button>
+      </div>
     </div>
   </div>
 
