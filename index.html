@@ -1303,7 +1303,8 @@
     function loadTrack(index) {
       currentTrack = ((index % playlist.length) + playlist.length) % playlist.length;
       audio.src = "musique/" + encodeURIComponent(playlist[currentTrack]);
-      document.getElementById("mp-title").textContent = getTrackName(playlist[currentTrack]);
+      const name = getTrackName(playlist[currentTrack]);
+      document.getElementById("mp-title").innerHTML = `<span>${name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${name}</span>`;
       document.getElementById("music-nav-status").textContent = getTrackName(playlist[currentTrack]).substring(0, 18) + "…";
       if (isPlaying) audio.play();
       renderMusicList();
@@ -1502,7 +1503,38 @@
     }
 
     function animateFW() { /* desactive pour perf */ }
-    window.addEventListener("load", initFW);
+    window.addEventListener("load", () => {
+      const player = document.getElementById("mini-player");
+      const dragBar = document.getElementById("mp-drag-bar");
+      if (!player || !dragBar) return;
+
+      let isDragging = false, ox = 0, oy = 0, sx = 0, sy = 0;
+
+      dragBar.addEventListener("mousedown", e => {
+        if (e.target.tagName === "BUTTON") return;
+        isDragging = true;
+        const r = player.getBoundingClientRect();
+        ox = r.left; oy = r.top;
+        sx = e.clientX; sy = e.clientY;
+        player.style.setProperty("left",   ox + "px", "important");
+        player.style.setProperty("top",    oy + "px", "important");
+        player.style.setProperty("bottom", "auto",    "important");
+        player.style.setProperty("right",  "auto",    "important");
+        e.preventDefault();
+      });
+
+      document.addEventListener("mousemove", e => {
+        if (!isDragging) return;
+        const nx = Math.max(70, Math.min(window.innerWidth - player.offsetWidth - 315, ox + e.clientX - sx));
+        const ny = Math.max(0,  Math.min(window.innerHeight - player.offsetHeight - 5, oy + e.clientY - sy));
+        player.style.setProperty("left", nx + "px", "important");
+        player.style.setProperty("top",  ny + "px", "important");
+      });
+
+      document.addEventListener("mouseup", () => { isDragging = false; });
+
+      initFW();
+    });
     // Déclencher feux d'artifice aux milestones
     const milestonesSeen = new Set();
     function checkMilestones() {
