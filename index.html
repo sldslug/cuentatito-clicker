@@ -499,95 +499,11 @@
       updateComboUI();
     }
 
-    // ── EASTER EGG : maintien 30-35s ──
-    let holdStart = null;
-    let holdInterval = null;
-    let eggTriggered = false;
-
-    document.getElementById("img-wrapper").addEventListener("mousedown", () => {
-      if (eggTriggered) return;
-      holdStart = Date.now();
-      holdInterval = setInterval(() => {
-        const held = (Date.now() - holdStart) / 1000;
-        const img = document.getElementById("cuentatito");
-
-        if (held >= 35 && !eggTriggered) {
-          // EXPLOSION
-          eggTriggered = true;
-          clearInterval(holdInterval);
-          img.classList.remove("egg-grow");
-          img.classList.add("egg-explode");
-          spawnExplosion();
-          setTimeout(() => {
-            img.classList.remove("egg-explode");
-            img.style.transform = "";
-            eggTriggered = false;
-          }, 1200);
-        } else if (held >= 30) {
-          // Grossit seulement à partir de 30s
-          img.classList.add("egg-grow");
-        }
-      }, 100);
-    });
-
-    function stopHold() {
-      clearInterval(holdInterval);
-      holdStart = null;
-      if (!eggTriggered) {
-        document.getElementById("cuentatito").classList.remove("egg-grow");
-      }
-    }
-
-    document.getElementById("img-wrapper").addEventListener("mouseup", stopHold);
-    document.getElementById("img-wrapper").addEventListener("mouseleave", stopHold);
-
-    // Stopper l'easter egg si on quitte la page
-    document.addEventListener("visibilitychange", () => {
-      if (document.hidden) stopHold();
-    });
-    window.addEventListener("blur", stopHold);
-
-    function spawnExplosion() {
-      const wrapper = document.getElementById("img-wrapper");
-      const rect = wrapper.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      // Particules
-      for (let i = 0; i < 30; i++) {
-        const p = document.createElement("div");
-        p.className = "egg-particle";
-        const angle = (i / 30) * 360;
-        const dist = 80 + Math.random() * 120;
-        const size = 8 + Math.random() * 14;
-        const colors = ["#c084fc","#f0abfc","#fbbf24","#f97316","#60a5fa","#fff"];
-        p.style.cssText = `
-          left:${cx}px; top:${cy}px;
-          width:${size}px; height:${size}px;
-          background:${colors[Math.floor(Math.random()*colors.length)]};
-          --dx:${Math.cos(angle*Math.PI/180)*dist}px;
-          --dy:${Math.sin(angle*Math.PI/180)*dist}px;
-        `;
-        document.body.appendChild(p);
-        setTimeout(() => p.remove(), 1000);
-      }
-      // Flash
-      const flash = document.createElement("div");
-      flash.className = "egg-flash";
-      document.body.appendChild(flash);
-      setTimeout(() => flash.remove(), 400);
-      // Bonus Cuentas
-      easterEggFound = true;
-      cuentas += 777;
-      totalEarned += 777;
-      updateUI();
-      checkAchievements();
-      spawnFloaty(cx, cy, "+777 ✨");
-    }
-
     // ── ANTI-AUTOCLICK ──
     const clickTimes = [];
     let blocked = false;
     let blockTimer = null;
+    let easterEggFound = false; // garde la variable pour compat save
 
     function checkAutoclick() {
       const now = Date.now();
@@ -805,8 +721,6 @@
       { id:"p2", cat:"prestige",name:"Prestige X",          desc:"Atteindre le prestige X (10).",  icon:"🌠", req:()=>prestigeCount>=10,                prog:()=>({cur:Math.min(prestigeCount,10),   max:10}),      diamonds:25,  claimed:false },
       { id:"p3", cat:"prestige",name:"Prestige L",          desc:"Atteindre le prestige L (50).",  icon:"💥", req:()=>prestigeCount>=50,                prog:()=>({cur:Math.min(prestigeCount,50),   max:50}),      diamonds:50,  claimed:false },
       { id:"p4", cat:"prestige",name:"Prestige C",          desc:"Atteindre le prestige C (100).", icon:"👑", req:()=>prestigeCount>=100,               prog:()=>({cur:Math.min(prestigeCount,100),  max:100}),     diamonds:100, claimed:false },
-      // Easter egg
-      { id:"e1", cat:"secret",  name:"Le secret de Tomito",desc:"Maintenir le clic 35 secondes.", icon:"🥚", req:()=>easterEggFound,                   prog:()=>({cur:easterEggFound?1:0,           max:1}),       diamonds:20,  claimed:false },
     ];
 
     let totalClics = 0;
@@ -1081,8 +995,8 @@
       { id:"c_bg_blue",        name:"Fond Bleu Ocean",      desc:"Change la couleur du fond.",          icon:"🌊", price:10, type:"bg",      apply:()=>{ applyBgOverride("#000d1a","#001a33","#000d1a","#002b4d"); } },
       { id:"c_floaty_gold",    name:"Floaty Dores",         desc:"+N en or au lieu de violet.",         icon:"✨", price:8,  type:"floaty",  apply:()=>{ document.documentElement.style.setProperty("--floaty-color","#f59e0b"); document.documentElement.style.setProperty("--floaty-shadow","rgba(245,158,11,0.8)"); } },
       { id:"c_floaty_green",   name:"Floaty Verts",         desc:"+N en vert.",                         icon:"💚", price:8,  type:"floaty",  apply:()=>{ document.documentElement.style.setProperty("--floaty-color","#34d399"); document.documentElement.style.setProperty("--floaty-shadow","rgba(52,211,153,0.8)"); } },
-      { id:"c_cursor_star",    name:"Curseur Etoile",       desc:"Curseur en forme d'etoile.",          icon:"⭐", price:6,  type:"cursor",  apply:()=>{ document.getElementById("custom-cursor").dataset.shape="star"; } },
-      { id:"c_cursor_diamond", name:"Curseur Diamant",      desc:"Curseur en forme de diamant.",        icon:"💎", price:6,  type:"cursor",  apply:()=>{ document.getElementById("custom-cursor").dataset.shape="diamond"; } },
+      { id:"c_cursor_star",    name:"Curseur Etoile",       desc:"Curseur en forme d'etoile.",          icon:"⭐", price:6,  type:"cursor",  apply:()=>{ } },
+      { id:"c_cursor_diamond", name:"Curseur Diamant",      desc:"Curseur en forme de diamant.",        icon:"💎", price:6,  type:"cursor",  apply:()=>{ } },
       // SKINS
       { id:"s_chiotte",        name:"Tomito Chiotte",       desc:"Un Tomito... particulier.",            icon:"🚽", price:15, type:"skin",    preview:"skintomito/tomitochiotte.png",   apply:()=>{ document.getElementById("cuentatito").src="skintomito/tomitochiotte.png"; } },
       { id:"s_souriant",       name:"Tomito Souriant",      desc:"Tomito de bonne humeur.",              icon:"😄", price:15, type:"skin",    preview:"skintomito/tomitosouriant.png",  apply:()=>{ document.getElementById("cuentatito").src="skintomito/tomitosouriant.png"; } },
