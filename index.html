@@ -106,6 +106,10 @@
         <span class="nav-label">A propos</span>
       </div>
       <div class="nav-divider"></div>
+      <div class="nav-item" data-tooltip="Codes secrets" onclick="openCodesPanel()">
+        <span class="nav-icon">🔑</span>
+        <span class="nav-label">Codes</span>
+      </div>
       <div class="nav-item" data-tooltip="Sauvegarder" onclick="saveGame()">
         <span class="nav-icon" id="save-icon">💾</span>
         <span class="nav-label">Sauvegarder</span>
@@ -1872,6 +1876,53 @@
       }
     }
 
+    // ── CODES SECRETS ──
+    const secretCodes = [
+      {
+        code: "AdminPanelSluginhoAbuseOfCarambarNoiretblancEnMemEtemps",
+        password: "z2XhtnhmQiNrCjWOQEYJCDnCIRKbiyG",
+        action: () => {
+          closeCodesPanel();
+          openAdminPanel();
+        },
+        msg: "✓ Accès admin accordé !"
+      }
+      // Ajouter d'autres codes ici
+    ];
+
+    function openCodesPanel() {
+      document.getElementById("codes-panel").classList.add("open");
+      document.getElementById("code-input").value = "";
+      document.getElementById("code-password").value = "";
+      document.getElementById("code-result").textContent = "";
+    }
+
+    function closeCodesPanel() {
+      document.getElementById("codes-panel").classList.remove("open");
+    }
+
+    function submitCode() {
+      const code = document.getElementById("code-input").value.trim();
+      const pass = document.getElementById("code-password").value.trim();
+      const result = document.getElementById("code-result");
+      const found = secretCodes.find(c => c.code === code && c.password === pass);
+      if (found) {
+        result.style.color = "#86efac";
+        result.textContent = found.msg;
+        setTimeout(() => found.action(), 800);
+      } else {
+        result.style.color = "#f87171";
+        result.textContent = "Code ou mot de passe incorrect.";
+      }
+    }
+
+    // Enter pour valider le code
+    document.addEventListener("keydown", e => {
+      if (e.key === "Enter" && document.getElementById("codes-panel").classList.contains("open")) {
+        submitCode();
+      }
+    });
+
     // ── PANEL ADMIN (Sluginho only) ──
     function openAdminPanel() { document.getElementById("admin-panel").classList.add("open"); }
     function closeAdminPanel() { document.getElementById("admin-panel").classList.remove("open"); }
@@ -2194,6 +2245,20 @@
 
   <!-- FEUX D'ARTIFICE -->
   <canvas id="fireworks-canvas"></canvas>
+
+  <!-- PANEL CODES -->
+  <div id="codes-panel">
+    <div id="codes-panel-inner">
+      <button onclick="closeCodesPanel()" style="position:absolute;top:14px;right:16px;background:none;border:none;color:#a78bfa;font-size:1.2rem;cursor:pointer;">✕</button>
+      <h2 style="font-family:'Cinzel Decorative',cursive;font-size:1rem;color:#c084fc;text-align:center;margin-bottom:20px;text-shadow:0 0 10px #a855f7;">🔑 Entrer un code</h2>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <input id="code-input" type="text" placeholder="Code..." style="background:rgba(30,10,60,0.8);border:1px solid rgba(124,58,237,0.4);border-radius:10px;color:#e9d5ff;font-family:'Nunito',sans-serif;font-size:0.88rem;padding:10px 14px;outline:none;width:100%;" />
+        <input id="code-password" type="password" placeholder="Mot de passe (si requis)..." style="background:rgba(30,10,60,0.8);border:1px solid rgba(124,58,237,0.4);border-radius:10px;color:#e9d5ff;font-family:'Nunito',sans-serif;font-size:0.88rem;padding:10px 14px;outline:none;width:100%;" />
+        <button onclick="submitCode()" style="padding:11px;background:linear-gradient(135deg,#7c3aed,#a855f7);border:none;border-radius:10px;color:#fff;font-family:'Cinzel Decorative',cursive;font-size:0.85rem;cursor:pointer;box-shadow:0 0 16px rgba(168,85,247,0.3);">Valider</button>
+        <div id="code-result" style="text-align:center;font-size:0.82rem;min-height:20px;"></div>
+      </div>
+    </div>
+  </div>
 
   <!-- PANEL ADMIN -->
   <div id="admin-panel">

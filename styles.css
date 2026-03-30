@@ -3442,3 +3442,23 @@ body #main {
 .admin-btn.red    { background: rgba(239,68,68,0.2); border:1px solid rgba(239,68,68,0.4); color:#f87171; }
 .admin-btn.green  { background: linear-gradient(135deg,#059669,#34d399); color:#fff; }
 .admin-btn.purple { background: linear-gradient(135deg,#7c3aed,#a855f7); color:#fff; }
+
+/* PANEL CODES */
+#codes-panel {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+  z-index: 9010; display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.25s;
+}
+#codes-panel.open { opacity: 1; pointer-events: all; }
+
+#codes-panel-inner {
+  background: rgba(8,4,20,0.98);
+  border: 1px solid rgba(124,58,237,0.4);
+  border-radius: 20px;
+  padding: 32px 28px 28px;
+  width: min(400px, 94vw);
+  position: relative;
+  box-shadow: 0 0 60px rgba(124,58,237,0.15);
+}
+#codes-panel.open #codes-panel-inner { animation: panelIn 0.3s cubic-bezier(0.22,1,0.36,1); }
