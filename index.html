@@ -1869,6 +1869,15 @@
 
     buildShop();
     loadGame().then(() => {
+      // Appliquer les talents sauvegardés
+      if (window._pendingTalents) {
+        window._pendingTalents.forEach(s => {
+          const t = talents.find(x => x.id === s.id);
+          if (t && s.bought && !t.bought) { t.bought = true; t.bonus(); }
+        });
+        window._pendingTalents = null;
+        recalcStats();
+      }
       updateUI();
       checkAchievements();
     });
