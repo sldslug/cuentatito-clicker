@@ -138,13 +138,26 @@
         <img id="cuentatito" src="Cuentatito.png" alt="Cuentatito" draggable="false" />
       </div>
       <div id="combo-display"></div>
-      <div id="action-btns-row">
-        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
-          <button id="prestige-btn" onclick="openPrestigePanel()" title="Prestige" style="background:rgba(20,5,45,0.7);border:2px solid rgba(124,58,237,0.5);border-radius:16px;cursor:pointer;padding:0;width:120px;height:120px;min-width:120px;min-height:120px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:transform 0.1s;flex-shrink:0;">
-            <img src="boutondujeu/prestige.png" alt="Prestige" style="width:100px;height:100px;object-fit:contain;" />
+      <div id="action-btns-row" style="display:flex;gap:16px;justify-content:center;align-items:flex-start;margin-top:20px;">
+        <div style="display:flex;flex-direction:column;align-items:center;width:120px;">
+          <button id="prestige-btn" onclick="openPrestigePanel()" title="Prestige" style="width:120px;height:120px;padding:0;background:rgba(20,5,45,0.7);border:2px solid rgba(124,58,237,0.5);border-radius:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;overflow:hidden;box-sizing:border-box;">
+            <img src="boutondujeu/prestige.png" style="width:100px;height:100px;object-fit:contain;pointer-events:none;" />
           </button>
-          <span id="prestige-info" style="font-size:0.62rem;color:#fbbf24;font-weight:700;text-align:center;min-height:14px;"></span>
+          <span id="prestige-info" style="display:block;width:120px;height:18px;line-height:18px;margin-top:5px;font-size:0.62rem;font-weight:700;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fbbf24;"></span>
         </div>
+        <div style="display:flex;flex-direction:column;align-items:center;width:120px;">
+          <button id="turbo-btn" onclick="activateTurbo()" title="Turbo" style="width:120px;height:120px;padding:0;background:rgba(20,5,45,0.7);border:2px solid rgba(124,58,237,0.5);border-radius:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;overflow:hidden;box-sizing:border-box;">
+            <img src="boutondujeu/turbo.png" id="turbo-img" style="width:100px;height:100px;object-fit:contain;pointer-events:none;" />
+          </button>
+          <span id="turbo-timer" style="display:block;width:120px;height:18px;line-height:18px;margin-top:5px;font-size:0.62rem;font-weight:700;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#a78bfa;"></span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;width:120px;">
+          <button id="autoclick-btn" onclick="toggleAutoclick()" title="Autoclick" style="width:120px;height:120px;padding:0;background:rgba(20,5,45,0.7);border:2px solid rgba(124,58,237,0.5);border-radius:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;overflow:hidden;box-sizing:border-box;">
+            <img src="boutondujeu/autoclick.png" id="autoclick-img" style="width:100px;height:100px;object-fit:contain;pointer-events:none;opacity:0.45;transition:opacity 0.2s;" />
+          </button>
+          <span id="autoclick-label" style="display:block;width:120px;height:18px;line-height:18px;margin-top:5px;font-size:0.62rem;font-weight:700;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#a78bfa;">OFF</span>
+        </div>
+      </div>
         <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
           <button id="turbo-btn" onclick="activateTurbo()" title="Turbo" style="background:rgba(20,5,45,0.7);border:2px solid rgba(124,58,237,0.5);border-radius:16px;cursor:pointer;padding:0;width:120px;height:120px;min-width:120px;min-height:120px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:transform 0.1s;flex-shrink:0;">
             <img src="boutondujeu/turbo.png" alt="Turbo" id="turbo-img" style="width:100px;height:100px;object-fit:contain;" />
@@ -1051,10 +1064,8 @@
         if (d.autoclickRate) autoclickRate = d.autoclickRate;
         if (d.comboTimeout) comboTimeout = d.comboTimeout;
 
-        // Talents restaurés après que le tableau talents soit défini
-        if (d.talents) {
-          window._pendingTalents = d.talents;
-        }
+        // Talents : stocker pour restauration
+        if (d.talents) window._savedTalents = d.talents;
 
         recalcStats();
       } catch(e) { console.warn("Erreur chargement save", e); }
@@ -1782,15 +1793,6 @@
 
     let comboTimeout = 1500;
 
-    // Appliquer les talents sauvegardés si en attente
-    if (window._pendingTalents) {
-      window._pendingTalents.forEach(s => {
-        const t = talents.find(x => x.id === s.id);
-        if (t && s.bought && !t.bought) { t.bought = true; t.bonus(); }
-      });
-      window._pendingTalents = null;
-    }
-
     function buyTalent(id) {
       const t = talents.find(x => x.id === id);
       if (!t || t.bought) return;
@@ -1870,13 +1872,12 @@
 
     buildShop();
     loadGame().then(() => {
-      // Appliquer les talents sauvegardés
-      if (window._pendingTalents) {
-        window._pendingTalents.forEach(s => {
+      // Restaurer les talents achetés
+      if (window._savedTalents) {
+        window._savedTalents.forEach(s => {
           const t = talents.find(x => x.id === s.id);
           if (t && s.bought && !t.bought) { t.bought = true; t.bonus(); }
         });
-        window._pendingTalents = null;
         recalcStats();
       }
       updateUI();
