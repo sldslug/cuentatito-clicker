@@ -2023,8 +2023,7 @@
     setInterval(checkAdminEvents, 10000);
 
     buildShop();
-    loadGame().then(() => {
-      console.log("LOAD _savedTalents:", window._savedTalents);
+    loadGame().then(async () => {
       // Restaurer les talents achetés
       if (window._savedTalents) {
         window._savedTalents.forEach(s => {
@@ -2037,6 +2036,15 @@
       updateUI();
       checkAchievements();
       checkAdminEvents();
+
+      // Vérifier si admin
+      if (currentUser) {
+        const { data: prof } = await sb.from("profiles").select("username").eq("id", currentUser.id).single();
+        if (prof && prof.username === "Sluginho") {
+          const btn = document.getElementById("admin-open-btn");
+          if (btn) btn.style.display = "block";
+        }
+      }
     });
   </script>
 
