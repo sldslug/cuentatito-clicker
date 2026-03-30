@@ -1860,6 +1860,113 @@
       }
     }
 
+    // ── EVENEMENTS ADMIN ──
+    let communityBossActive = false;
+    let communityBossData = null;
+    let activeBonusData = null;
+
+    async function checkAdminEvents() {
+      const { data } = await sb.from("admin_events")
+        .select("*")
+        .eq("active", true)
+        .gt("expires_at", new Date().toISOString());
+
+      if (!data) return;
+
+      // Notifications
+      data.filter(e => e.type === "notification").forEach(e => {
+        const key = "notif_" + e.id;
+        if (!sessionStorage.getItem(key)) {
+          sessionStorage.setItem(key, "1");
+          showAdminNotif(e.data.emoji, e.data.message);
+        }
+      });
+
+      // Boss communautaire
+      const bossEvent = data.find(e => e.type === "boss");
+      if (bossEvent && !communityBossActive) {
+        communityBossActive = true;
+        communityBossData = bossEvent;
+        showCommunityBoss(bossEvent);
+      } else if (!bossEvent && communityBossActive) {
+        communityBossActive = false;
+        hideCommunityBoss();
+      }
+
+      // Bonus global
+      const bonusEvent = data.find(e => e.type === "bonus");
+      activeBonusData = bonusEvent ? bonusEvent.data : null;
+    }
+
+    function getAdminBonusMult(type) {
+      if (!activeBonusData) return 1;
+      if (activeBonusData.bonus_type === type) return activeBonusData.value;
+      return 1;
+    }
+
+    function showAdminNotif(emoji, message) {
+      const t = document.createElement("div");
+      t.className = "ach-toast";
+      t.style.borderColor = "rgba(249,115,22,0.6)";
+      t.innerHTML = `<span class="ach-toast-icon">${emoji}</span><div><div class="ach-toast-name">${message}</div><div class="ach-toast-sub">Événement de Sluginho</div></div>`;
+      document.body.appendChild(t);
+      setTimeout(() => t.classList.add("visible"), 50);
+      setTimeout(() => { t.classList.remove("visible"); setTimeout(() => t.remove(), 400); }, 5000);
+    }
+
+    function showCommunityBoss(event) {
+      const d = event.data;
+      let widget = document.getElementById("community-boss-widget");
+      if (!widget) {
+        widget = document.createElement("div");
+        widget.id = "community-boss-widget";
+        widget.style.cssText = "position:fixed;top:70px;left:50%;transform:translateX(-50%);background:rgba(8,4,20,0.97);border:2px solid rgba(239,68,68,0.6);border-radius:16px;padding:14px 24px;z-index:800;min-width:340px;text-align:center;box-shadow:0 0 40px rgba(239,68,68,0.3);";
+        document.body.appendChild(widget);
+      }
+      const pct = Math.min(100, (d.hp_current / d.hp_max) * 100);
+      widget.innerHTML = `
+        <div style="font-family:'Cinzel Decorative',cursive;font-size:0.9rem;color:#fca5a5;margin-bottom:8px;">👹 ${d.name} — Boss Communautaire</div>
+        <div style="background:rgba(255,255,255,0.08);border-radius:99px;height:10px;overflow:hidden;margin-bottom:6px;">
+          <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#ef4444,#f97316);border-radius:99px;transition:width 0.3s;"></div>
+        </div>
+        <div style="font-size:0.75rem;color:#fca5a5;margin-bottom:10px;">${d.hp_current?.toLocaleString()} / ${d.hp_max?.toLocaleString()} HP</div>
+        <button onclick="attackCommunityBoss()" style="background:linear-gradient(135deg,#dc2626,#ef4444);border:none;border-radius:10px;color:#fff;font-family:'Cinzel Decorative',cursive;font-size:0.8rem;padding:8px 20px;cursor:pointer;">⚔️ Attaquer !</button>
+        <div style="font-size:0.7rem;color:#6b7280;margin-top:6px;">Récompense : ${d.reward?.toLocaleString()} Cuentas</div>
+      `;
+    }
+
+    function hideCommunityBoss() {
+      const w = document.getElementById("community-boss-widget");
+      if (w) w.remove();
+    }
+
+    async function attackCommunityBoss() {
+      if (!communityBossData || !currentUser) return;
+      const dmg = Math.max(1, Math.floor(cpc * 10));
+      const event = communityBossData;
+      const newHp = Math.max(0, (event.data.hp_current || 0) - dmg);
+      const newData = { ...event.data, hp_current: newHp };
+
+      if (newHp <= 0) {
+        // Boss vaincu
+        await sb.from("admin_events").update({ active: false, data: newData }).eq("id", event.id);
+        const reward = event.data.reward || 0;
+        cuentas += reward;
+        totalEarned += reward;
+        updateUI();
+        hideCommunityBoss();
+        communityBossActive = false;
+        showAdminNotif("🏆", `Boss vaincu ! +${reward.toLocaleString()} Cuentas !`);
+      } else {
+        await sb.from("admin_events").update({ data: newData }).eq("id", event.id);
+        communityBossData = { ...event, data: newData };
+        showCommunityBoss(communityBossData);
+      }
+    }
+
+    // Vérifier les événements toutes les 10s
+    setInterval(checkAdminEvents, 10000);
+
     buildShop();
     loadGame().then(() => {
       console.log("LOAD _savedTalents:", window._savedTalents);
@@ -1874,6 +1981,7 @@
       }
       updateUI();
       checkAchievements();
+      checkAdminEvents();
     });
   </script>
 

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Panel Admin - Cuenta dé Tomito</title>
+  <link rel="icon" href="logosite/logosite.png" type="image/png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { min-height: 100vh; font-family: 'Nunito', sans-serif; background: #0a0015; color: #f0e6ff; padding: 30px 20px; }
+    body::before { content:''; position:fixed; inset:0; background:linear-gradient(135deg,#0a0015,#1a0030,#0a0015); z-index:-1; }
+
+    h1 { font-family:'Cinzel Decorative',cursive; font-size:1.6rem; color:#f97316; text-shadow:0 0 20px rgba(249,115,22,0.5); margin-bottom:6px; }
+    .subtitle { color:#7c6fa0; font-size:0.85rem; margin-bottom:30px; }
+
+    #access-denied { text-align:center; margin-top:100px; color:#f87171; font-size:1.2rem; }
+
+    .section {
+      background: rgba(20,5,45,0.8);
+      border: 1px solid rgba(249,115,22,0.3);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .section h2 {
+      font-family:'Cinzel Decorative',cursive;
+      font-size:0.95rem;
+      color:#f97316;
+      margin-bottom:16px;
+      padding-bottom:8px;
+      border-bottom:1px solid rgba(249,115,22,0.2);
+    }
+
+    .form-row { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px; align-items:flex-end; }
+
+    label { font-size:0.78rem; color:#a78bfa; display:block; margin-bottom:4px; }
+
+    input, textarea, select {
+      background: rgba(30,10,60,0.8);
+      border: 1px solid rgba(124,58,237,0.4);
+      border-radius: 8px;
+      color: #e9d5ff;
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.88rem;
+      padding: 8px 12px;
+      outline: none;
+    }
+    input:focus, textarea:focus, select:focus { border-color:#a855f7; }
+    input[type=number] { width:140px; }
+    input[type=text] { width:220px; }
+    textarea { width:100%; min-height:80px; resize:vertical; }
+
+    .btn {
+      padding: 9px 20px;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+    .btn:hover { transform:scale(1.03); }
+    .btn-orange { background:linear-gradient(135deg,#f97316,#ef4444); color:#fff; box-shadow:0 0 14px rgba(249,115,22,0.3); }
+    .btn-purple { background:linear-gradient(135deg,#7c3aed,#a855f7); color:#fff; box-shadow:0 0 14px rgba(168,85,247,0.3); }
+    .btn-red    { background:rgba(239,68,68,0.2); border:1px solid rgba(239,68,68,0.4); color:#f87171; }
+    .btn-green  { background:linear-gradient(135deg,#059669,#34d399); color:#fff; }
+
+    #events-list { display:flex; flex-direction:column; gap:8px; margin-top:16px; }
+
+    .event-card {
+      background: rgba(30,10,60,0.5);
+      border: 1px solid rgba(124,58,237,0.3);
+      border-radius: 10px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .event-card.active { border-color:rgba(52,211,153,0.5); background:rgba(6,78,59,0.2); }
+    .event-type { font-size:0.72rem; font-weight:700; color:#a78bfa; text-transform:uppercase; letter-spacing:1px; min-width:80px; }
+    .event-info { flex:1; font-size:0.82rem; color:#e9d5ff; }
+    .event-status { font-size:0.72rem; color:#86efac; }
+
+    #log { background:rgba(0,0,0,0.4); border-radius:8px; padding:12px; font-size:0.78rem; color:#86efac; min-height:40px; margin-top:12px; font-family:monospace; }
+  </style>
+</head>
+<body>
+  <div id="access-denied" style="display:none">🚫 Accès refusé. Réservé à Sluginho.</div>
+
+  <div id="admin-content" style="display:none">
+    <h1>⚡ Panel Admin</h1>
+    <p class="subtitle">Connecté en tant que Sluginho — Contrôle total du jeu</p>
+
+    <!-- BOSS COMMUNAUTAIRE -->
+    <div class="section">
+      <h2>👹 Boss Communautaire</h2>
+      <div class="form-row">
+        <div>
+          <label>Nom du boss</label>
+          <input type="text" id="boss-name-input" value="Le Grand Tomito" />
+        </div>
+        <div>
+          <label>HP total</label>
+          <input type="number" id="boss-hp-input" value="1000000" />
+        </div>
+        <div>
+          <label>Récompense (Cuentas)</label>
+          <input type="number" id="boss-reward-input" value="500000" />
+        </div>
+        <div>
+          <label>Durée (minutes)</label>
+          <input type="number" id="boss-duration-input" value="60" />
+        </div>
+      </div>
+      <button class="btn btn-orange" onclick="spawnCommunityBoss()">👹 Lancer le Boss</button>
+      <button class="btn btn-red" onclick="killEvent('boss')" style="margin-left:8px;">Terminer le boss</button>
+    </div>
+
+    <!-- BONUS GLOBAL -->
+    <div class="section">
+      <h2>🎁 Bonus Global</h2>
+      <div class="form-row">
+        <div>
+          <label>Type</label>
+          <select id="bonus-type">
+            <option value="cps_mult">Multiplicateur CPS</option>
+            <option value="cpc_mult">Multiplicateur CPC</option>
+            <option value="cuentas">Cuentas gratuites</option>
+          </select>
+        </div>
+        <div>
+          <label>Valeur</label>
+          <input type="number" id="bonus-value" value="2" step="0.1" />
+        </div>
+        <div>
+          <label>Durée (minutes)</label>
+          <input type="number" id="bonus-duration" value="30" />
+        </div>
+      </div>
+      <button class="btn btn-green" onclick="sendBonus()">🎁 Envoyer le bonus</button>
+      <button class="btn btn-red" onclick="killEvent('bonus')" style="margin-left:8px;">Annuler</button>
+    </div>
+
+    <!-- NOTIFICATION -->
+    <div class="section">
+      <h2>📢 Notification Globale</h2>
+      <div class="form-row">
+        <div style="flex:1">
+          <label>Message</label>
+          <input type="text" id="notif-message" value="Un événement spécial arrive bientôt !" style="width:100%;" />
+        </div>
+        <div>
+          <label>Emoji</label>
+          <input type="text" id="notif-emoji" value="🎉" style="width:70px;" />
+        </div>
+      </div>
+      <button class="btn btn-purple" onclick="sendNotification()">📢 Envoyer à tous</button>
+    </div>
+
+    <!-- EVENEMENTS ACTIFS -->
+    <div class="section">
+      <h2>📋 Événements actifs</h2>
+      <button class="btn btn-purple" onclick="loadEvents()" style="margin-bottom:12px;">🔄 Rafraîchir</button>
+      <div id="events-list"><p style="color:#6b7280;font-size:0.82rem;">Aucun événement.</p></div>
+    </div>
+
+    <div id="log">En attente d'action...</div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://hfdbeiduutgxbbgryozh.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmZGJlaWR1dXRneGJiZ3J5b3poIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3OTgwOTcsImV4cCI6MjA5MDM3NDA5N30.P4aYHCN98H9CQUriRbtdqUgaVPau03H8uxyTz1nf2HA";
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    function log(msg) {
+      document.getElementById("log").textContent = new Date().toLocaleTimeString() + " — " + msg;
+    }
+
+    async function init() {
+      const { data } = await sb.auth.getSession();
+      if (!data.session) { window.location.href = "auth.html"; return; }
+      const { data: profile } = await sb.from("profiles").select("username").eq("id", data.session.user.id).single();
+      if (!profile || profile.username !== "Sluginho") {
+        document.getElementById("access-denied").style.display = "block";
+        return;
+      }
+      document.getElementById("admin-content").style.display = "block";
+      loadEvents();
+    }
+
+    async function spawnCommunityBoss() {
+      const name = document.getElementById("boss-name-input").value;
+      const hp = parseInt(document.getElementById("boss-hp-input").value);
+      const reward = parseInt(document.getElementById("boss-reward-input").value);
+      const duration = parseInt(document.getElementById("boss-duration-input").value);
+      const expires = new Date(Date.now() + duration * 60000).toISOString();
+
+      // Désactiver l'ancien boss
+      await sb.from("admin_events").update({ active: false }).eq("type", "boss");
+
+      const { error } = await sb.from("admin_events").insert({
+        type: "boss",
+        data: { name, hp_max: hp, hp_current: hp, reward },
+        active: true,
+        expires_at: expires
+      });
+
+      if (error) { log("Erreur: " + error.message); return; }
+      log(`Boss "${name}" lancé avec ${hp.toLocaleString()} HP pendant ${duration} min !`);
+      loadEvents();
+    }
+
+    async function sendBonus() {
+      const type = document.getElementById("bonus-type").value;
+      const value = parseFloat(document.getElementById("bonus-value").value);
+      const duration = parseInt(document.getElementById("bonus-duration").value);
+      const expires = new Date(Date.now() + duration * 60000).toISOString();
+
+      await sb.from("admin_events").update({ active: false }).eq("type", "bonus");
+      const { error } = await sb.from("admin_events").insert({
+        type: "bonus",
+        data: { bonus_type: type, value },
+        active: true,
+        expires_at: expires
+      });
+
+      if (error) { log("Erreur: " + error.message); return; }
+      log(`Bonus ${type} x${value} envoyé pendant ${duration} min !`);
+      loadEvents();
+    }
+
+    async function sendNotification() {
+      const msg = document.getElementById("notif-message").value;
+      const emoji = document.getElementById("notif-emoji").value;
+      const expires = new Date(Date.now() + 30000).toISOString(); // 30s
+
+      const { error } = await sb.from("admin_events").insert({
+        type: "notification",
+        data: { message: msg, emoji },
+        active: true,
+        expires_at: expires
+      });
+
+      if (error) { log("Erreur: " + error.message); return; }
+      log(`Notification envoyée : ${emoji} ${msg}`);
+      loadEvents();
+    }
+
+    async function killEvent(type) {
+      await sb.from("admin_events").update({ active: false }).eq("type", type);
+      log(`Événement "${type}" terminé.`);
+      loadEvents();
+    }
+
+    async function loadEvents() {
+      const { data } = await sb.from("admin_events").select("*").order("created_at", { ascending: false }).limit(20);
+      const container = document.getElementById("events-list");
+      if (!data || data.length === 0) { container.innerHTML = '<p style="color:#6b7280;font-size:0.82rem;">Aucun événement.</p>'; return; }
+      container.innerHTML = data.map(e => {
+        const d = e.data;
+        let info = "";
+        if (e.type === "boss") info = `${d.name} — ${d.hp_current?.toLocaleString()}/${d.hp_max?.toLocaleString()} HP — Récompense: ${d.reward?.toLocaleString()}`;
+        if (e.type === "bonus") info = `${d.bonus_type} x${d.value}`;
+        if (e.type === "notification") info = `${d.emoji} ${d.message}`;
+        const exp = e.expires_at ? new Date(e.expires_at).toLocaleTimeString() : "—";
+        return `<div class="event-card ${e.active ? 'active' : ''}">
+          <span class="event-type">${e.type}</span>
+          <span class="event-info">${info}</span>
+          <span class="event-status">${e.active ? '✓ Actif' : 'Terminé'}</span>
+          <span style="font-size:0.7rem;color:#6b7280;">exp: ${exp}</span>
+          ${e.active ? `<button class="btn btn-red" onclick="killEvent('${e.type}')" style="padding:4px 10px;font-size:0.72rem;">Stop</button>` : ''}
+        </div>`;
+      }).join('');
+    }
+
+    init();
+  </script>
+</body>
+</html>
