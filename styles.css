@@ -3088,3 +3088,26 @@ body.sidebar-open #mini-player { left: 240px; }
   flex-direction: column;
   align-items: center;
 }
+
+/* CENTRAGE AVEC COMPENSATION SHOP */
+#main {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+}
+
+#clicker-zone {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 0 40px;
+}
+
+#clicker-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}

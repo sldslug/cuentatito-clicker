@@ -152,7 +152,7 @@
           <div class="img-wrapper" id="img-wrapper">
             <img id="cuentatito" src="Cuentatito.png" alt="Cuentatito" draggable="false" />
           </div>
-          <div class="click-hint">▼ Clique ici ▼</div>
+      <div class="click-hint" style="display:none">▼ Clique ici ▼</div>
           <div id="combo-display"></div>
         </div>
       </div>
@@ -935,6 +935,7 @@
       return {
         cuentas, totalEarned, totalClics, totalBought,
         bestCombo, easterEggFound, diamonds, prestigeCount, isDayMode,
+        turboCooldownEnd: turboCooldown > 0 ? Date.now() + turboCooldown * 1000 : 0,
         shop: shopData.map(i => ({ id: i.id, owned: i.owned })),
         achievements: achievements.map(a => ({ id: a.id, unlocked: !!a.unlocked, claimed: !!a.claimed })),
         ownedCosmetics: [...ownedCosmetics],
@@ -1030,6 +1031,11 @@
             const item = cosmeticItems.find(x => x.id === id);
             if (item) item.apply();
           });
+        }
+
+        if (d.turboCooldownEnd) {
+          const remaining = Math.floor((d.turboCooldownEnd - Date.now()) / 1000);
+          turboCooldown = remaining > 0 ? remaining : 0;
         }
 
         recalcStats();
