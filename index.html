@@ -62,6 +62,11 @@
         <span class="nav-icon">💎</span>
         <span class="nav-label" id="diamond-count">0 diamants</span>
       </div>
+      <div class="nav-item" data-tooltip="Amis" onclick="openFriends()">
+        <span class="nav-icon">👥</span>
+        <span class="nav-label">Amis</span>
+        <span id="friends-badge" class="nav-badge" style="display:none"></span>
+      </div>
       <div class="nav-item" data-tooltip="Classement" onclick="openLeaderboard()">
         <span class="nav-icon">🥇</span>
         <span class="nav-label">Classement</span>
@@ -1224,7 +1229,6 @@
       const container = document.getElementById("lb-list");
       container.innerHTML = `<div class="lb-empty">Chargement...</div>`;
 
-      // Charger depuis Supabase
       const { data: scores } = await sb.from("scores")
         .select("username, total_earned, prestige_count, updated_at")
         .order("total_earned", { ascending: false })
@@ -1238,7 +1242,7 @@
       container.innerHTML = scores.map((s, i) => {
         const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i+1}.`;
         const date = new Date(s.updated_at).toLocaleDateString();
-        return `<div class="lb-row ${i < 3 ? 'top'+i : ''}">
+        return `<div class="lb-row ${i < 3 ? 'top'+i : ''}" onclick="window.open('profil.html?u=${encodeURIComponent(s.username)}','_blank')" style="cursor:pointer">
           <span class="lb-rank">${medal}</span>
           <span class="lb-name">${s.username}</span>
           <span class="lb-prestige">${s.prestige_count > 0 ? toRoman(s.prestige_count) : "—"}</span>
@@ -1247,6 +1251,11 @@
         </div>`;
       }).join('');
     }
+
+    // Refresh classement toutes les 30s si panel ouvert
+    setInterval(() => {
+      if (document.getElementById("lb-panel").classList.contains("open")) renderLeaderboard();
+    }, 30000);
 
     let mouseX = -9999, mouseY = -9999;
 
@@ -1539,6 +1548,98 @@
     function openAbout() { document.getElementById("about-panel").classList.add("open"); }
     function closeAbout() { document.getElementById("about-panel").classList.remove("open"); }
 
+    // ── AMIS ──
+    function openFriends() {
+      document.getElementById("friends-panel").classList.add("open");
+      loadFriends();
+    }
+    function closeFriends() { document.getElementById("friends-panel").classList.remove("open"); }
+
+    async function searchFriend() {
+      const q = document.getElementById("friends-search").value.trim();
+      const res = document.getElementById("friends-search-result");
+      if (!q) return;
+      res.innerHTML = "Recherche...";
+      const { data } = await sb.from("profiles").select("id, username, last_seen").ilike("username", q).limit(5);
+      if (!data || data.length === 0) { res.innerHTML = `<div class="friends-empty">Aucun joueur trouvé.</div>`; return; }
+      res.innerHTML = data.map(p => {
+        const diffMin = (Date.now() - new Date(p.last_seen)) / 60000;
+        const online = diffMin < 5;
+        return `<div class="friend-row">
+          <span class="friend-dot ${online?'online':'offline'}">●</span>
+          <span class="friend-name" onclick="window.open('profil.html?u=${encodeURIComponent(p.username)}','_blank')">${p.username}</span>
+          <button class="friend-add-btn" onclick="sendFriendRequest('${p.id}', this)">+ Ajouter</button>
+        </div>`;
+      }).join('');
+    }
+
+    async function sendFriendRequest(friendId, btn) {
+      if (!currentUser) return;
+      btn.disabled = true;
+      const { error } = await sb.from("friends").insert({ user_id: currentUser.id, friend_id: friendId, status: "pending" });
+      btn.textContent = error ? "Erreur" : "⏳";
+    }
+
+    async function loadFriends() {
+      if (!currentUser) return;
+      const onlineEl = document.getElementById("friends-online");
+      const listEl = document.getElementById("friends-list");
+      onlineEl.innerHTML = listEl.innerHTML = "Chargement...";
+
+      const { data: rows } = await sb.from("friends")
+        .select("user_id, friend_id, status")
+        .or(`user_id.eq.${currentUser.id},friend_id.eq.${currentUser.id}`);
+
+      if (!rows || rows.length === 0) {
+        onlineEl.innerHTML = `<div class="friends-empty">Aucun ami en ligne.</div>`;
+        listEl.innerHTML = `<div class="friends-empty">Aucun ami pour l'instant.</div>`;
+        return;
+      }
+
+      const friendIds = rows.map(r => r.user_id === currentUser.id ? r.friend_id : r.user_id);
+      const { data: profiles } = await sb.from("profiles").select("id, username, last_seen, prestige_count").in("id", friendIds);
+
+      const accepted = rows.filter(r => r.status === "accepted");
+      const pending = rows.filter(r => r.status === "pending" && r.friend_id === currentUser.id);
+
+      // Badge demandes en attente
+      const badge = document.getElementById("friends-badge");
+      if (pending.length > 0) { badge.textContent = pending.length; badge.style.display = "inline-block"; }
+      else badge.style.display = "none";
+
+      const renderFriend = (p, status) => {
+        const diffMin = (Date.now() - new Date(p.last_seen)) / 60000;
+        const online = diffMin < 5;
+        const timeStr = online ? "En ligne" : `il y a ${Math.floor(diffMin)}min`;
+        return `<div class="friend-row">
+          <span class="friend-dot ${online?'online':'offline'}">●</span>
+          <span class="friend-name" onclick="window.open('profil.html?u=${encodeURIComponent(p.username)}','_blank')">${p.username}</span>
+          <span class="friend-time">${status === 'pending' ? '⏳ En attente' : timeStr}</span>
+        </div>`;
+      };
+
+      const onlineFriends = (profiles||[]).filter(p => {
+        const isAccepted = accepted.some(r => r.user_id === p.id || r.friend_id === p.id);
+        return isAccepted && (Date.now() - new Date(p.last_seen)) / 60000 < 5;
+      });
+
+      onlineEl.innerHTML = onlineFriends.length > 0
+        ? onlineFriends.map(p => renderFriend(p, "accepted")).join('')
+        : `<div class="friends-empty">Aucun ami en ligne.</div>`;
+
+      listEl.innerHTML = (profiles||[]).map(p => {
+        const row = rows.find(r => r.user_id === p.id || r.friend_id === p.id);
+        return renderFriend(p, row?.status);
+      }).join('') || `<div class="friends-empty">Aucun ami.</div>`;
+    }
+
+    // Mettre à jour last_seen toutes les 2 minutes
+    async function updateLastSeen() {
+      if (!currentUser) return;
+      await sb.from("profiles").update({ last_seen: new Date().toISOString() }).eq("id", currentUser.id);
+    }
+    setInterval(updateLastSeen, 120000);
+
     buildShop();
     loadGame().then(() => {
       updateUI();
@@ -1589,6 +1690,23 @@
         <button class="mf-btn" onclick="setMusicFilter('fav', this)">❤️ Favoris</button>
       </div>
       <div id="music-list"></div>
+    </div>
+  </div>
+
+  <!-- PANEL AMIS -->
+  <div id="friends-panel">
+    <div id="friends-panel-inner">
+      <button class="friends-close" onclick="closeFriends()">✕</button>
+      <h2 class="friends-title">👥 Amis</h2>
+      <div id="friends-search-wrap">
+        <input id="friends-search" type="text" placeholder="Chercher un pseudo..." maxlength="20"/>
+        <button id="friends-search-btn" onclick="searchFriend()">Chercher</button>
+      </div>
+      <div id="friends-search-result"></div>
+      <div class="friends-section-label">En ligne maintenant</div>
+      <div id="friends-online"></div>
+      <div class="friends-section-label">Tous mes amis</div>
+      <div id="friends-list"></div>
     </div>
   </div>
 

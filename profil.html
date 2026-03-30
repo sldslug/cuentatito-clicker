@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Profil - Cuenta dé Tomito Clicker</title>
+  <link rel="icon" href="logosite/logosite.png" type="image/png"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      font-family: 'Nunito', sans-serif;
+      background: #0d0020;
+      color: #f0e6ff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #0d0020, #1a003a, #0d0020, #2a0050, #0d0020);
+      background-size: 400% 400%;
+      animation: bgShift 12s ease infinite;
+      z-index: -1;
+    }
+    @keyframes bgShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+
+    #back-btn {
+      align-self: flex-start;
+      background: rgba(124,58,237,0.2);
+      border: 1px solid rgba(124,58,237,0.4);
+      border-radius: 10px;
+      color: #a78bfa;
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.85rem;
+      padding: 8px 16px;
+      cursor: pointer;
+      margin-bottom: 30px;
+      transition: background 0.15s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    #back-btn:hover { background: rgba(124,58,237,0.35); color: #fff; }
+
+    #profile-card {
+      background: rgba(10,2,24,0.95);
+      border: 1px solid rgba(124,58,237,0.4);
+      border-radius: 24px;
+      padding: 36px 32px;
+      width: min(560px, 100%);
+      box-shadow: 0 0 60px rgba(124,58,237,0.15);
+    }
+
+    #profile-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 28px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid rgba(124,58,237,0.2);
+    }
+
+    #profile-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      border: 3px solid rgba(168,85,247,0.6);
+      box-shadow: 0 0 20px rgba(168,85,247,0.3);
+      object-fit: cover;
+      background: rgba(45,10,80,0.4);
+    }
+
+    #profile-name {
+      font-family: 'Cinzel Decorative', cursive;
+      font-size: 1.4rem;
+      background: linear-gradient(90deg, #c084fc, #f0abfc, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    #profile-online {
+      font-size: 0.78rem;
+      margin-top: 4px;
+    }
+
+    .online { color: #86efac; }
+    .offline { color: #6b7280; }
+
+    #add-friend-btn {
+      margin-top: 8px;
+      padding: 6px 14px;
+      background: linear-gradient(135deg, #7c3aed, #a855f7);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+    #add-friend-btn:hover { transform: scale(1.04); }
+    #add-friend-btn:disabled { opacity: 0.5; cursor: default; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: rgba(30,10,60,0.6);
+      border: 1px solid rgba(99,102,241,0.25);
+      border-radius: 12px;
+      padding: 14px 10px;
+      text-align: center;
+    }
+
+    .stat-val {
+      font-family: 'Cinzel Decorative', cursive;
+      font-size: 1rem;
+      color: #c084fc;
+      text-shadow: 0 0 8px rgba(192,132,252,0.4);
+      margin-bottom: 4px;
+    }
+
+    .stat-label { font-size: 0.68rem; color: #7c6fa0; }
+
+    #ach-section h3 {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #6366f1;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid rgba(99,102,241,0.2);
+    }
+
+    #ach-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .ach-badge {
+      background: rgba(30,27,75,0.6);
+      border: 1px solid rgba(99,102,241,0.3);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 0.78rem;
+      color: #a5b4fc;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    #not-found {
+      text-align: center;
+      color: #7c6fa0;
+      font-size: 1rem;
+      margin-top: 60px;
+    }
+  </style>
+</head>
+<body>
+  <a href="index.html" id="back-btn">← Retour au jeu</a>
+
+  <div id="profile-card" style="display:none">
+    <div id="profile-header">
+      <img id="profile-avatar" src="Cuentatito.png" alt="avatar"/>
+      <div>
+        <div id="profile-name">—</div>
+        <div id="profile-online"></div>
+        <button id="add-friend-btn" style="display:none" onclick="addFriend()">+ Ajouter en ami</button>
+      </div>
+    </div>
+    <div class="stats-grid" id="stats-grid"></div>
+    <div id="ach-section">
+      <h3>🏆 Achievements débloqués</h3>
+      <div id="ach-grid"></div>
+    </div>
+  </div>
+
+  <div id="not-found" style="display:none">Joueur introuvable.</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://hfdbeiduutgxbbgryozh.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmZGJlaWR1dXRneGJiZ3J5b3poIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3OTgwOTcsImV4cCI6MjA5MDM3NDA5N30.P4aYHCN98H9CQUriRbtdqUgaVPau03H8uxyTz1nf2HA";
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const params = new URLSearchParams(window.location.search);
+    const username = params.get("u");
+    let targetUserId = null;
+    let currentUserId = null;
+
+    function toRoman(n) {
+      const vals=[100,90,50,40,10,9,5,4,1], syms=["C","XC","L","XL","X","IX","V","IV","I"];
+      let r=""; for(let i=0;i<vals.length;i++) while(n>=vals[i]){r+=syms[i];n-=vals[i];} return r;
+    }
+
+    function formatNum(n) {
+      n = Math.floor(n);
+      if (n >= 1e12) return (n/1e12).toFixed(2)+" T";
+      if (n >= 1e9)  return (n/1e9).toFixed(2)+" B";
+      if (n >= 1e6)  return (n/1e6).toFixed(2)+" M";
+      if (n >= 1e3)  return (n/1e3).toFixed(1)+" K";
+      return n.toString();
+    }
+
+    async function load() {
+      if (!username) { document.getElementById("not-found").style.display = "block"; return; }
+
+      // Session courante
+      const { data: sess } = await sb.auth.getSession();
+      if (sess.session) currentUserId = sess.session.user.id;
+
+      // Charger le profil
+      const { data: profile } = await sb.from("profiles")
+        .select("id, username, last_seen, prestige_count, total_earned")
+        .eq("username", username).single();
+
+      if (!profile) { document.getElementById("not-found").style.display = "block"; return; }
+      targetUserId = profile.id;
+
+      // Charger la save pour les stats
+      const { data: save } = await sb.from("saves").select("data").eq("id", profile.id).single();
+      const d = save?.data || {};
+
+      // Charger le score
+      const { data: score } = await sb.from("scores").select("*").eq("id", profile.id).single();
+
+      document.getElementById("profile-card").style.display = "block";
+      document.getElementById("profile-name").textContent = profile.username;
+
+      // Skin équipé
+      if (d.equippedCosmetics?.skin) {
+        const skinMap = {
+          s_chiotte: "skintomito/tomitochiotte.png",
+          s_souriant: "skintomito/tomitosouriant.png",
+          s_vulgaire: "skintomito/tomitovulgaire.png",
+          s_default: "Cuentatito.png"
+        };
+        const src = skinMap[d.equippedCosmetics.skin];
+        if (src) document.getElementById("profile-avatar").src = src;
+      }
+
+      // En ligne ? (last_seen < 5 min)
+      const lastSeen = new Date(profile.last_seen);
+      const diffMin = (Date.now() - lastSeen) / 60000;
+      const onlineEl = document.getElementById("profile-online");
+      if (diffMin < 5) {
+        onlineEl.innerHTML = '<span class="online">● En ligne</span>';
+      } else {
+        const h = Math.floor(diffMin / 60), m = Math.floor(diffMin % 60);
+        onlineEl.innerHTML = `<span class="offline">Vu il y a ${h > 0 ? h+"h " : ""}${m}min</span>`;
+      }
+
+      // Bouton ami (si connecté et pas son propre profil)
+      if (currentUserId && currentUserId !== targetUserId) {
+        const btn = document.getElementById("add-friend-btn");
+        btn.style.display = "inline-block";
+        // Vérifier si déjà ami
+        const { data: existing } = await sb.from("friends")
+          .select("status").or(`user_id.eq.${currentUserId},friend_id.eq.${currentUserId}`)
+          .or(`user_id.eq.${targetUserId},friend_id.eq.${targetUserId}`).single();
+        if (existing) {
+          btn.textContent = existing.status === "accepted" ? "✓ Ami" : "⏳ En attente";
+          btn.disabled = true;
+        }
+      }
+
+      // Stats
+      const stats = [
+        { val: formatNum(score?.total_earned || 0), label: "Cuentas gagnées" },
+        { val: score?.prestige_count > 0 ? toRoman(score.prestige_count) : "—", label: "Prestige" },
+        { val: formatNum(score?.total_clics || 0), label: "Total clics" },
+        { val: score?.diamonds || 0, label: "💎 Diamants" },
+        { val: d.shop ? d.shop.reduce((a,i)=>a+i.owned,0) : 0, label: "Achats totaux" },
+        { val: d.bestCombo ? "x"+d.bestCombo : "—", label: "Meilleur combo" },
+      ];
+      document.getElementById("stats-grid").innerHTML = stats.map(s =>
+        `<div class="stat-card"><div class="stat-val">${s.val}</div><div class="stat-label">${s.label}</div></div>`
+      ).join('');
+
+      // Achievements
+      if (d.achievements) {
+        const unlocked = d.achievements.filter(a => a.unlocked);
+        const achNames = {
+          c1:"👆 Premier clic", c2:"✌️ Cliqueur", c3:"🔥 Mains en feu", c4:"💪 Cliqueur pro", c5:"🍅 Tomito approuve",
+          g1:"💰 Premiers sous", g2:"🤑 Millionnaire", g3:"🏦 Milliardaire", g4:"⚡ Dieu des Cuentas",
+          s1:"🛒 Premier achat", s2:"🏪 Accro au shop", s3:"📦 Gros consommateur", s4:"🌟 Tout acheté",
+          k1:"✨ Combo x2", k2:"💫 Combo x3", k3:"🌀 Combo MAX",
+          p1:"⭐ Première renaissance", p2:"🌠 Prestige X", p3:"💥 Prestige L", p4:"👑 Prestige C"
+        };
+        document.getElementById("ach-grid").innerHTML = unlocked.map(a =>
+          `<div class="ach-badge">${achNames[a.id] || a.id}</div>`
+        ).join('') || '<span style="color:#6b7280;font-size:0.8rem">Aucun achievement débloqué.</span>';
+      }
+    }
+
+    async function addFriend() {
+      if (!currentUserId || !targetUserId) return;
+      const btn = document.getElementById("add-friend-btn");
+      btn.disabled = true;
+      btn.textContent = "Envoi...";
+      const { error } = await sb.from("friends").insert({ user_id: currentUserId, friend_id: targetUserId, status: "pending" });
+      btn.textContent = error ? "Erreur" : "⏳ En attente";
+    }
+
+    load();
+  </script>
+</body>
+</html>
