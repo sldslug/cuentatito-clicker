@@ -115,6 +115,10 @@
         <span class="nav-icon">🚪</span>
         <span class="nav-label" id="nav-username">Déconnexion</span>
       </div>
+      <div class="nav-item" id="admin-nav-btn" data-tooltip="Panel Admin" onclick="window.open('admin.html','_blank')" style="display:none">
+        <span class="nav-icon">⚡</span>
+        <span class="nav-label" style="color:#f97316;">Panel Admin</span>
+      </div>
     </nav>
   </div>
 
@@ -1001,6 +1005,11 @@
         // Afficher le pseudo dans la sidebar
         const navUser = document.getElementById("nav-username");
         if (navUser) navUser.textContent = currentUsername || "Déconnexion";
+        // Bouton admin uniquement pour Sluginho
+        if (currentUsername === "Sluginho") {
+          const adminBtn = document.getElementById("admin-nav-btn");
+          if (adminBtn) adminBtn.style.display = "";
+        }
       }
 
       // Fallback localStorage
