@@ -273,7 +273,7 @@
       errEl.textContent = "";
 
       // On utilise username@cuentatito.game comme email fictif
-      const email = username.toLowerCase() + "@cuentatito.game";
+      const email = username.toLowerCase().replace(/[^a-z0-9]/g, '') + "@cuentatito.game";
       const { error } = await sb.auth.signInWithPassword({ email, password });
 
       if (error) {
@@ -314,8 +314,8 @@
         return;
       }
 
-      const email = username.toLowerCase() + "@cuentatito.game";
-      const { data, error } = await sb.auth.signUp({ email, password });
+      const email = username.toLowerCase().replace(/[^a-z0-9]/g, '') + "@cuentatito.game";
+      const { data, error } = await sb.auth.signUp({ email, password, options: { emailRedirectTo: null } });
 
       if (error) {
         errEl.textContent = "Erreur : " + error.message;
