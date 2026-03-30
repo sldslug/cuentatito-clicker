@@ -947,7 +947,7 @@
         turboCooldownEnd: turboCooldown > 0 ? Date.now() + turboCooldown * 1000 : 0,
         autoclickRate,
         comboTimeout,
-        talents: talents.map(t => ({ id: t.id, bought: !!t.bought })),
+        talents: (typeof talents !== 'undefined' ? talents : []).map(t => ({ id: t.id, bought: !!t.bought })),
         shop: shopData.map(i => ({ id: i.id, owned: i.owned })),
         achievements: achievements.map(a => ({ id: a.id, unlocked: !!a.unlocked, claimed: !!a.claimed })),
         ownedCosmetics: [...ownedCosmetics],
@@ -1762,7 +1762,7 @@
     setInterval(updateLastSeen, 120000);
 
     // ── ARBRE DE TALENTS ──
-    const talents = [
+    var talents = [
       // Clics
       { id:"t_cpc1",  cat:"clic",    name:"Doigts agiles",      desc:"Condition : 100 clics",       cost:500,     req:()=>totalClics>=100,    bonus:()=>{ cpc += 1; },            bonusLabel:"+1/clic",   icon:"👆", bought:false },
       { id:"t_cpc2",  cat:"clic",    name:"Frappe puissante",   desc:"Condition : 1 000 clics",     cost:5000,    req:()=>totalClics>=1000,   bonus:()=>{ cpc += 5; },            bonusLabel:"+5/clic",   icon:"💪", bought:false },
