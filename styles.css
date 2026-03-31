@@ -3985,3 +3985,65 @@ body #main {
   box-shadow: 0 0 60px rgba(251,191,36,0.15);
   animation: panelIn 0.3s cubic-bezier(0.22,1,0.36,1);
 }
+
+/* PANEL MINIGAMES */
+#minigames-panel {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+  z-index: 9003; display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.25s;
+}
+#minigames-panel.open { opacity: 1; pointer-events: all; }
+
+#minigames-panel-inner {
+  background: rgba(8,4,20,0.98);
+  border: 1px solid rgba(124,58,237,0.4);
+  border-radius: 20px;
+  padding: 32px 28px 28px;
+  width: min(620px, 94vw);
+  position: relative;
+  box-shadow: 0 0 60px rgba(124,58,237,0.15);
+}
+#minigames-panel.open #minigames-panel-inner { animation: panelIn 0.3s cubic-bezier(0.22,1,0.36,1); }
+
+#minigames-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 100px);
+  gap: 12px;
+  justify-content: center;
+}
+
+.mg-slot {
+  width: 100px;
+  height: 100px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.15s;
+  overflow: hidden;
+}
+
+.mg-slot.empty {
+  background: rgba(30,10,60,0.5);
+  border: 2px dashed rgba(124,58,237,0.3);
+}
+
+.mg-slot.empty span {
+  font-size: 0.7rem;
+  color: #4b5563;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.mg-slot:not(.empty):hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(168,85,247,0.4);
+}
+
+.mg-slot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

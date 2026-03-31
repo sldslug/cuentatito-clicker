@@ -168,11 +168,17 @@
           <span id="prestige-info" style="display:block;width:100px;height:16px;line-height:16px;margin-top:3px;font-size:0.58rem;font-weight:700;text-align:center;color:#fbbf24;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></span>
         </div>
         
+                <div style="display:flex;flex-direction:column;align-items:center;">
+          <button onclick="openMinigames()" title="Mini-jeux" style="width:100px;height:100px;padding:0;background:rgba(20,5,45,0.7);border:2px solid rgba(124,58,237,0.5);border-radius:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;overflow:hidden;transition:transform 0.1s;">
+            <img src="boutondujeu/minigames.png" alt="Mini-jeux" style="width:84px;height:84px;object-fit:contain;pointer-events:none;" />
+          </button>
+          <span style="display:block;width:100px;height:16px;line-height:16px;margin-top:3px;font-size:0.58rem;font-weight:700;text-align:center;color:#a78bfa;">Mini-jeux</span>
+        </div>
         <div style="display:flex;flex-direction:column;align-items:center;">
           <button id="autoclick-btn" onclick="toggleAutoclick()" title="Autoclick" style="width:100px;height:100px;padding:0;background:rgba(20,5,45,0.7);border:2px solid rgba(124,58,237,0.5);border-radius:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;overflow:hidden;">
-            <img src="boutondujeu/autoclick.png" id="autoclick-img" style="width:84px;height:84px;object-fit:contain;pointer-events:none;opacity:0.45;transition:opacity 0.2s;" />
+            <img src="boutondujeu/autoclick.png" alt="Autoclick" id="autoclick-img" style="width:84px;height:84px;object-fit:contain;pointer-events:none;opacity:0.45;transition:opacity 0.2s;" />
           </button>
-          <span id="autoclick-label" style="display:block;width:100px;height:16px;line-height:16px;margin-top:3px;font-size:0.58rem;font-weight:700;text-align:center;color:#a78bfa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">OFF</span>
+          <span id="autoclick-label" style="display:block;width:100px;height:16px;line-height:16px;margin-top:3px;font-size:0.58rem;font-weight:700;text-align:center;color:#a78bfa;">OFF</span>
         </div>
       </div>
       <!-- Image centree, ne bouge pas -->
@@ -2791,6 +2797,9 @@
       requestAnimationFrame(animate);
     }
 
+    function openMinigames() { document.getElementById("minigames-panel").classList.add("open"); }
+    function closeMinigames() { document.getElementById("minigames-panel").classList.remove("open"); }
+
     // ── AVERTISSEMENT QUITTER SANS SAUVEGARDER ──
     // (déclaré plus haut avec les variables globales)
 
@@ -3002,6 +3011,27 @@
       <div style="display:flex;gap:10px;">
         <button onclick="saveAndLeave()" style="flex:1;padding:10px;background:linear-gradient(135deg,#059669,#34d399);border:none;border-radius:10px;color:#fff;font-family:'Nunito',sans-serif;font-size:0.88rem;font-weight:700;cursor:pointer;">💾 Sauvegarder</button>
         <button onclick="leaveWithoutSave()" style="flex:1;padding:10px;background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.4);border-radius:10px;color:#f87171;font-family:'Nunito',sans-serif;font-size:0.88rem;font-weight:700;cursor:pointer;">Quitter quand même</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL MINIGAMES -->
+  <div id="minigames-panel">
+    <div id="minigames-panel-inner">
+      <button onclick="closeMinigames()" style="position:absolute;top:14px;right:16px;background:none;border:none;color:#a78bfa;font-size:1.2rem;cursor:pointer;">✕</button>
+      <h2 style="font-family:'Cinzel Decorative',cursive;font-size:1rem;color:#c084fc;text-align:center;margin-bottom:20px;text-shadow:0 0 10px #a855f7;">🎮 Mini-jeux</h2>
+      <div id="minigames-grid">
+        <!-- 10 cases vides pour l'instant (2 lignes de 5) -->
+        <div class="mg-slot empty"><span>Bientôt</span></div>
+        <div class="mg-slot empty"><span>Bientôt</span></div>
+        <div class="mg-slot empty"><span>Bientôt</span></div>
+        <div class="mg-slot empty"><span>Bientôt</span></div>
+        <div class="mg-slot empty"><span>Bientôt</span></div>
+        <div class="mg-slot empty"><span>Bientôt</span></div>
+        <div class="mg-slot empty"><span>Bientôt</span></div>
+        <div class="mg-slot empty"><span>Bientôt</span></div>
+        <div class="mg-slot empty"><span>Bientôt</span></div>
+        <div class="mg-slot empty"><span>Bientôt</span></div>
       </div>
     </div>
   </div>
