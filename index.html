@@ -943,7 +943,10 @@
     function toggleTheme() {
       isDayMode = !isDayMode;
       document.body.classList.toggle("day-mode", isDayMode);
-      document.getElementById("theme-toggle-icon").textContent = isDayMode ? "☀️" : "🌙";
+      const icon = document.getElementById("theme-toggle-icon");
+      if (icon) {
+        icon.src = isDayMode ? "sidebar/ModeJour_soleil.png" : "sidebar/ModeNuit_lune.png";
+      }
       document.getElementById("theme-toggle-label").textContent = isDayMode ? "Mode nuit" : "Mode jour";
     }
 
@@ -1063,7 +1066,8 @@
         });
 
         document.body.classList.toggle("day-mode", isDayMode);
-        document.getElementById("theme-toggle-icon").textContent = isDayMode ? "☀️" : "🌙";
+        const themeIcon = document.getElementById("theme-toggle-icon");
+        if (themeIcon) themeIcon.src = isDayMode ? "sidebar/ModeJour_soleil.png" : "sidebar/ModeNuit_lune.png";
         document.getElementById("theme-toggle-label").textContent = isDayMode ? "Mode nuit" : "Mode jour";
         document.getElementById("diamond-count").textContent = diamonds + " diamants";
 
