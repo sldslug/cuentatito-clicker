@@ -2597,6 +2597,7 @@
       document.getElementById("wheel-panel").classList.add("open");
       updateWheelCooldown();
       drawWheelCanvas(0);
+      renderWheelOdds();
     }
 
     function closeWheel() {
@@ -2629,20 +2630,22 @@
       const slices = getWheelSlices();
       const n = slices.length;
       const arc = (Math.PI * 2) / n;
-      const cx = 150, cy = 150, r = 140;
+      const cx = 180, cy = 180, r = 165;
 
-      ctx.clearRect(0, 0, 300, 300);
+      ctx.clearRect(0, 0, 360, 360);
 
       slices.forEach((s, i) => {
         const start = rotation + i * arc - Math.PI / 2;
         const end = start + arc;
+
+        // Secteur
         ctx.beginPath();
         ctx.moveTo(cx, cy);
         ctx.arc(cx, cy, r, start, end);
         ctx.closePath();
         ctx.fillStyle = s.color;
         ctx.fill();
-        ctx.strokeStyle = "rgba(0,0,0,0.3)";
+        ctx.strokeStyle = "rgba(0,0,0,0.4)";
         ctx.lineWidth = 2;
         ctx.stroke();
 
@@ -2652,21 +2655,37 @@
         ctx.rotate(start + arc / 2);
         ctx.textAlign = "right";
         ctx.fillStyle = "#fff";
-        ctx.font = "bold 11px Nunito";
-        ctx.shadowBlur = 4;
-        ctx.shadowColor = "rgba(0,0,0,0.8)";
-        ctx.fillText(s.label, r - 8, 4);
+        ctx.font = "bold 13px Nunito, sans-serif";
+        ctx.shadowBlur = 5;
+        ctx.shadowColor = "rgba(0,0,0,0.9)";
+        ctx.fillText(s.label, r - 10, 5);
         ctx.restore();
       });
 
-      // Centre
+      // Cercle central
       ctx.beginPath();
-      ctx.arc(cx, cy, 18, 0, Math.PI * 2);
+      ctx.arc(cx, cy, 22, 0, Math.PI * 2);
       ctx.fillStyle = "#0d0020";
       ctx.fill();
       ctx.strokeStyle = "#fbbf24";
       ctx.lineWidth = 3;
       ctx.stroke();
+    }
+
+    function renderWheelOdds() {
+      const weights = [20, 20, 5, 25, 15, 5, 20, 10];
+      const total = weights.reduce((a, b) => a + b, 0);
+      const slices = getWheelSlices();
+      const container = document.getElementById("wheel-odds");
+      if (!container) return;
+      container.innerHTML = slices.map((s, i) => {
+        const pct = ((weights[i] / total) * 100).toFixed(0);
+        return `<div style="display:flex;align-items:center;gap:5px;">
+          <span style="width:10px;height:10px;border-radius:50%;background:${s.color};flex-shrink:0;display:inline-block;"></span>
+          <span style="color:#e9d5ff;">${s.label}</span>
+          <span style="color:#6b7280;margin-left:auto;">${pct}%</span>
+        </div>`;
+      }).join('');
     }
 
     function spinWheel() {
@@ -2916,11 +2935,12 @@
       <h2 style="font-family:'Cinzel Decorative',cursive;font-size:1rem;color:#fbbf24;text-align:center;margin-bottom:4px;text-shadow:0 0 10px rgba(251,191,36,0.5);">🎡 Roue de la Fortune</h2>
       <div id="wheel-cooldown-msg" style="text-align:center;font-size:0.78rem;color:#a78bfa;margin-bottom:14px;min-height:18px;"></div>
       <div id="wheel-container">
-        <canvas id="wheel-canvas" width="300" height="300"></canvas>
+        <canvas id="wheel-canvas" width="360" height="360"></canvas>
         <div id="wheel-pointer">▼</div>
       </div>
       <button id="wheel-spin-btn" onclick="spinWheel()" style="margin-top:18px;width:100%;padding:12px;background:linear-gradient(135deg,#f59e0b,#f97316);border:none;border-radius:12px;color:#fff;font-family:'Cinzel Decorative',cursive;font-size:0.9rem;cursor:pointer;box-shadow:0 0 20px rgba(245,158,11,0.4);transition:transform 0.1s;">🎡 Tourner !</button>
       <div id="wheel-result" style="margin-top:14px;text-align:center;font-size:1rem;font-weight:700;min-height:24px;"></div>
+      <div id="wheel-odds" style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:0.72rem;text-align:left;"></div>
     </div>
   </div>
 
