@@ -1043,8 +1043,15 @@
 
       // Charger depuis Supabase en priorité
       if (currentUser) {
-        const { data: remote } = await sb.from("saves").select("data").eq("id", currentUser.id).single();
+        const { data: remote, error: remoteErr } = await sb.from("saves").select("data").eq("id", currentUser.id).single();
         if (remote) d = remote.data;
+
+        // Debug visible sur mobile - disparaît après 10s
+        const dbg = document.createElement("div");
+        dbg.style.cssText = "position:fixed;top:0;left:0;right:0;background:rgba(0,0,0,0.85);color:#86efac;font-size:0.72rem;padding:6px 10px;z-index:99999;font-family:monospace;line-height:1.6;";
+        dbg.innerHTML = `user: ${currentUsername || currentUser.id.substring(0,8)}<br>save: ${remote ? "OK - " + Math.floor(remote.data?.cuentas || 0) + " cuentas" : "VIDE"}<br>err: ${remoteErr?.message || "none"}`;
+        document.body.appendChild(dbg);
+        setTimeout(() => dbg.remove(), 10000);
         // Afficher le pseudo dans la sidebar
         const navUser = document.getElementById("nav-username");
         if (navUser) navUser.textContent = currentUsername || "Déconnexion";
