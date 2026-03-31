@@ -568,8 +568,13 @@
       const lbl = document.getElementById("autoclick-label");
       const btn = document.getElementById("autoclick-btn");
       if (img) img.style.opacity = autoclickEnabled ? "1" : "0.45";
-      if (lbl) lbl.textContent = autoclickEnabled ? "ON 0.3/s" : "OFF";
+      if (lbl) lbl.textContent = autoclickEnabled ? `ON ${autoclickRate}/s` : "OFF";
       if (btn) btn.style.borderColor = autoclickEnabled ? "#86efac" : "rgba(124,58,237,0.5)";
+    }
+
+    function updateAutoclickLabel() {
+      const lbl = document.getElementById("autoclick-label");
+      if (lbl && autoclickEnabled) lbl.textContent = `ON ${autoclickRate}/s`;
     }
 
     setInterval(() => {
@@ -1927,6 +1932,7 @@
       t.bonus();
       recalcStats();
       updateUI();
+      updateAutoclickLabel();
       renderTalentTree();
       // Toast
       const el = document.createElement("div");
