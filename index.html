@@ -17,7 +17,7 @@
     let currentUsername = "";
 
     // Promesse résolue quand l'auth est prête
-    const authReady = (async () => {
+    window.authReady = (async () => {
       const { data } = await sb.auth.getSession();
       if (!data.session) {
         window.location.href = "auth.html";
@@ -2765,7 +2765,7 @@
     }
 
     buildShop();
-    loadGame().then(async () => {
+    (typeof authReady !== 'undefined' ? authReady : Promise.resolve()).then(() => loadGame()).then(async () => {
       // Restaurer les talents achetés
       if (window._savedTalents) {
         window._savedTalents.forEach(s => {
