@@ -106,7 +106,7 @@
         <span class="nav-label">A propos</span>
       </div>
       <div class="nav-item" data-tooltip="Roue de la Fortune" onclick="openWheel()">
-        <span class="nav-icon">🎡</span>
+        <img class="nav-icon-img" src="sidebar/RoueFortune.png" />
         <span class="nav-label">Roue Fortune</span>
       </div>
       <div class="nav-divider"></div>
@@ -167,12 +167,7 @@
           </button>
           <span id="prestige-info" style="display:block;width:100px;height:16px;line-height:16px;margin-top:3px;font-size:0.58rem;font-weight:700;text-align:center;color:#fbbf24;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></span>
         </div>
-        <div style="display:flex;flex-direction:column;align-items:center;">
-          <button id="turbo-btn" onclick="activateTurbo()" title="Turbo" style="width:100px;height:100px;padding:0;background:rgba(20,5,45,0.7);border:2px solid rgba(124,58,237,0.5);border-radius:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;overflow:hidden;">
-            <img src="boutondujeu/turbo.png" id="turbo-img" style="width:84px;height:84px;object-fit:contain;pointer-events:none;" />
-          </button>
-          <span id="turbo-timer" style="display:block;width:100px;height:16px;line-height:16px;margin-top:3px;font-size:0.58rem;font-weight:700;text-align:center;color:#a78bfa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></span>
-        </div>
+        
         <div style="display:flex;flex-direction:column;align-items:center;">
           <button id="autoclick-btn" onclick="toggleAutoclick()" title="Autoclick" style="width:100px;height:100px;padding:0;background:rgba(20,5,45,0.7);border:2px solid rgba(124,58,237,0.5);border-radius:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;overflow:hidden;">
             <img src="boutondujeu/autoclick.png" id="autoclick-img" style="width:84px;height:84px;object-fit:contain;pointer-events:none;opacity:0.45;transition:opacity 0.2s;" />
@@ -986,9 +981,11 @@
       return {
         cuentas, totalEarned, totalClics, totalBought,
         bestCombo, easterEggFound, diamonds, prestigeCount, isDayMode,
-        turboCooldownEnd: turboCooldown > 0 ? Date.now() + turboCooldown * 1000 : 0,
+        turboCooldownEnd: 0,
         autoclickRate,
         comboTimeout,
+        wheelLastSpin,
+        inventory: inventory.map(r => r.id),
         talents: (typeof talents !== 'undefined' ? talents : []).map(t => ({ id: t.id, bought: !!t.bought })),
         shop: shopData.map(i => ({ id: i.id, owned: i.owned })),
         achievements: achievements.map(a => ({ id: a.id, unlocked: !!a.unlocked, claimed: !!a.claimed })),
@@ -1101,6 +1098,11 @@
 
         if (d.autoclickRate) autoclickRate = d.autoclickRate;
         if (d.comboTimeout) comboTimeout = d.comboTimeout;
+        if (d.wheelLastSpin) wheelLastSpin = d.wheelLastSpin;
+        if (d.inventory) {
+          inventory = d.inventory.map(id => relicDefs.find(r => r.id === id)).filter(Boolean);
+          inventory.forEach(r => r.bonus());
+        }
 
         // Talents : stocker pour restauration
         if (d.talents) window._savedTalents = d.talents;
