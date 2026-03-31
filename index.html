@@ -2797,6 +2797,118 @@
       requestAnimationFrame(animate);
     }
 
+    // ── CLICKER FEVER ──
+    let cfInterval = null, cfTimerInterval = null;
+
+    function openClickerFever() {
+      closeMinigames();
+      document.getElementById("cf-panel").classList.add("open");
+      document.getElementById("cf-overlay").style.display = "flex";
+      document.getElementById("cf-overlay-result").style.display = "none";
+      document.getElementById("cf-start-btn").textContent = "▶ Jouer";
+      document.getElementById("cf-overlay-title").textContent = "🔥 Clicker Fever";
+      document.getElementById("cf-overlay-sub").textContent = "Clique partout sauf sur les zones rouges !";
+      document.getElementById("cf-score").textContent = "0";
+      document.getElementById("cf-timer").textContent = "10";
+    }
+
+    function closeCF() {
+      clearInterval(cfInterval);
+      clearInterval(cfTimerInterval);
+      document.getElementById("cf-panel").classList.remove("open");
+      // Nettoyer les zones
+      document.querySelectorAll(".cf-zone").forEach(z => z.remove());
+    }
+
+    function startCF() {
+      document.getElementById("cf-overlay").style.display = "none";
+      document.querySelectorAll(".cf-zone").forEach(z => z.remove());
+
+      let score = 0;
+      let timeLeft = 10;
+      const area = document.getElementById("cf-area");
+      const W = area.offsetWidth, H = area.offsetHeight;
+
+      document.getElementById("cf-score").textContent = "0";
+      document.getElementById("cf-timer").textContent = "10";
+
+      // Clic sur la zone de jeu (fond = +1)
+      area.onclick = (e) => {
+        if (e.target === area) {
+          score++;
+          document.getElementById("cf-score").textContent = score;
+          spawnClickEffect(e.clientX, e.clientY, "+1", "#86efac");
+        }
+      };
+
+      function spawnZone() {
+        const isRed = Math.random() < 0.35;
+        const size = 40 + Math.random() * 50;
+        const x = Math.random() * (W - size);
+        const y = Math.random() * (H - size);
+        const zone = document.createElement("div");
+        zone.className = "cf-zone " + (isRed ? "red" : "green");
+        zone.style.cssText = `left:${x}px;top:${y}px;width:${size}px;height:${size}px;`;
+        zone.onclick = (e) => {
+          e.stopPropagation();
+          if (isRed) {
+            score = Math.max(0, score - 3);
+            document.getElementById("cf-score").textContent = score;
+            spawnClickEffect(e.clientX, e.clientY, "-3", "#f87171");
+            zone.classList.add("hit-red");
+          } else {
+            score += 2;
+            document.getElementById("cf-score").textContent = score;
+            spawnClickEffect(e.clientX, e.clientY, "+2", "#86efac");
+            zone.classList.add("hit-green");
+          }
+          setTimeout(() => zone.remove(), 200);
+        };
+        area.appendChild(zone);
+        setTimeout(() => { if (zone.parentNode) zone.remove(); }, 1200);
+      }
+
+      function spawnClickEffect(x, y, text, color) {
+        const el = document.createElement("div");
+        el.className = "floaty";
+        el.textContent = text;
+        el.style.color = color;
+        el.style.textShadow = `0 0 8px ${color}`;
+        el.style.left = (x - 10) + "px";
+        el.style.top  = (y - 10) + "px";
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 1100);
+      }
+
+      cfInterval = setInterval(spawnZone, 400);
+
+      cfTimerInterval = setInterval(() => {
+        timeLeft--;
+        document.getElementById("cf-timer").textContent = timeLeft;
+        if (timeLeft <= 0) {
+          clearInterval(cfInterval);
+          clearInterval(cfTimerInterval);
+          area.onclick = null;
+          document.querySelectorAll(".cf-zone").forEach(z => z.remove());
+
+          const reward = score * Math.max(1, Math.floor(cpc * 8));
+          cuentas += reward;
+          totalEarned += reward;
+          updateUI();
+          markUnsaved();
+
+          const overlay = document.getElementById("cf-overlay");
+          overlay.style.display = "flex";
+          document.getElementById("cf-overlay-title").textContent = "Terminé !";
+          document.getElementById("cf-overlay-sub").textContent = `Score : ${score} points`;
+          const res = document.getElementById("cf-overlay-result");
+          res.style.display = "block";
+          res.textContent = `+${formatNum(reward)} Cuentas !`;
+          document.getElementById("cf-start-btn").textContent = "🔁 Rejouer";
+        }
+      }, 1000);
+    }
+
     // ── SNAKE ──
     let snakeGame = null;
 
@@ -3180,6 +3292,28 @@
     </div>
   </div>
 
+  <!-- PANEL CLICKER FEVER -->
+  <div id="cf-panel">
+    <div id="cf-panel-inner">
+      <div id="cf-header">
+        <button onclick="closeCF()" style="background:none;border:none;color:#a78bfa;font-size:1.2rem;cursor:pointer;">✕</button>
+        <span style="font-family:'Cinzel Decorative',cursive;font-size:0.9rem;color:#f97316;">🔥 Clicker Fever</span>
+        <div id="cf-stats" style="font-size:0.82rem;color:#fbbf24;font-weight:700;display:flex;gap:12px;">
+          <span>Score : <span id="cf-score">0</span></span>
+          <span>⏱ <span id="cf-timer">10</span>s</span>
+        </div>
+      </div>
+      <div id="cf-area">
+        <div id="cf-overlay">
+          <div id="cf-overlay-title">🔥 Clicker Fever</div>
+          <div id="cf-overlay-sub">Clique partout sauf sur les zones rouges !</div>
+          <div id="cf-overlay-result" style="display:none"></div>
+          <button id="cf-start-btn" onclick="startCF()">▶ Jouer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- PANEL SNAKE -->
   <div id="snake-panel">
     <div id="snake-panel-inner">
@@ -3209,6 +3343,9 @@
       <div id="minigames-grid">
         <div class="mg-slot" onclick="openSnake()" title="Snake des Cuentas">
           <img src="minijeu/snake.png" alt="Snake" />
+        </div>
+        <div class="mg-slot" onclick="openClickerFever()" title="Clicker Fever">
+          <img src="minijeu/Clickerfever.png" alt="Clicker Fever" />
         </div>
         <div class="mg-slot empty"><span>Bientôt</span></div>
         <div class="mg-slot empty"><span>Bientôt</span></div>
