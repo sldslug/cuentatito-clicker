@@ -129,11 +129,18 @@
   <!-- TOGGLE THEME (gardé pour compat JS) -->
   <button id="theme-toggle" style="display:none" onclick="toggleTheme()">🌙</button>
 
-  <!-- WIDGET METEO -->
-  <div id="weather-widget" title="Météo des Cuentas" style="position:fixed;top:14px;left:50%;transform:translateX(-50%);background:rgba(10,2,24,0.85);border:1px solid rgba(124,58,237,0.3);border-radius:20px;padding:5px 14px;font-size:0.82rem;color:#e9d5ff;z-index:200;backdrop-filter:blur(10px);display:flex;align-items:center;gap:6px;cursor:default;">🌤️ <span>Dégagé</span></div>
-
-  <!-- BOUTON INVENTAIRE RELIQUES -->
-  <button id="relic-btn" onclick="openInventory()" title="Inventaire des reliques" style="position:fixed;top:14px;right:330px;z-index:200;background:rgba(10,2,24,0.85);border:1px solid rgba(251,191,36,0.4);border-radius:50%;width:38px;height:38px;font-size:1.1rem;cursor:pointer;backdrop-filter:blur(10px);transition:transform 0.15s;">🎒</button>
+  <!-- WIDGET METEO + INVENTAIRE (alignés en haut à droite) -->
+  <div id="top-right-widgets" style="position:fixed;top:14px;right:330px;z-index:200;display:flex;align-items:center;gap:8px;">
+    <!-- Météo -->
+    <div style="position:relative;">
+      <button id="weather-widget" onclick="toggleWeatherPopup()" style="background:rgba(10,2,24,0.85);border:1px solid rgba(124,58,237,0.3);border-radius:20px;padding:5px 14px;font-size:0.82rem;color:#e9d5ff;cursor:pointer;backdrop-filter:blur(10px);display:flex;align-items:center;gap:6px;transition:border-color 0.15s;">🌤️ <span id="weather-label">Dégagé</span></button>
+      <div id="weather-popup" style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:rgba(8,4,20,0.97);border:1px solid rgba(124,58,237,0.4);border-radius:14px;padding:14px 18px;min-width:200px;box-shadow:0 8px 30px rgba(0,0,0,0.6);z-index:300;animation:chatSlideUp 0.2s cubic-bezier(0.22,1,0.36,1);">
+        <div id="weather-popup-content"></div>
+      </div>
+    </div>
+    <!-- Inventaire -->
+    <button id="relic-btn" onclick="openInventory()" title="Inventaire des reliques" style="background:rgba(10,2,24,0.85);border:1px solid rgba(251,191,36,0.4);border-radius:50%;width:38px;height:38px;font-size:1.1rem;cursor:pointer;backdrop-filter:blur(10px);transition:transform 0.15s;display:flex;align-items:center;justify-content:center;">🎒</button>
+  </div>
 
   <header>
     <h1>Cuenta dé Tomito Clicker</h1>
@@ -2354,12 +2361,36 @@
     function applyWeather(w) {
       currentWeather = w;
       recalcStats();
-      const widget = document.getElementById("weather-widget");
-      if (widget) {
-        widget.innerHTML = `${w.icon} <span>${w.label}</span>`;
-        widget.title = w.msg;
+      const label = document.getElementById("weather-label");
+      if (label) label.textContent = w.label;
+      const btn = document.getElementById("weather-widget");
+      if (btn) btn.childNodes[0].textContent = w.icon + " ";
+    }
+
+    function toggleWeatherPopup() {
+      const popup = document.getElementById("weather-popup");
+      if (!popup) return;
+      const isOpen = popup.style.display !== "none";
+      popup.style.display = isOpen ? "none" : "block";
+      if (!isOpen) {
+        const w = currentWeather;
+        document.getElementById("weather-popup-content").innerHTML = `
+          <div style="font-size:1.8rem;text-align:center;margin-bottom:8px;">${w.icon}</div>
+          <div style="font-family:'Cinzel Decorative',cursive;font-size:0.85rem;color:#c084fc;text-align:center;margin-bottom:8px;">${w.label}</div>
+          <div style="font-size:0.78rem;color:#a78bfa;text-align:center;margin-bottom:10px;">${w.msg}</div>
+          <div style="font-size:0.72rem;color:#6b7280;text-align:center;">Change toutes les heures</div>
+        `;
       }
     }
+
+    // Fermer le popup météo si on clique ailleurs
+    document.addEventListener("click", e => {
+      const popup = document.getElementById("weather-popup");
+      const widget = document.getElementById("weather-widget");
+      if (popup && widget && !widget.contains(e.target) && !popup.contains(e.target)) {
+        popup.style.display = "none";
+      }
+    });
 
     function changeWeather() {
       const w = weathers[Math.floor(Math.random() * weathers.length)];

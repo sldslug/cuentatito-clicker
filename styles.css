@@ -3614,16 +3614,9 @@ body #main {
 #chat-input-row button:hover { transform: scale(1.05); }
 
 /* SIDEBAR IMAGES */
-.nav-icon-img {
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
-  flex-shrink: 0;
-  filter: brightness(0.8);
-  transition: filter 0.15s;
-}
 
-.nav-item:hover .nav-icon-img { filter: brightness(1.2); }
+
+
 
 /* PANEL INVENTAIRE */
 #inventory-panel {
@@ -3683,3 +3676,19 @@ body #main {
 /* WIDGET METEO hover */
 #weather-widget:hover { border-color: rgba(168,85,247,0.6); }
 #relic-btn:hover { transform: scale(1.1) rotate(10deg); }
+
+/* SIDEBAR ICONES */
+.nav-icon-img {
+  width: 38px !important;
+  height: 38px !important;
+  object-fit: contain !important;
+  flex-shrink: 0 !important;
+  filter: brightness(0.85) !important;
+  transition: filter 0.15s, transform 0.15s !important;
+  display: block !important;
+}
+
+.nav-item:hover .nav-icon-img {
+  filter: brightness(1.3) !important;
+  transform: scale(1.12) !important;
+}
