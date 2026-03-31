@@ -56,33 +56,33 @@
   <div id="sidebar" class="collapsed">
     <nav id="sidebar-nav">
       <div class="nav-item" data-tooltip="Achievements" onclick="openAchievements()">
-        <span class="nav-icon">🏆</span>
+        <img class="nav-icon-img" src="sidebar/Achievements.png" />
         <span class="nav-label">Achievements</span>
         <span id="ach-badge-side" class="nav-badge" style="display:none"></span>
       </div>
       <div class="nav-item" id="nav-diamonds" data-tooltip="Diamants">
-        <span class="nav-icon">💎</span>
+        <img class="nav-icon-img" src="sidebar/Diamond.png" />
         <span class="nav-label" id="diamond-count">0 diamants</span>
       </div>
       <div class="nav-item" data-tooltip="Amis" onclick="openFriends()">
-        <span class="nav-icon">👥</span>
+        <img class="nav-icon-img" src="sidebar/Amis.png" />
         <span class="nav-label">Amis</span>
         <span id="friends-badge" class="nav-badge" style="display:none"></span>
       </div>
       <div class="nav-item" data-tooltip="Classement" onclick="openLeaderboard()">
-        <span class="nav-icon">🥇</span>
+        <img class="nav-icon-img" src="sidebar/Classement.png" />
         <span class="nav-label">Classement</span>
       </div>
       <div class="nav-item" data-tooltip="Boutique cosmétique" onclick="openCosmeticShop()">
-        <span class="nav-icon">🎨</span>
+        <img class="nav-icon-img" src="sidebar/Cosmetiques.png" />
         <span class="nav-label">Cosmétiques</span>
       </div>
       <div class="nav-item" data-tooltip="Statistiques" onclick="openStats()">
-        <span class="nav-icon">📊</span>
+        <img class="nav-icon-img" src="sidebar/Statistiques.png" />
         <span class="nav-label">Statistiques</span>
       </div>
       <div class="nav-item" data-tooltip="Prestige" onclick="openPrestigePanel()">
-        <span class="nav-icon">⭐</span>
+        <img class="nav-icon-img" src="sidebar/Prestige.png" />
         <span class="nav-label">Prestige</span>
         <span id="prestige-info-side" class="nav-sub"></span>
       </div>
@@ -92,31 +92,31 @@
       </div>
       <div class="nav-divider"></div>
       <div class="nav-item" data-tooltip="Musique" onclick="openMusicPanel()">
-        <span class="nav-icon">🎵</span>
+        <img class="nav-icon-img" src="sidebar/Musique.png" />
         <span class="nav-label">Musique</span>
         <span id="music-nav-status" class="nav-sub"></span>
       </div>
       <div class="nav-divider"></div>
       <div class="nav-item" data-tooltip="Partager mon score" onclick="openShare()">
-        <span class="nav-icon">📤</span>
+        <img class="nav-icon-img" src="sidebar/Partager.png" />
         <span class="nav-label">Partager</span>
       </div>
       <div class="nav-item" data-tooltip="A propos" onclick="openAbout()">
-        <span class="nav-icon">ℹ️</span>
+        <img class="nav-icon-img" src="sidebar/APropos.png" />
         <span class="nav-label">A propos</span>
       </div>
       <div class="nav-divider"></div>
       <div class="nav-item" data-tooltip="Codes secrets" onclick="openCodesPanel()">
-        <span class="nav-icon">🔑</span>
+        <img class="nav-icon-img" src="sidebar/Codes.png" />
         <span class="nav-label">Codes</span>
       </div>
       <div class="nav-item" data-tooltip="Sauvegarder" onclick="saveGame()">
-        <span class="nav-icon" id="save-icon">💾</span>
+        <img class="nav-icon-img" src="sidebar/Sauvegarder.png" id="save-icon" />
         <span class="nav-label">Sauvegarder</span>
         <span id="save-status" class="nav-sub"></span>
       </div>
       <div class="nav-item" data-tooltip="Se déconnecter" onclick="logout()">
-        <span class="nav-icon">🚪</span>
+        <img class="nav-icon-img" src="sidebar/Deconnexion.png" />
         <span class="nav-label" id="nav-username">Déconnexion</span>
       </div>
       <div class="nav-item" id="admin-nav-btn" data-tooltip="Panel Admin" onclick="window.open('admin.html','_blank')" style="display:none">
@@ -128,6 +128,12 @@
 
   <!-- TOGGLE THEME (gardé pour compat JS) -->
   <button id="theme-toggle" style="display:none" onclick="toggleTheme()">🌙</button>
+
+  <!-- WIDGET METEO -->
+  <div id="weather-widget" title="Météo des Cuentas" style="position:fixed;top:14px;left:50%;transform:translateX(-50%);background:rgba(10,2,24,0.85);border:1px solid rgba(124,58,237,0.3);border-radius:20px;padding:5px 14px;font-size:0.82rem;color:#e9d5ff;z-index:200;backdrop-filter:blur(10px);display:flex;align-items:center;gap:6px;cursor:default;">🌤️ <span>Dégagé</span></div>
+
+  <!-- BOUTON INVENTAIRE RELIQUES -->
+  <button id="relic-btn" onclick="openInventory()" title="Inventaire des reliques" style="position:fixed;top:14px;right:330px;z-index:200;background:rgba(10,2,24,0.85);border:1px solid rgba(251,191,36,0.4);border-radius:50%;width:38px;height:38px;font-size:1.1rem;cursor:pointer;backdrop-filter:blur(10px);transition:transform 0.15s;">🎒</button>
 
   <header>
     <h1>Cuenta dé Tomito Clicker</h1>
@@ -504,6 +510,7 @@
       checkAchievements();
       checkMilestones();
       checkTalents();
+      showTomitoQuote("buy");
     }
 
     // ── COMBO DE CLICS ──
@@ -628,9 +635,13 @@
 
       const mult = getComboMult();
       if (mult > bestCombo) bestCombo = mult;
-      const gained = cpc * mult * (turboActive ? 3 : 1);
+      const gained = cpc * mult * (turboActive ? 3 : 1) * (currentWeather?.cpcBonus || 1);
       cuentas += gained;
       totalEarned += gained;
+      lastClickTime = Date.now();
+      tryDropRelic();
+      if (mult >= 3) showTomitoQuote("combo");
+      if (cuentas >= 1000000) showTomitoQuote("rich");
       updateUI();
       checkAchievements();
       spawnFloaty(e.clientX, e.clientY, "+" + formatNum(gained) + (mult > 1 ? ` x${mult}!` : ""));
@@ -2305,6 +2316,132 @@
       if (inp) inp.addEventListener("keydown", e => { if (e.key === "Enter") sendChat(); });
     });
 
+    function openInventory() {
+      document.getElementById("inventory-panel").classList.add("open");
+      const container = document.getElementById("inventory-list");
+      if (inventory.length === 0) {
+        container.innerHTML = '<p style="color:#6b7280;font-size:0.85rem;text-align:center;padding:20px 0;">Aucune relique pour l\'instant.<br>Continue de cliquer !</p>';
+        return;
+      }
+      const rarityColor = { rare:"#60a5fa", epique:"#c084fc", legendaire:"#fbbf24" };
+      container.innerHTML = inventory.map(r => `
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:rgba(30,10,60,0.5);border:1px solid ${rarityColor[r.rarity] || '#6366f1'}33;border-radius:10px;margin-bottom:8px;">
+          <span style="font-size:1.6rem;">${r.icon}</span>
+          <div>
+            <div style="font-weight:700;font-size:0.9rem;color:${rarityColor[r.rarity] || '#e9d5ff'}">${r.name}</div>
+            <div style="font-size:0.73rem;color:#9f7aea;margin-top:2px;">${r.desc}</div>
+            <div style="font-size:0.68rem;color:${rarityColor[r.rarity]};margin-top:2px;text-transform:uppercase;letter-spacing:1px;">${r.rarity}</div>
+          </div>
+        </div>`).join('');
+    }
+
+    // ── METEO ──
+    const weathers = [
+      { id:"sun",   icon:"☀️",  label:"Ensoleillé",  cpsBonus:1.1,  cpcBonus:1.0,  msg:"Production +10% !" },
+      { id:"rain",  icon:"🌧️", label:"Pluvieux",    cpsBonus:0.95, cpcBonus:1.0,  msg:"Production -5%..." },
+      { id:"storm", icon:"⚡",  label:"Orage",       cpsBonus:2.0,  cpcBonus:1.0,  msg:"x2 CPS pendant 5 min !", duration:300 },
+      { id:"wind",  icon:"💨",  label:"Venteux",     cpsBonus:1.0,  cpcBonus:1.25, msg:"Clics +25% !" },
+      { id:"snow",  icon:"❄️",  label:"Neige",       cpsBonus:0.8,  cpcBonus:0.8,  msg:"Tout ralentit..." },
+      { id:"clear", icon:"🌤️", label:"Dégagé",      cpsBonus:1.0,  cpcBonus:1.0,  msg:"Temps normal." },
+    ];
+    let currentWeather = weathers[5];
+    let weatherTimer = null;
+
+    function applyWeather(w) {
+      currentWeather = w;
+      recalcStats();
+      const widget = document.getElementById("weather-widget");
+      if (widget) {
+        widget.innerHTML = `${w.icon} <span>${w.label}</span>`;
+        widget.title = w.msg;
+      }
+    }
+
+    function changeWeather() {
+      const w = weathers[Math.floor(Math.random() * weathers.length)];
+      applyWeather(w);
+      // Toast météo
+      const t = document.createElement("div");
+      t.className = "ach-toast";
+      t.innerHTML = `<span class="ach-toast-icon">${w.icon}</span><div><div class="ach-toast-name">Météo : ${w.label}</div><div class="ach-toast-sub">${w.msg}</div></div>`;
+      document.body.appendChild(t);
+      setTimeout(() => t.classList.add("visible"), 50);
+      setTimeout(() => { t.classList.remove("visible"); setTimeout(() => t.remove(), 400); }, 4000);
+    }
+
+    // Météo change toutes les heures
+    setInterval(changeWeather, 3600000);
+    // Première météo après 10s
+    setTimeout(changeWeather, 10000);
+
+    // ── RELIQUES ──
+    const relicDefs = [
+      { id:"r1", name:"Éclat de Tomito",    icon:"💎", desc:"+5% CPS permanent",      rarity:"rare",      bonus:()=>{ cps *= 1.05; } },
+      { id:"r2", name:"Pièce du 7",         icon:"🪙", desc:"+3 Cuentas/clic",         rarity:"rare",      bonus:()=>{ cpc += 3; } },
+      { id:"r3", name:"Couronne Violette",  icon:"👑", desc:"+15% CPS permanent",      rarity:"epique",    bonus:()=>{ cps *= 1.15; } },
+      { id:"r4", name:"Dé Cosmique",        icon:"🎲", desc:"x2 sur les combos",       rarity:"epique",    bonus:()=>{ /* appliqué dans combo */ } },
+      { id:"r5", name:"Larme de Prestige",  icon:"⭐", desc:"+0.5 au multiplicateur",  rarity:"legendaire",bonus:()=>{ /* appliqué dans getPrestigeMult */ } },
+      { id:"r6", name:"Sablier Brisé",      icon:"⏳", desc:"Turbo cooldown -50%",     rarity:"rare",      bonus:()=>{ } },
+    ];
+    let inventory = [];
+    let relicDropChance = 0; // compteur de clics
+
+    function tryDropRelic() {
+      relicDropChance++;
+      if (relicDropChance < 500) return;
+      if (Math.random() > 0.002) return; // ~1/500
+      relicDropChance = 0;
+      const available = relicDefs.filter(r => !inventory.find(i => i.id === r.id));
+      if (available.length === 0) return;
+      const relic = available[Math.floor(Math.random() * available.length)];
+      inventory.push(relic);
+      relic.bonus();
+      recalcStats();
+      showRelicDrop(relic);
+    }
+
+    function showRelicDrop(r) {
+      const rarityColor = r.rarity === "legendaire" ? "#fbbf24" : r.rarity === "epique" ? "#c084fc" : "#60a5fa";
+      const t = document.createElement("div");
+      t.className = "ach-toast";
+      t.style.borderColor = rarityColor;
+      t.innerHTML = `<span class="ach-toast-icon">${r.icon}</span><div><div class="ach-toast-name" style="color:${rarityColor}">${r.name}</div><div class="ach-toast-sub">${r.desc} — ${r.rarity}</div></div>`;
+      document.body.appendChild(t);
+      setTimeout(() => t.classList.add("visible"), 50);
+      setTimeout(() => { t.classList.remove("visible"); setTimeout(() => t.remove(), 400); }, 5000);
+    }
+
+    // ── TOMITO PARLE ──
+    const tomitoQuotes = [
+      { trigger:"idle",    msgs:["T'es là ou pas ?", "Clique un peu...", "Je m'ennuie moi."] },
+      { trigger:"combo",   msgs:["COMBO LET'S GO !", "T'es chaud là !", "VITE VITE VITE !"] },
+      { trigger:"buy",     msgs:["Bon achat !", "Encore !", "Tu dépenses bien."] },
+      { trigger:"prestige",msgs:["PRESTIGE !!!", "Respect.", "Tu es devenu plus fort."] },
+      { trigger:"rich",    msgs:["T'es riche là !", "Millionnaire !", "Achète quelque chose !"] },
+      { trigger:"poor",    msgs:["T'as plus rien...", "Fais des économies.", "Clique plus vite !"] },
+    ];
+    let lastTomitoQuote = 0;
+    let lastClickTime = Date.now();
+
+    function showTomitoQuote(trigger) {
+      if (Date.now() - lastTomitoQuote < 8000) return;
+      const group = tomitoQuotes.find(q => q.trigger === trigger);
+      if (!group) return;
+      const msg = group.msgs[Math.floor(Math.random() * group.msgs.length)];
+      lastTomitoQuote = Date.now();
+      const bubble = document.createElement("div");
+      bubble.className = "tomito-bubble";
+      bubble.textContent = msg;
+      document.getElementById("img-wrapper")?.appendChild(bubble);
+      setTimeout(() => bubble.classList.add("visible"), 50);
+      setTimeout(() => { bubble.classList.remove("visible"); setTimeout(() => bubble.remove(), 400); }, 3000);
+    }
+
+    // Idle : si pas de clic depuis 30s
+    setInterval(() => {
+      if (Date.now() - lastClickTime > 30000) showTomitoQuote("idle");
+    }, 10000);
+
     buildShop();
     loadGame().then(async () => {
       // Restaurer les talents achetés
@@ -2478,6 +2615,15 @@
 
   <!-- FEUX D'ARTIFICE -->
   <canvas id="fireworks-canvas"></canvas>
+
+  <!-- PANEL INVENTAIRE -->
+  <div id="inventory-panel">
+    <div id="inventory-panel-inner">
+      <button onclick="document.getElementById('inventory-panel').classList.remove('open')" style="position:absolute;top:14px;right:16px;background:none;border:none;color:#a78bfa;font-size:1.2rem;cursor:pointer;">✕</button>
+      <h2 style="font-family:'Cinzel Decorative',cursive;font-size:1rem;color:#fbbf24;text-align:center;margin-bottom:16px;text-shadow:0 0 10px rgba(251,191,36,0.5);">🎒 Reliques</h2>
+      <div id="inventory-list"></div>
+    </div>
+  </div>
 
   <!-- PANEL CODES -->
   <div id="codes-panel">
