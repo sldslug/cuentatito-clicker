@@ -177,9 +177,11 @@
         </div>
       </div>
       <!-- Image centree, ne bouge pas -->
-      <div class="img-wrapper" id="img-wrapper">
-        <img id="cuentatito" src="Cuentatito.png" alt="Cuentatito" draggable="false" />
-        <canvas id="viz-canvas"></canvas>
+      <div style="position:relative;display:flex;align-items:center;justify-content:center;margin-top:30px;">
+        <canvas id="viz-canvas" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:0;"></canvas>
+        <div class="img-wrapper" id="img-wrapper" style="position:relative;z-index:1;">
+          <img id="cuentatito" src="Cuentatito.png" alt="Cuentatito" draggable="false" />
+        </div>
       </div>
       <div id="combo-display"></div>
       <button id="admin-open-btn" onclick="openAdminPanel()" style="display:none;margin-top:12px;padding:8px 20px;background:linear-gradient(135deg,#f97316,#ef4444);border:none;border-radius:10px;color:#fff;font-family:'Cinzel Decorative',cursive;font-size:0.75rem;cursor:pointer;box-shadow:0 0 16px rgba(249,115,22,0.4);">⚡ Panel Admin</button>
@@ -1433,11 +1435,11 @@
       const canvas = document.getElementById("viz-canvas");
       if (!canvas || !vizAnalyser) return;
       const ctx = canvas.getContext("2d");
-      const size = 360;
+      const size = 340;
       canvas.width = size;
       canvas.height = size;
       const cx = size / 2, cy = size / 2;
-      const radius = 168; // juste autour du cercle de 320px
+      const radius = 155;
 
       const data = new Uint8Array(vizAnalyser.frequencyBinCount);
 
@@ -1450,7 +1452,7 @@
         for (let i = 0; i < bars; i++) {
           const angle = (i / bars) * Math.PI * 2 - Math.PI / 2;
           const val = data[Math.floor(i / bars * data.length)] / 255;
-          const barH = 8 + val * 40;
+          const barH = 6 + val * 30;
           const hue = 270 + val * 80;
 
           const x1 = cx + Math.cos(angle) * radius;
@@ -1497,6 +1499,8 @@
       } else if (isPlaying) {
         audio.pause(); isPlaying = false;
         stopVisualizer();
+        const canvas = document.getElementById("viz-canvas");
+        if (canvas) { const ctx = canvas.getContext("2d"); ctx.clearRect(0,0,canvas.width,canvas.height); }
       } else {
         initVisualizer();
         if (vizAudioCtx && vizAudioCtx.state === "suspended") vizAudioCtx.resume();
@@ -1563,6 +1567,9 @@
     function closePlayer() {
       audio.pause();
       isPlaying = false;
+      stopVisualizer();
+      const canvas = document.getElementById("viz-canvas");
+      if (canvas) { const ctx = canvas.getContext("2d"); ctx.clearRect(0,0,canvas.width,canvas.height); }
       document.getElementById("mp-play").textContent = "\u25B6";
       document.getElementById("mini-player").classList.add("hidden");
     }
