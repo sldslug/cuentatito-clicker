@@ -3723,3 +3723,22 @@ body #main {
 #sidebar.collapsed .nav-icon-img {
   margin-left: 0 !important;
 }
+
+/* SIDEBAR COLLAPSED - ICONES VISIBLES */
+#sidebar.collapsed .nav-item {
+  padding: 10px 0 !important;
+  justify-content: center !important;
+  gap: 0 !important;
+}
+
+#sidebar.collapsed .nav-icon-img {
+  margin-left: 0 !important;
+  width: 30px !important;
+  height: 30px !important;
+}
+
+#sidebar.collapsed .nav-label,
+#sidebar.collapsed .nav-sub,
+#sidebar.collapsed .nav-badge {
+  display: none !important;
+}
