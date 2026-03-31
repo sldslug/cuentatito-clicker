@@ -1440,13 +1440,28 @@
       canvas.height = size;
       canvas.style.width = size + "px";
       canvas.style.height = size + "px";
+
+      // Centrer le canvas sur l'image en temps réel
+      function repositionCanvas() {
+        const img = document.getElementById("cuentatito");
+        if (!img) return;
+        const r = img.getBoundingClientRect();
+        const imgCx = r.left + r.width / 2;
+        const imgCy = r.top + r.height / 2;
+        canvas.style.position = "fixed";
+        canvas.style.left = (imgCx - size / 2) + "px";
+        canvas.style.top  = (imgCy - size / 2) + "px";
+        canvas.style.zIndex = "0";
+        canvas.style.pointerEvents = "none";
+      }
+
       const cx = size / 2, cy = size / 2;
       const baseRadius = 170;
-
       const data = new Uint8Array(vizAnalyser.frequencyBinCount);
 
       function frame() {
         vizAnimId = requestAnimationFrame(frame);
+        repositionCanvas();
         vizAnalyser.getByteFrequencyData(data);
         ctx.clearRect(0, 0, size, size);
 
@@ -1463,34 +1478,17 @@
         }
         ctx.closePath();
 
-        // Dégradé violet → rose → cyan selon l'intensité
         const avg = data.reduce((a, b) => a + b, 0) / data.length / 255;
         const grad = ctx.createLinearGradient(cx - baseRadius, cy, cx + baseRadius, cy);
-        grad.addColorStop(0, `hsla(${260 + avg * 60}, 90%, 65%, 0.7)`);
+        grad.addColorStop(0,   `hsla(${260 + avg * 60}, 90%, 65%, 0.7)`);
         grad.addColorStop(0.5, `hsla(${300 + avg * 40}, 90%, 70%, 0.8)`);
-        grad.addColorStop(1, `hsla(${200 + avg * 80}, 90%, 65%, 0.7)`);
+        grad.addColorStop(1,   `hsla(${200 + avg * 80}, 90%, 65%, 0.7)`);
 
         ctx.strokeStyle = grad;
-        ctx.lineWidth = 2;
-        ctx.shadowBlur = 12;
+        ctx.lineWidth = 2.5;
+        ctx.shadowBlur = 14;
         ctx.shadowColor = `hsla(${270 + avg * 60}, 90%, 65%, 0.9)`;
         ctx.stroke();
-
-        // Points lumineux aux pics
-        for (let i = 0; i < points; i += 3) {
-          const angle = (i / points) * Math.PI * 2 - Math.PI / 2;
-          const val = data[Math.floor(i / points * data.length)] / 255;
-          if (val < 0.4) continue;
-          const r = baseRadius + val * 55;
-          const x = cx + Math.cos(angle) * r;
-          const y = cy + Math.sin(angle) * r;
-          ctx.beginPath();
-          ctx.arc(x, y, 2 + val * 3, 0, Math.PI * 2);
-          ctx.fillStyle = `hsla(${280 + val * 80}, 100%, 80%, ${val})`;
-          ctx.shadowBlur = 10;
-          ctx.shadowColor = `hsla(${280 + val * 80}, 100%, 70%, 1)`;
-          ctx.fill();
-        }
         ctx.shadowBlur = 0;
       }
       frame();
