@@ -105,6 +105,10 @@
         <img class="nav-icon-img" src="sidebar/APropos.png" />
         <span class="nav-label">A propos</span>
       </div>
+      <div class="nav-item" data-tooltip="Roue de la Fortune" onclick="openWheel()">
+        <span class="nav-icon">🎡</span>
+        <span class="nav-label">Roue Fortune</span>
+      </div>
       <div class="nav-divider"></div>
       <div class="nav-item" data-tooltip="Codes secrets" onclick="openCodesPanel()">
         <img class="nav-icon-img" src="sidebar/Codes.png" />
@@ -2563,6 +2567,165 @@
       if (Date.now() - lastClickTime > 30000) showTomitoQuote("idle");
     }, 10000);
 
+    // ── ROUE DE LA FORTUNE ──
+    const WHEEL_COOLDOWN = 24 * 3600 * 1000; // 24h
+    let wheelLastSpin = 0;
+    let wheelSpinning = false;
+
+    function getWheelSlices() {
+      // Récompenses calculées selon les stats actuelles
+      const cuentasBonus  = Math.floor(cuentas * 0.5);
+      const cpsBonus      = Math.floor(cps * 300); // 5 min de CPS
+      const bigBonus      = Math.floor(cuentas * 1.5);
+      const smallBonus    = Math.floor(cuentas * 0.1);
+      const malus         = Math.floor(cuentas * 0.2);
+      const cpsMultBonus  = Math.floor(cps * 600); // 10 min de CPS
+
+      return [
+        { label: "+" + formatNum(cuentasBonus),  color: "#f59e0b", action: () => { cuentas += cuentasBonus; totalEarned += cuentasBonus; }, desc: "50% de tes Cuentas !" },
+        { label: "+" + formatNum(cpsBonus),       color: "#a855f7", action: () => { cuentas += cpsBonus;     totalEarned += cpsBonus; },     desc: "5 min de production !" },
+        { label: "JACKPOT",                        color: "#ef4444", action: () => { cuentas += bigBonus;     totalEarned += bigBonus; },     desc: "+" + formatNum(bigBonus) + " Cuentas !" },
+        { label: "+" + formatNum(smallBonus),     color: "#34d399", action: () => { cuentas += smallBonus;   totalEarned += smallBonus; },   desc: "10% de tes Cuentas" },
+        { label: "RIEN",                           color: "#4b5563", action: () => {},                                                        desc: "Pas de chance..." },
+        { label: "-" + formatNum(malus),          color: "#dc2626", action: () => { cuentas = Math.max(0, cuentas - malus); },               desc: "-20% de tes Cuentas..." },
+        { label: "+" + formatNum(cpsMultBonus),   color: "#06b6d4", action: () => { cuentas += cpsMultBonus; totalEarned += cpsMultBonus; }, desc: "10 min de production !" },
+        { label: "💎 +5",                          color: "#818cf8", action: () => { diamonds += 5; document.getElementById("diamond-count").textContent = diamonds + " diamants"; }, desc: "+5 Diamants !" },
+      ];
+    }
+
+    function openWheel() {
+      document.getElementById("wheel-panel").classList.add("open");
+      updateWheelCooldown();
+      drawWheelCanvas(0);
+    }
+
+    function closeWheel() {
+      document.getElementById("wheel-panel").classList.remove("open");
+    }
+
+    function updateWheelCooldown() {
+      const remaining = WHEEL_COOLDOWN - (Date.now() - wheelLastSpin);
+      const btn = document.getElementById("wheel-spin-btn");
+      const msg = document.getElementById("wheel-cooldown-msg");
+      if (remaining > 0 && wheelLastSpin > 0) {
+        const h = Math.floor(remaining / 3600000);
+        const m = Math.floor((remaining % 3600000) / 60000);
+        msg.textContent = `Prochain tour dans ${h}h ${m}m`;
+        btn.disabled = true;
+        btn.style.opacity = "0.5";
+        btn.style.cursor = "not-allowed";
+      } else {
+        msg.textContent = "Gratuit aujourd'hui !";
+        btn.disabled = false;
+        btn.style.opacity = "1";
+        btn.style.cursor = "pointer";
+      }
+    }
+
+    function drawWheelCanvas(rotation) {
+      const canvas = document.getElementById("wheel-canvas");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      const slices = getWheelSlices();
+      const n = slices.length;
+      const arc = (Math.PI * 2) / n;
+      const cx = 150, cy = 150, r = 140;
+
+      ctx.clearRect(0, 0, 300, 300);
+
+      slices.forEach((s, i) => {
+        const start = rotation + i * arc - Math.PI / 2;
+        const end = start + arc;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, r, start, end);
+        ctx.closePath();
+        ctx.fillStyle = s.color;
+        ctx.fill();
+        ctx.strokeStyle = "rgba(0,0,0,0.3)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Texte
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(start + arc / 2);
+        ctx.textAlign = "right";
+        ctx.fillStyle = "#fff";
+        ctx.font = "bold 11px Nunito";
+        ctx.shadowBlur = 4;
+        ctx.shadowColor = "rgba(0,0,0,0.8)";
+        ctx.fillText(s.label, r - 8, 4);
+        ctx.restore();
+      });
+
+      // Centre
+      ctx.beginPath();
+      ctx.arc(cx, cy, 18, 0, Math.PI * 2);
+      ctx.fillStyle = "#0d0020";
+      ctx.fill();
+      ctx.strokeStyle = "#fbbf24";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+    }
+
+    function spinWheel() {
+      if (wheelSpinning) return;
+      const remaining = WHEEL_COOLDOWN - (Date.now() - wheelLastSpin);
+      if (remaining > 0 && wheelLastSpin > 0) return;
+
+      wheelSpinning = true;
+      wheelLastSpin = Date.now();
+      document.getElementById("wheel-spin-btn").disabled = true;
+      document.getElementById("wheel-result").textContent = "";
+
+      const slices = getWheelSlices();
+      const n = slices.length;
+      const arc = (Math.PI * 2) / n;
+
+      // Choisir une case au hasard (pondérée : jackpot et malus moins fréquents)
+      const weights = [20, 20, 5, 25, 15, 5, 20, 10];
+      const total = weights.reduce((a, b) => a + b, 0);
+      let rand = Math.random() * total, chosen = 0;
+      for (let i = 0; i < weights.length; i++) {
+        rand -= weights[i];
+        if (rand <= 0) { chosen = i; break; }
+      }
+
+      // Calculer la rotation finale pour pointer sur la case choisie
+      const targetAngle = -(chosen * arc) - arc / 2;
+      const spins = 5 + Math.random() * 3; // 5-8 tours
+      const finalRotation = spins * Math.PI * 2 + targetAngle;
+
+      let start = null;
+      const duration = 4000;
+      let currentRot = 0;
+
+      function animate(ts) {
+        if (!start) start = ts;
+        const elapsed = ts - start;
+        const progress = Math.min(elapsed / duration, 1);
+        // Easing out cubic
+        const ease = 1 - Math.pow(1 - progress, 3);
+        currentRot = finalRotation * ease;
+        drawWheelCanvas(currentRot);
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          wheelSpinning = false;
+          const s = slices[chosen];
+          s.action();
+          updateUI();
+          saveGame(true);
+          document.getElementById("wheel-result").innerHTML =
+            `<span style="color:${s.color};font-size:1.1rem;">${s.label}</span><br><span style="font-size:0.82rem;color:#a78bfa;">${s.desc}</span>`;
+          updateWheelCooldown();
+        }
+      }
+      requestAnimationFrame(animate);
+    }
+
     buildShop();
     loadGame().then(async () => {
       // Restaurer les talents achetés
@@ -2743,6 +2906,21 @@
       <button onclick="document.getElementById('inventory-panel').classList.remove('open')" style="position:absolute;top:14px;right:16px;background:none;border:none;color:#a78bfa;font-size:1.2rem;cursor:pointer;">✕</button>
       <h2 style="font-family:'Cinzel Decorative',cursive;font-size:1rem;color:#fbbf24;text-align:center;margin-bottom:16px;text-shadow:0 0 10px rgba(251,191,36,0.5);">🎒 Reliques</h2>
       <div id="inventory-list"></div>
+    </div>
+  </div>
+
+  <!-- PANEL ROUE -->
+  <div id="wheel-panel">
+    <div id="wheel-panel-inner">
+      <button onclick="closeWheel()" style="position:absolute;top:14px;right:16px;background:none;border:none;color:#a78bfa;font-size:1.2rem;cursor:pointer;">✕</button>
+      <h2 style="font-family:'Cinzel Decorative',cursive;font-size:1rem;color:#fbbf24;text-align:center;margin-bottom:4px;text-shadow:0 0 10px rgba(251,191,36,0.5);">🎡 Roue de la Fortune</h2>
+      <div id="wheel-cooldown-msg" style="text-align:center;font-size:0.78rem;color:#a78bfa;margin-bottom:14px;min-height:18px;"></div>
+      <div id="wheel-container">
+        <canvas id="wheel-canvas" width="300" height="300"></canvas>
+        <div id="wheel-pointer">▼</div>
+      </div>
+      <button id="wheel-spin-btn" onclick="spinWheel()" style="margin-top:18px;width:100%;padding:12px;background:linear-gradient(135deg,#f59e0b,#f97316);border:none;border-radius:12px;color:#fff;font-family:'Cinzel Decorative',cursive;font-size:0.9rem;cursor:pointer;box-shadow:0 0 20px rgba(245,158,11,0.4);transition:transform 0.1s;">🎡 Tourner !</button>
+      <div id="wheel-result" style="margin-top:14px;text-align:center;font-size:1rem;font-weight:700;min-height:24px;"></div>
     </div>
   </div>
 

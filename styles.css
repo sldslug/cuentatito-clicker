@@ -3754,3 +3754,40 @@ body #main {
   pointer-events: none;
   z-index: 2;
 }
+
+/* ROUE DE LA FORTUNE */
+#wheel-panel {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+  z-index: 9003; display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.25s;
+}
+#wheel-panel.open { opacity: 1; pointer-events: all; }
+
+#wheel-panel-inner {
+  background: rgba(8,4,20,0.98);
+  border: 2px solid rgba(245,158,11,0.4);
+  border-radius: 20px;
+  padding: 32px 28px 28px;
+  width: min(380px, 94vw);
+  position: relative;
+  text-align: center;
+  box-shadow: 0 0 60px rgba(245,158,11,0.15);
+}
+#wheel-panel.open #wheel-panel-inner { animation: panelIn 0.3s cubic-bezier(0.22,1,0.36,1); }
+
+#wheel-container {
+  position: relative;
+  display: inline-block;
+}
+
+#wheel-pointer {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.4rem;
+  color: #fbbf24;
+  text-shadow: 0 0 10px rgba(245,158,11,0.8);
+  z-index: 10;
+}
