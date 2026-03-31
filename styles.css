@@ -3791,3 +3791,177 @@ body #main {
   text-shadow: 0 0 10px rgba(245,158,11,0.8);
   z-index: 10;
 }
+
+/* ═══════════════════════════════════════
+   RESPONSIVE MOBILE - max 768px
+═══════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* SIDEBAR - cachée par défaut, slide depuis la gauche */
+  #sidebar {
+    width: 260px !important;
+    transform: translateX(-260px);
+    transition: transform 0.3s cubic-bezier(0.22,1,0.36,1) !important;
+    z-index: 1000 !important;
+  }
+
+  #sidebar:not(.collapsed) {
+    transform: translateX(0) !important;
+    width: 260px !important;
+  }
+
+  #sidebar.collapsed {
+    transform: translateX(-260px) !important;
+    width: 260px !important;
+  }
+
+  /* Overlay quand sidebar ouverte */
+  #sidebar:not(.collapsed)::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    left: 260px;
+    background: rgba(0,0,0,0.5);
+    z-index: -1;
+  }
+
+  /* SHOP - passe en bas */
+  #shop {
+    position: fixed !important;
+    top: auto !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    height: 45vh !important;
+    border-left: none !important;
+    border-top: 1px solid rgba(124,58,237,0.4) !important;
+    z-index: 100 !important;
+  }
+
+  /* CONTENU PRINCIPAL */
+  body {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-bottom: 46vh !important;
+  }
+
+  header {
+    padding: 16px 10px 6px !important;
+    margin: 0 !important;
+  }
+
+  header h1 {
+    font-size: clamp(1rem, 5vw, 1.6rem) !important;
+  }
+
+  #counter-wrap {
+    margin: 8px 0 4px !important;
+    padding: 0 !important;
+  }
+
+  #counter { font-size: clamp(1.4rem, 6vw, 2rem) !important; }
+
+  /* CLICKER ZONE */
+  #clicker-zone { padding: 10px 0 20px !important; }
+
+  .img-wrapper, #cuentatito {
+    width: 220px !important;
+    height: 220px !important;
+  }
+
+  /* BOUTONS ACTION */
+  #action-btns-row > div > button {
+    width: 75px !important;
+    height: 75px !important;
+  }
+
+  #action-btns-row > div > button img {
+    width: 62px !important;
+    height: 62px !important;
+  }
+
+  /* BOUTONS ABSOLUS A GAUCHE */
+  div[style*="position:absolute;left:calc(50%"] {
+    left: calc(50% - 200px) !important;
+  }
+
+  /* MINI PLAYER */
+  #mini-player {
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 46vh !important;
+    width: 100% !important;
+    border-radius: 0 !important;
+  }
+
+  /* CHAT WIDGET */
+  #chat-widget {
+    right: 10px !important;
+    bottom: calc(46vh + 10px) !important;
+  }
+
+  /* WIDGETS HAUT DROITE */
+  #top-right-widgets {
+    right: 10px !important;
+    top: 10px !important;
+  }
+
+  /* BOSS WIDGET FIXE */
+  #boss-fixed-widget {
+    right: 10px !important;
+    top: 50px !important;
+  }
+
+  /* SIDEBAR TOGGLE */
+  #sidebar-toggle {
+    top: 8px !important;
+    left: 8px !important;
+    z-index: 1001 !important;
+  }
+
+  /* PANELS - plein écran sur mobile */
+  #ach-panel-inner,
+  #cosm-panel-inner,
+  #stats-panel-inner,
+  #lb-panel-inner,
+  #friends-panel-inner,
+  #prestige-panel-inner,
+  #share-panel-inner,
+  #about-panel-inner,
+  #music-panel-inner,
+  #wheel-panel-inner,
+  #codes-panel-inner,
+  #admin-panel-inner,
+  #inventory-panel-inner,
+  #chat-box {
+    width: 95vw !important;
+    max-height: 85vh !important;
+  }
+
+  /* BOSS WIDGET INLINE */
+  #boss-widget { width: 90vw !important; }
+
+  /* VISUALISEUR */
+  #viz-canvas {
+    width: 280px !important;
+    height: 280px !important;
+  }
+}
+
+/* ═══════════════════════════════════════
+   TRES PETIT ECRAN - max 400px
+═══════════════════════════════════════ */
+@media (max-width: 400px) {
+  .img-wrapper, #cuentatito {
+    width: 180px !important;
+    height: 180px !important;
+  }
+
+  #action-btns-row > div > button {
+    width: 60px !important;
+    height: 60px !important;
+  }
+
+  header h1 { font-size: 1rem !important; }
+}

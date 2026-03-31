@@ -966,17 +966,21 @@
 
     function toggleSidebar() {
       const sb = document.getElementById("sidebar");
-      sb.classList.toggle("collapsed");
-      // Pousser le player si la sidebar l'écrase
-      const player = document.getElementById("mini-player");
-      if (player && !player.classList.contains("hidden")) {
-        const sidebarWidth = sb.classList.contains("collapsed") ? 62 : 240;
-        const rect = player.getBoundingClientRect();
-        if (rect.left < sidebarWidth + 8) {
-          player.style.setProperty("left",   (sidebarWidth + 8) + "px", "important");
-          player.style.setProperty("top",    rect.top + "px",           "important");
-          player.style.setProperty("bottom", "auto",                    "important");
-          player.style.setProperty("right",  "auto",                    "important");
+      const isMobile = window.innerWidth <= 768;
+      if (isMobile) {
+        sb.classList.toggle("collapsed");
+      } else {
+        sb.classList.toggle("collapsed");
+        const player = document.getElementById("mini-player");
+        if (player && !player.classList.contains("hidden")) {
+          const sidebarWidth = sb.classList.contains("collapsed") ? 62 : 240;
+          const rect = player.getBoundingClientRect();
+          if (rect.left < sidebarWidth + 8) {
+            player.style.setProperty("left", (sidebarWidth + 8) + "px", "important");
+            player.style.setProperty("top", rect.top + "px", "important");
+            player.style.setProperty("bottom", "auto", "important");
+            player.style.setProperty("right", "auto", "important");
+          }
         }
       }
     }
