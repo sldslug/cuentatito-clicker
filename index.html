@@ -655,6 +655,7 @@
       totalEarned += gained;
       lastClickTime = Date.now();
       tryDropRelic();
+      markUnsaved();
       if (mult >= 3) showTomitoQuote("combo");
       if (cuentas >= 1000000) showTomitoQuote("rich");
       updateUI();
@@ -680,6 +681,7 @@
         const gained = (cps / 20) * (turboActive ? 3 : 1);
         cuentas += gained;
         totalEarned += gained;
+        hasUnsavedChanges = true;
         uiDirty = true;
       }
     }, 50);
@@ -2782,39 +2784,14 @@
 
     // ── AVERTISSEMENT QUITTER SANS SAUVEGARDER ──
     let hasUnsavedChanges = false;
-
-    // Marquer comme non sauvegardé après chaque action
     function markUnsaved() { hasUnsavedChanges = true; }
 
-    // Avertissement natif du navigateur
     window.addEventListener("beforeunload", e => {
       if (!hasUnsavedChanges) return;
       e.preventDefault();
-      e.returnValue = "";
+      e.returnValue = "Tu as des changements non sauvegardés. Veux-tu vraiment quitter ?";
+      return e.returnValue;
     });
-
-    // Popup custom avant de quitter
-    window.addEventListener("beforeunload", e => {
-      if (!hasUnsavedChanges) return;
-      // Afficher notre popup (en plus du natif)
-      showSaveBeforeLeavePopup();
-    });
-
-    function showSaveBeforeLeavePopup() {
-      const popup = document.getElementById("save-before-leave-popup");
-      if (popup) popup.classList.add("open");
-    }
-
-    async function saveAndLeave() {
-      await saveGame(false);
-      hasUnsavedChanges = false;
-      document.getElementById("save-before-leave-popup").classList.remove("open");
-    }
-
-    function leaveWithoutSave() {
-      hasUnsavedChanges = false;
-      document.getElementById("save-before-leave-popup").classList.remove("open");
-    }
 
     buildShop();
     (typeof authReady !== 'undefined' ? authReady : Promise.resolve()).then(() => loadGame()).then(async () => {
