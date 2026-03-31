@@ -2797,6 +2797,164 @@
       requestAnimationFrame(animate);
     }
 
+    // ── SNAKE ──
+    let snakeGame = null;
+
+    function openSnake() {
+      closeMinigames();
+      document.getElementById("snake-panel").classList.add("open");
+      document.getElementById("snake-overlay").style.display = "flex";
+      document.getElementById("snake-overlay-score").style.display = "none";
+      document.getElementById("snake-start-btn").textContent = "▶ Jouer";
+      document.getElementById("snake-overlay-title").textContent = "🐍 Snake des Cuentas";
+      document.getElementById("snake-overlay-sub").textContent = "Mange les pièces, évite les murs et toi-même";
+      drawSnakeIdle();
+    }
+
+    function closeSnake() {
+      if (snakeGame) { clearInterval(snakeGame.loop); snakeGame = null; }
+      document.removeEventListener("keydown", snakeKeyHandler);
+      document.getElementById("snake-panel").classList.remove("open");
+    }
+
+    function drawSnakeIdle() {
+      const canvas = document.getElementById("snake-canvas");
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#0d0020";
+      ctx.fillRect(0, 0, 400, 400);
+      // Grille
+      ctx.strokeStyle = "rgba(124,58,237,0.1)";
+      ctx.lineWidth = 0.5;
+      for (let i = 0; i <= 400; i += 20) {
+        ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, 400); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(400, i); ctx.stroke();
+      }
+    }
+
+    function startSnake() {
+      document.getElementById("snake-overlay").style.display = "none";
+      document.getElementById("snake-score-display").textContent = "Score : 0";
+
+      const CELL = 20, COLS = 20, ROWS = 20;
+      const coinImg = new Image(); coinImg.src = "piece.png";
+
+      let snake = [{x:10, y:10}, {x:9, y:10}, {x:8, y:10}];
+      let dir = {x:1, y:0};
+      let nextDir = {x:1, y:0};
+      let coin = spawnCoin();
+      let score = 0;
+      let speed = 150;
+
+      function spawnCoin() {
+        let pos;
+        do { pos = {x: Math.floor(Math.random()*COLS), y: Math.floor(Math.random()*ROWS)}; }
+        while (snake.some(s => s.x === pos.x && s.y === pos.y));
+        return pos;
+      }
+
+      function draw() {
+        const canvas = document.getElementById("snake-canvas");
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#0d0020";
+        ctx.fillRect(0, 0, 400, 400);
+
+        // Grille
+        ctx.strokeStyle = "rgba(124,58,237,0.08)";
+        ctx.lineWidth = 0.5;
+        for (let i = 0; i <= 400; i += CELL) {
+          ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,400); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(400,i); ctx.stroke();
+        }
+
+        // Pièce
+        if (coinImg.complete) {
+          ctx.drawImage(coinImg, coin.x*CELL+1, coin.y*CELL+1, CELL-2, CELL-2);
+        } else {
+          ctx.fillStyle = "#fbbf24";
+          ctx.beginPath();
+          ctx.arc(coin.x*CELL+CELL/2, coin.y*CELL+CELL/2, CELL/2-2, 0, Math.PI*2);
+          ctx.fill();
+        }
+
+        // Snake
+        snake.forEach((seg, i) => {
+          const ratio = 1 - i / snake.length * 0.4;
+          ctx.fillStyle = i === 0 ? "#c084fc" : `rgba(168,85,247,${ratio})`;
+          ctx.beginPath();
+          ctx.roundRect(seg.x*CELL+1, seg.y*CELL+1, CELL-2, CELL-2, 4);
+          ctx.fill();
+        });
+
+        // Yeux sur la tête
+        const head = snake[0];
+        ctx.fillStyle = "#fff";
+        const ex = dir.x === 1 ? 14 : dir.x === -1 ? 4 : 7;
+        const ey = dir.y === 1 ? 14 : dir.y === -1 ? 4 : 7;
+        ctx.beginPath(); ctx.arc(head.x*CELL+ex, head.y*CELL+ey, 2, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(head.x*CELL+ex+(dir.y!==0?6:0), head.y*CELL+ey+(dir.x!==0?6:0), 2, 0, Math.PI*2); ctx.fill();
+      }
+
+      function update() {
+        dir = nextDir;
+        const head = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
+
+        // Collision mur
+        if (head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS) { gameOver(); return; }
+        // Collision soi-même
+        if (snake.some(s => s.x === head.x && s.y === head.y)) { gameOver(); return; }
+
+        snake.unshift(head);
+
+        if (head.x === coin.x && head.y === coin.y) {
+          score++;
+          document.getElementById("snake-score-display").textContent = `Score : ${score}`;
+          coin = spawnCoin();
+          if (score % 5 === 0) { // accélère tous les 5 points
+            clearInterval(snakeGame.loop);
+            speed = Math.max(60, speed - 10);
+            snakeGame.loop = setInterval(tick, speed);
+          }
+        } else {
+          snake.pop();
+        }
+        draw();
+      }
+
+      function tick() { update(); }
+
+      function gameOver() {
+        clearInterval(snakeGame.loop);
+        document.removeEventListener("keydown", snakeKeyHandler);
+        const reward = score * Math.max(1, Math.floor(cpc * 10));
+        cuentas += reward;
+        totalEarned += reward;
+        updateUI();
+        markUnsaved();
+
+        const overlay = document.getElementById("snake-overlay");
+        overlay.style.display = "flex";
+        document.getElementById("snake-overlay-title").textContent = "Game Over !";
+        document.getElementById("snake-overlay-sub").textContent = `Score : ${score} pièces`;
+        const scoreEl = document.getElementById("snake-overlay-score");
+        scoreEl.style.display = "block";
+        scoreEl.textContent = `+${formatNum(reward)} Cuentas gagnées !`;
+        document.getElementById("snake-start-btn").textContent = "🔁 Rejouer";
+      }
+
+      snakeGame = { loop: setInterval(tick, speed) };
+      document.addEventListener("keydown", snakeKeyHandler);
+
+      function snakeKeyHandler(e) {
+        if (["ArrowUp","ArrowDown","ArrowLeft","ArrowRight","w","a","s","d"].includes(e.key)) e.preventDefault();
+        if ((e.key==="ArrowUp"||e.key==="w")    && dir.y!==1)  nextDir={x:0,y:-1};
+        if ((e.key==="ArrowDown"||e.key==="s")  && dir.y!==-1) nextDir={x:0,y:1};
+        if ((e.key==="ArrowLeft"||e.key==="a")  && dir.x!==1)  nextDir={x:-1,y:0};
+        if ((e.key==="ArrowRight"||e.key==="d") && dir.x!==-1) nextDir={x:1,y:0};
+      }
+      window.snakeKeyHandler = snakeKeyHandler;
+      draw();
+    }
+
     function openMinigames() { document.getElementById("minigames-panel").classList.add("open"); }
     function closeMinigames() { document.getElementById("minigames-panel").classList.remove("open"); }
 
@@ -3015,14 +3173,36 @@
     </div>
   </div>
 
+  <!-- PANEL SNAKE -->
+  <div id="snake-panel">
+    <div id="snake-panel-inner">
+      <div id="snake-header">
+        <button onclick="closeSnake()" style="background:none;border:none;color:#a78bfa;font-size:1.2rem;cursor:pointer;">✕</button>
+        <span style="font-family:'Cinzel Decorative',cursive;font-size:0.95rem;color:#c084fc;">🐍 Snake des Cuentas</span>
+        <div id="snake-score-display" style="font-size:0.85rem;color:#fbbf24;font-weight:700;">Score : 0</div>
+      </div>
+      <canvas id="snake-canvas" width="400" height="400"></canvas>
+      <div id="snake-overlay">
+        <div id="snake-overlay-content">
+          <div id="snake-overlay-title">🐍 Snake des Cuentas</div>
+          <div id="snake-overlay-sub">Mange les pièces, évite les murs et toi-même</div>
+          <div id="snake-overlay-score" style="display:none"></div>
+          <button id="snake-start-btn" onclick="startSnake()">▶ Jouer</button>
+          <div style="font-size:0.72rem;color:#6b7280;margin-top:8px;">Flèches ou WASD pour diriger</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- PANEL MINIGAMES -->
   <div id="minigames-panel">
     <div id="minigames-panel-inner">
       <button onclick="closeMinigames()" style="position:absolute;top:14px;right:16px;background:none;border:none;color:#a78bfa;font-size:1.2rem;cursor:pointer;">✕</button>
       <h2 style="font-family:'Cinzel Decorative',cursive;font-size:1rem;color:#c084fc;text-align:center;margin-bottom:20px;text-shadow:0 0 10px #a855f7;">🎮 Mini-jeux</h2>
       <div id="minigames-grid">
-        <!-- 10 cases vides pour l'instant (2 lignes de 5) -->
-        <div class="mg-slot empty"><span>Bientôt</span></div>
+        <div class="mg-slot" onclick="openSnake()" title="Snake des Cuentas">
+          <img src="minijeu/snake.png" alt="Snake" />
+        </div>
         <div class="mg-slot empty"><span>Bientôt</span></div>
         <div class="mg-slot empty"><span>Bientôt</span></div>
         <div class="mg-slot empty"><span>Bientôt</span></div>
