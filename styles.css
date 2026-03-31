@@ -3965,3 +3965,23 @@ body #main {
 
   header h1 { font-size: 1rem !important; }
 }
+
+/* POPUP SAUVEGARDER AVANT QUITTER */
+#save-before-leave-popup {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+  z-index: 99998; display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.25s;
+}
+#save-before-leave-popup.open { opacity: 1; pointer-events: all; }
+
+#save-before-leave-inner {
+  background: rgba(8,4,20,0.98);
+  border: 2px solid rgba(251,191,36,0.4);
+  border-radius: 20px;
+  padding: 32px 28px;
+  width: min(380px, 94vw);
+  text-align: center;
+  box-shadow: 0 0 60px rgba(251,191,36,0.15);
+  animation: panelIn 0.3s cubic-bezier(0.22,1,0.36,1);
+}

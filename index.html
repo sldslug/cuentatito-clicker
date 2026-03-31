@@ -520,6 +520,7 @@
       checkMilestones();
       checkTalents();
       showTomitoQuote("buy");
+      markUnsaved();
     }
 
     // ── COMBO DE CLICS ──
@@ -1008,10 +1009,8 @@
       console.log("SAVE talents:", saveData.talents);
       localStorage.setItem("cuentatito_save", JSON.stringify(saveData));
 
-      // Sauvegarde sur Supabase si connecté
       if (currentUser) {
         await sb.from("saves").upsert({ id: currentUser.id, data: saveData, updated_at: new Date().toISOString() });
-        // Mettre à jour le score global
         await sb.from("scores").upsert({
           id: currentUser.id,
           username: currentUsername,
@@ -1023,18 +1022,35 @@
         });
       }
 
+      hasUnsavedChanges = false;
+
       if (!silent) {
         const icon = document.getElementById("save-icon");
         const status = document.getElementById("save-status");
-        icon.textContent = "✅";
-        status.textContent = "Sauvegardé";
-        status.classList.add("visible");
-        clearTimeout(icon._t);
-        icon._t = setTimeout(() => {
-          icon.textContent = "💾";
-          status.textContent = "";
-          status.classList.remove("visible");
-        }, 2000);
+        // Icone check animée
+        if (icon) {
+          icon.src = "sidebar/Sauvegarder.png";
+          icon.style.filter = "brightness(0) saturate(100%) invert(74%) sepia(60%) saturate(400%) hue-rotate(90deg)";
+          setTimeout(() => { icon.style.filter = ""; }, 2500);
+        }
+        if (status) {
+          status.textContent = "✓ Sauvegardé";
+          status.style.color = "#86efac";
+          status.classList.add("visible");
+          clearTimeout(icon?._t);
+          if (icon) icon._t = setTimeout(() => {
+            status.textContent = "";
+            status.classList.remove("visible");
+          }, 2500);
+        }
+        // Toast de confirmation
+        const t = document.createElement("div");
+        t.className = "ach-toast";
+        t.style.borderColor = "rgba(134,239,172,0.5)";
+        t.innerHTML = `<span class="ach-toast-icon">💾</span><div><div class="ach-toast-name">Sauvegarde réussie !</div><div class="ach-toast-sub">${currentUser ? "Synchronisé sur Supabase" : "Sauvegarde locale"}</div></div>`;
+        document.body.appendChild(t);
+        setTimeout(() => t.classList.add("visible"), 50);
+        setTimeout(() => { t.classList.remove("visible"); setTimeout(() => t.remove(), 400); }, 3000);
       }
     }
 
@@ -2764,6 +2780,42 @@
       requestAnimationFrame(animate);
     }
 
+    // ── AVERTISSEMENT QUITTER SANS SAUVEGARDER ──
+    let hasUnsavedChanges = false;
+
+    // Marquer comme non sauvegardé après chaque action
+    function markUnsaved() { hasUnsavedChanges = true; }
+
+    // Avertissement natif du navigateur
+    window.addEventListener("beforeunload", e => {
+      if (!hasUnsavedChanges) return;
+      e.preventDefault();
+      e.returnValue = "";
+    });
+
+    // Popup custom avant de quitter
+    window.addEventListener("beforeunload", e => {
+      if (!hasUnsavedChanges) return;
+      // Afficher notre popup (en plus du natif)
+      showSaveBeforeLeavePopup();
+    });
+
+    function showSaveBeforeLeavePopup() {
+      const popup = document.getElementById("save-before-leave-popup");
+      if (popup) popup.classList.add("open");
+    }
+
+    async function saveAndLeave() {
+      await saveGame(false);
+      hasUnsavedChanges = false;
+      document.getElementById("save-before-leave-popup").classList.remove("open");
+    }
+
+    function leaveWithoutSave() {
+      hasUnsavedChanges = false;
+      document.getElementById("save-before-leave-popup").classList.remove("open");
+    }
+
     buildShop();
     (typeof authReady !== 'undefined' ? authReady : Promise.resolve()).then(() => loadGame()).then(async () => {
       // Restaurer les talents achetés
@@ -2960,6 +3012,19 @@
       <button id="wheel-spin-btn" onclick="spinWheel()" style="margin-top:18px;width:100%;padding:12px;background:linear-gradient(135deg,#f59e0b,#f97316);border:none;border-radius:12px;color:#fff;font-family:'Cinzel Decorative',cursive;font-size:0.9rem;cursor:pointer;box-shadow:0 0 20px rgba(245,158,11,0.4);transition:transform 0.1s;">🎡 Tourner !</button>
       <div id="wheel-result" style="margin-top:14px;text-align:center;font-size:1rem;font-weight:700;min-height:24px;"></div>
       <div id="wheel-odds" style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:0.72rem;text-align:left;"></div>
+    </div>
+  </div>
+
+  <!-- POPUP SAUVEGARDER AVANT DE QUITTER -->
+  <div id="save-before-leave-popup">
+    <div id="save-before-leave-inner">
+      <div style="font-size:2rem;margin-bottom:10px;">💾</div>
+      <h2 style="font-family:'Cinzel Decorative',cursive;font-size:1rem;color:#fbbf24;margin-bottom:8px;">Quitter sans sauvegarder ?</h2>
+      <p style="font-size:0.82rem;color:#a78bfa;margin-bottom:20px;line-height:1.6;">Tu as des changements non sauvegardés.<br>Veux-tu sauvegarder avant de partir ?</p>
+      <div style="display:flex;gap:10px;">
+        <button onclick="saveAndLeave()" style="flex:1;padding:10px;background:linear-gradient(135deg,#059669,#34d399);border:none;border-radius:10px;color:#fff;font-family:'Nunito',sans-serif;font-size:0.88rem;font-weight:700;cursor:pointer;">💾 Sauvegarder</button>
+        <button onclick="leaveWithoutSave()" style="flex:1;padding:10px;background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.4);border-radius:10px;color:#f87171;font-family:'Nunito',sans-serif;font-size:0.88rem;font-weight:700;cursor:pointer;">Quitter quand même</button>
+      </div>
     </div>
   </div>
 
