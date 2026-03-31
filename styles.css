@@ -3692,3 +3692,13 @@ body #main {
   filter: brightness(1.3) !important;
   transform: scale(1.12) !important;
 }
+
+/* ALIGNEMENT ICONES SIDEBAR */
+.nav-item {
+  padding-left: 12px !important;
+}
+
+#sidebar.collapsed .nav-item {
+  justify-content: center !important;
+  padding-left: 0 !important;
+}
