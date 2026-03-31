@@ -16,8 +16,8 @@
     let currentUser = null;
     let currentUsername = "";
 
-    // Vérifier la session avant tout
-    (async () => {
+    // Promesse résolue quand l'auth est prête
+    const authReady = (async () => {
       const { data } = await sb.auth.getSession();
       if (!data.session) {
         window.location.href = "auth.html";
