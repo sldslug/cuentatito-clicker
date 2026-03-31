@@ -3702,3 +3702,24 @@ body #main {
   justify-content: center !important;
   padding-left: 0 !important;
 }
+
+/* FIX SIDEBAR ICONES FINAL */
+#sidebar .nav-item {
+  padding: 10px 0 10px 0 !important;
+  justify-content: flex-start !important;
+  gap: 12px !important;
+}
+
+#sidebar.collapsed .nav-item {
+  justify-content: center !important;
+  padding: 10px 0 !important;
+}
+
+#sidebar .nav-icon-img {
+  margin-left: 12px !important;
+  flex-shrink: 0 !important;
+}
+
+#sidebar.collapsed .nav-icon-img {
+  margin-left: 0 !important;
+}
