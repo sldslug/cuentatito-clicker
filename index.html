@@ -1434,6 +1434,7 @@
     function drawVisualizer() {
       const canvas = document.getElementById("viz-canvas");
       if (!canvas || !vizAnalyser) return;
+      vizAnalyser.fftSize = 512; // plus de données = tout le cercle réagit
       const ctx = canvas.getContext("2d");
       const size = 500;
       canvas.width = size;
@@ -1441,22 +1442,19 @@
       canvas.style.width = size + "px";
       canvas.style.height = size + "px";
 
-      // Centrer le canvas sur l'image en temps réel
       function repositionCanvas() {
         const img = document.getElementById("cuentatito");
         if (!img) return;
         const r = img.getBoundingClientRect();
-        const imgCx = r.left + r.width / 2;
-        const imgCy = r.top + r.height / 2;
         canvas.style.position = "fixed";
-        canvas.style.left = (imgCx - size / 2) + "px";
-        canvas.style.top  = (imgCy - size / 2) + "px";
+        canvas.style.left = (r.left + r.width / 2 - size / 2) + "px";
+        canvas.style.top  = (r.top  + r.height / 2 - size / 2) + "px";
         canvas.style.zIndex = "0";
         canvas.style.pointerEvents = "none";
       }
 
       const cx = size / 2, cy = size / 2;
-      const baseRadius = 170;
+      const radius = 168;
       const data = new Uint8Array(vizAnalyser.frequencyBinCount);
 
       function frame() {
@@ -1465,30 +1463,32 @@
         vizAnalyser.getByteFrequencyData(data);
         ctx.clearRect(0, 0, size, size);
 
-        const points = 120;
-        ctx.beginPath();
-        for (let i = 0; i <= points; i++) {
-          const angle = (i / points) * Math.PI * 2 - Math.PI / 2;
-          const val = data[Math.floor(i / points * data.length)] / 255;
-          const r = baseRadius + val * 55;
-          const x = cx + Math.cos(angle) * r;
-          const y = cy + Math.sin(angle) * r;
-          if (i === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
+        const bars = 128;
+        for (let i = 0; i < bars; i++) {
+          const angle = (i / bars) * Math.PI * 2 - Math.PI / 2;
+          // Miroir : utiliser les données symétriquement pour que tout le cercle réagisse
+          const idx = i < bars / 2
+            ? Math.floor(i / (bars / 2) * data.length / 2)
+            : Math.floor((bars - i) / (bars / 2) * data.length / 2);
+          const val = data[idx] / 255;
+          const barH = 5 + val * 45;
+          const hue = 270 + val * 80;
+
+          const x1 = cx + Math.cos(angle) * radius;
+          const y1 = cy + Math.sin(angle) * radius;
+          const x2 = cx + Math.cos(angle) * (radius + barH);
+          const y2 = cy + Math.sin(angle) * (radius + barH);
+
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.strokeStyle = `hsla(${hue}, 85%, 65%, ${0.4 + val * 0.6})`;
+          ctx.lineWidth = 2.5;
+          ctx.lineCap = "round";
+          ctx.shadowBlur = val > 0.5 ? 8 : 0;
+          ctx.shadowColor = `hsla(${hue}, 90%, 70%, 0.8)`;
+          ctx.stroke();
         }
-        ctx.closePath();
-
-        const avg = data.reduce((a, b) => a + b, 0) / data.length / 255;
-        const grad = ctx.createLinearGradient(cx - baseRadius, cy, cx + baseRadius, cy);
-        grad.addColorStop(0,   `hsla(${260 + avg * 60}, 90%, 65%, 0.7)`);
-        grad.addColorStop(0.5, `hsla(${300 + avg * 40}, 90%, 70%, 0.8)`);
-        grad.addColorStop(1,   `hsla(${200 + avg * 80}, 90%, 65%, 0.7)`);
-
-        ctx.strokeStyle = grad;
-        ctx.lineWidth = 2.5;
-        ctx.shadowBlur = 14;
-        ctx.shadowColor = `hsla(${270 + avg * 60}, 90%, 65%, 0.9)`;
-        ctx.stroke();
         ctx.shadowBlur = 0;
       }
       frame();
