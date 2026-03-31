@@ -2867,9 +2867,16 @@
         }
 
         // Pièce
-        if (coinImg.complete) {
-          ctx.drawImage(coinImg, coin.x*CELL+1, coin.y*CELL+1, CELL-2, CELL-2);
-        } else {
+        try {
+          if (coinImg.complete && coinImg.naturalWidth > 0) {
+            ctx.drawImage(coinImg, coin.x*CELL+1, coin.y*CELL+1, CELL-2, CELL-2);
+          } else {
+            ctx.fillStyle = "#fbbf24";
+            ctx.beginPath();
+            ctx.arc(coin.x*CELL+CELL/2, coin.y*CELL+CELL/2, CELL/2-2, 0, Math.PI*2);
+            ctx.fill();
+          }
+        } catch(e) {
           ctx.fillStyle = "#fbbf24";
           ctx.beginPath();
           ctx.arc(coin.x*CELL+CELL/2, coin.y*CELL+CELL/2, CELL/2-2, 0, Math.PI*2);
