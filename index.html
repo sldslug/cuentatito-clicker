@@ -177,9 +177,9 @@
         </div>
       </div>
       <!-- Image centree, ne bouge pas -->
-      <div style="position:relative;display:flex;align-items:center;justify-content:center;margin-top:30px;">
-        <canvas id="viz-canvas" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:0;"></canvas>
-        <div class="img-wrapper" id="img-wrapper" style="position:relative;z-index:1;">
+      <div style="position:relative;display:inline-block;">
+        <canvas id="viz-canvas" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:2;"></canvas>
+        <div class="img-wrapper" id="img-wrapper" style="position:relative;z-index:3;">
           <img id="cuentatito" src="Cuentatito.png" alt="Cuentatito" draggable="false" />
         </div>
       </div>
@@ -1434,24 +1434,19 @@
     function drawVisualizer() {
       const canvas = document.getElementById("viz-canvas");
       if (!canvas || !vizAnalyser) return;
-      vizAnalyser.fftSize = 512; // plus de données = tout le cercle réagit
+      vizAnalyser.fftSize = 512;
       const ctx = canvas.getContext("2d");
       const size = 500;
       canvas.width = size;
       canvas.height = size;
       canvas.style.width = size + "px";
       canvas.style.height = size + "px";
-
-      function repositionCanvas() {
-        const img = document.getElementById("cuentatito");
-        if (!img) return;
-        const r = img.getBoundingClientRect();
-        canvas.style.position = "fixed";
-        canvas.style.left = (r.left + r.width / 2 - size / 2) + "px";
-        canvas.style.top  = (r.top  + r.height / 2 - size / 2) + "px";
-        canvas.style.zIndex = "0";
-        canvas.style.pointerEvents = "none";
-      }
+      canvas.style.position = "absolute";
+      canvas.style.top = "50%";
+      canvas.style.left = "50%";
+      canvas.style.transform = "translate(-50%, -50%)";
+      canvas.style.zIndex = "2";
+      canvas.style.pointerEvents = "none";
 
       const cx = size / 2, cy = size / 2;
       const radius = 168;
@@ -1459,14 +1454,12 @@
 
       function frame() {
         vizAnimId = requestAnimationFrame(frame);
-        repositionCanvas();
         vizAnalyser.getByteFrequencyData(data);
         ctx.clearRect(0, 0, size, size);
 
         const bars = 128;
         for (let i = 0; i < bars; i++) {
           const angle = (i / bars) * Math.PI * 2 - Math.PI / 2;
-          // Miroir : utiliser les données symétriquement pour que tout le cercle réagisse
           const idx = i < bars / 2
             ? Math.floor(i / (bars / 2) * data.length / 2)
             : Math.floor((bars - i) / (bars / 2) * data.length / 2);
