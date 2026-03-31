@@ -364,6 +364,15 @@
     let cuentas = 0;
     let cpc = 1;
     let cps = 0;
+    let hasUnsavedChanges = false;
+    function markUnsaved() { hasUnsavedChanges = true; }
+
+    window.addEventListener("beforeunload", e => {
+      if (!hasUnsavedChanges) return;
+      e.preventDefault();
+      e.returnValue = "Tu as des changements non sauvegardés. Veux-tu vraiment quitter ?";
+      return e.returnValue;
+    });
     let buyQty = 1; // 1 | 10 | 50 | 100 | "max"
 
     const itemEls = new Map();
@@ -2783,15 +2792,7 @@
     }
 
     // ── AVERTISSEMENT QUITTER SANS SAUVEGARDER ──
-    let hasUnsavedChanges = false;
-    function markUnsaved() { hasUnsavedChanges = true; }
-
-    window.addEventListener("beforeunload", e => {
-      if (!hasUnsavedChanges) return;
-      e.preventDefault();
-      e.returnValue = "Tu as des changements non sauvegardés. Veux-tu vraiment quitter ?";
-      return e.returnValue;
-    });
+    // (déclaré plus haut avec les variables globales)
 
     buildShop();
     (typeof authReady !== 'undefined' ? authReady : Promise.resolve()).then(() => loadGame()).then(async () => {
