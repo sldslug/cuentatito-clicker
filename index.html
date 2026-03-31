@@ -179,6 +179,7 @@
       <!-- Image centree, ne bouge pas -->
       <div class="img-wrapper" id="img-wrapper">
         <img id="cuentatito" src="Cuentatito.png" alt="Cuentatito" draggable="false" />
+        <canvas id="viz-canvas"></canvas>
       </div>
       <div id="combo-display"></div>
       <button id="admin-open-btn" onclick="openAdminPanel()" style="display:none;margin-top:12px;padding:8px 20px;background:linear-gradient(135deg,#f97316,#ef4444);border:none;border-radius:10px;color:#fff;font-family:'Cinzel Decorative',cursive;font-size:0.75rem;cursor:pointer;box-shadow:0 0 16px rgba(249,115,22,0.4);">⚡ Panel Admin</button>
@@ -1412,9 +1413,66 @@
     let musicFilter = "all";
     let shuffleOrder = [];
 
-    // Visualiseur désactivé - cause des problèmes audio
-    function initVisualizer() {}
-    function drawVisualizer() {}
+    // ── VISUALISEUR CIRCULAIRE ──
+    let vizAudioCtx = null, vizAnalyser = null, vizSource = null, vizAnimId = null;
+
+    function initVisualizer() {
+      if (vizAudioCtx) return;
+      try {
+        vizAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        vizAnalyser = vizAudioCtx.createAnalyser();
+        vizAnalyser.fftSize = 256;
+        vizSource = vizAudioCtx.createMediaElementSource(audio);
+        vizSource.connect(vizAnalyser);
+        vizAnalyser.connect(vizAudioCtx.destination);
+        drawVisualizer();
+      } catch(e) { console.warn("Visualizer init failed:", e); }
+    }
+
+    function drawVisualizer() {
+      const canvas = document.getElementById("viz-canvas");
+      if (!canvas || !vizAnalyser) return;
+      const ctx = canvas.getContext("2d");
+      const size = 360;
+      canvas.width = size;
+      canvas.height = size;
+      const cx = size / 2, cy = size / 2;
+      const radius = 168; // juste autour du cercle de 320px
+
+      const data = new Uint8Array(vizAnalyser.frequencyBinCount);
+
+      function frame() {
+        vizAnimId = requestAnimationFrame(frame);
+        vizAnalyser.getByteFrequencyData(data);
+        ctx.clearRect(0, 0, size, size);
+
+        const bars = 80;
+        for (let i = 0; i < bars; i++) {
+          const angle = (i / bars) * Math.PI * 2 - Math.PI / 2;
+          const val = data[Math.floor(i / bars * data.length)] / 255;
+          const barH = 8 + val * 40;
+          const hue = 270 + val * 80;
+
+          const x1 = cx + Math.cos(angle) * radius;
+          const y1 = cy + Math.sin(angle) * radius;
+          const x2 = cx + Math.cos(angle) * (radius + barH);
+          const y2 = cy + Math.sin(angle) * (radius + barH);
+
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.strokeStyle = `hsla(${hue}, 80%, 65%, ${0.4 + val * 0.6})`;
+          ctx.lineWidth = 2.5;
+          ctx.lineCap = "round";
+          ctx.stroke();
+        }
+      }
+      frame();
+    }
+
+    function stopVisualizer() {
+      if (vizAnimId) { cancelAnimationFrame(vizAnimId); vizAnimId = null; }
+    }
 
     function getTrackName(f) { return f.replace(/\.mp3$/i, ""); }
 
@@ -1438,10 +1496,14 @@
         var p = audio.play(); if (p) p.catch(function(){});
       } else if (isPlaying) {
         audio.pause(); isPlaying = false;
+        stopVisualizer();
       } else {
+        initVisualizer();
+        if (vizAudioCtx && vizAudioCtx.state === "suspended") vizAudioCtx.resume();
         var p2 = audio.play();
         if (p2) p2.catch(function() { audio.load(); audio.play().catch(function(){}); });
         isPlaying = true;
+        drawVisualizer();
       }
       document.getElementById("mp-play").textContent = isPlaying ? "\u23F8" : "\u25B6";
       document.getElementById("mini-player").classList.remove("hidden");
@@ -1550,7 +1612,9 @@
     function playTrack(index) {
       isPlaying = true;
       loadTrack(index);
-      audio.play();
+      initVisualizer();
+      if (vizAudioCtx && vizAudioCtx.state === "suspended") vizAudioCtx.resume();
+      audio.play().catch(() => {});
       document.getElementById("mp-play").textContent = "⏸";
       document.getElementById("mini-player").classList.remove("hidden");
     }
