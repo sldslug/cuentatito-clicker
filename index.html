@@ -2797,6 +2797,195 @@
       requestAnimationFrame(animate);
     }
 
+    // ── PONG ──
+    let pongAnim = null;
+
+    function openPong() {
+      closeMinigames();
+      document.getElementById("pong-panel").classList.add("open");
+      document.getElementById("pong-overlay").style.display = "flex";
+      document.getElementById("pong-overlay-result").style.display = "none";
+      document.getElementById("pong-start-btn").textContent = "▶ Jouer";
+      document.getElementById("pong-overlay-title").textContent = "🏓 Pong vs Tomito";
+      document.getElementById("pong-overlay-sub").textContent = "Déplace ta raquette avec la souris ou le doigt";
+      document.getElementById("pong-score-player").textContent = "0";
+      document.getElementById("pong-score-ai").textContent = "0";
+      drawPongIdle();
+    }
+
+    function closePong() {
+      if (pongAnim) { cancelAnimationFrame(pongAnim); pongAnim = null; }
+      document.getElementById("pong-panel").classList.remove("open");
+    }
+
+    function drawPongIdle() {
+      const canvas = document.getElementById("pong-canvas");
+      const ctx = canvas.getContext("2d");
+      const W = canvas.width, H = canvas.height;
+      ctx.fillStyle = "#0d0020";
+      ctx.fillRect(0, 0, W, H);
+      ctx.setLineDash([10, 10]);
+      ctx.strokeStyle = "rgba(124,58,237,0.3)";
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(W/2, 0); ctx.lineTo(W/2, H); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    function startPong() {
+      document.getElementById("pong-overlay").style.display = "none";
+
+      const canvas = document.getElementById("pong-canvas");
+      const ctx = canvas.getContext("2d");
+      const W = canvas.width, H = canvas.height;
+      const PAD_W = 12, PAD_H = 70, BALL_R = 18;
+      const WIN_SCORE = 7;
+
+      // Charger image balle
+      const ballImg = new Image();
+      ballImg.src = "skintomito/tomitovulgaire.png";
+
+      let playerY = H/2 - PAD_H/2;
+      let aiY = H/2 - PAD_H/2;
+      let ball = { x: W/2, y: H/2, vx: 4, vy: 3 };
+      let scorePlayer = 0, scoreAI = 0;
+      let aiSpeed = 2.5;
+
+      // Contrôle souris
+      canvas.onmousemove = e => {
+        const rect = canvas.getBoundingClientRect();
+        playerY = Math.max(0, Math.min(H - PAD_H, e.clientY - rect.top - PAD_H/2));
+      };
+      // Contrôle tactile
+      canvas.ontouchmove = e => {
+        e.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        playerY = Math.max(0, Math.min(H - PAD_H, e.touches[0].clientY - rect.top - PAD_H/2));
+      };
+
+      function draw() {
+        ctx.fillStyle = "#0d0020";
+        ctx.fillRect(0, 0, W, H);
+
+        // Ligne centrale
+        ctx.setLineDash([10, 10]);
+        ctx.strokeStyle = "rgba(124,58,237,0.25)";
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(W/2, 0); ctx.lineTo(W/2, H); ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Raquette joueur (gauche)
+        ctx.fillStyle = "#86efac";
+        ctx.shadowBlur = 10; ctx.shadowColor = "#86efac";
+        ctx.beginPath();
+        ctx.roundRect(10, playerY, PAD_W, PAD_H, 6);
+        ctx.fill();
+
+        // Raquette IA (droite) avec image Tomito
+        ctx.fillStyle = "#f87171";
+        ctx.shadowBlur = 10; ctx.shadowColor = "#f87171";
+        ctx.beginPath();
+        ctx.roundRect(W - 10 - PAD_W, aiY, PAD_W, PAD_H, 6);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Balle (image ronde)
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, BALL_R, 0, Math.PI*2);
+        ctx.clip();
+        if (ballImg.complete && ballImg.naturalWidth > 0) {
+          ctx.drawImage(ballImg, ball.x - BALL_R, ball.y - BALL_R, BALL_R*2, BALL_R*2);
+        } else {
+          ctx.fillStyle = "#c084fc";
+          ctx.fill();
+        }
+        ctx.restore();
+        // Bordure balle
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, BALL_R, 0, Math.PI*2);
+        ctx.strokeStyle = "rgba(192,132,252,0.8)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+
+      function update() {
+        // IA suit la balle
+        const aiCenter = aiY + PAD_H/2;
+        if (aiCenter < ball.y - 5) aiY = Math.min(H - PAD_H, aiY + aiSpeed);
+        else if (aiCenter > ball.y + 5) aiY = Math.max(0, aiY - aiSpeed);
+
+        ball.x += ball.vx;
+        ball.y += ball.vy;
+
+        // Rebond haut/bas
+        if (ball.y - BALL_R <= 0) { ball.y = BALL_R; ball.vy = Math.abs(ball.vy); }
+        if (ball.y + BALL_R >= H) { ball.y = H - BALL_R; ball.vy = -Math.abs(ball.vy); }
+
+        // Rebond raquette joueur
+        if (ball.x - BALL_R <= 10 + PAD_W && ball.y >= playerY && ball.y <= playerY + PAD_H) {
+          ball.x = 10 + PAD_W + BALL_R;
+          ball.vx = Math.abs(ball.vx) * 1.05;
+          ball.vy += (ball.y - (playerY + PAD_H/2)) * 0.1;
+          aiSpeed = Math.min(6, aiSpeed + 0.15);
+        }
+
+        // Rebond raquette IA
+        if (ball.x + BALL_R >= W - 10 - PAD_W && ball.y >= aiY && ball.y <= aiY + PAD_H) {
+          ball.x = W - 10 - PAD_W - BALL_R;
+          ball.vx = -Math.abs(ball.vx);
+        }
+
+        // Point joueur
+        if (ball.x + BALL_R >= W) {
+          scorePlayer++;
+          document.getElementById("pong-score-player").textContent = scorePlayer;
+          resetBall(-1);
+          if (scorePlayer >= WIN_SCORE) { endPong(true); return; }
+        }
+
+        // Point IA
+        if (ball.x - BALL_R <= 0) {
+          scoreAI++;
+          document.getElementById("pong-score-ai").textContent = scoreAI;
+          resetBall(1);
+          if (scoreAI >= WIN_SCORE) { endPong(false); return; }
+        }
+
+        draw();
+        pongAnim = requestAnimationFrame(update);
+      }
+
+      function resetBall(dir) {
+        ball = { x: W/2, y: H/2, vx: 4 * dir, vy: (Math.random() - 0.5) * 6 };
+      }
+
+      function endPong(playerWon) {
+        cancelAnimationFrame(pongAnim);
+        canvas.onmousemove = null;
+        canvas.ontouchmove = null;
+
+        const reward = playerWon
+          ? Math.floor(cpc * 50 * scorePlayer)
+          : Math.floor(cpc * 10 * scorePlayer);
+        cuentas += reward;
+        totalEarned += reward;
+        updateUI();
+        markUnsaved();
+
+        const overlay = document.getElementById("pong-overlay");
+        overlay.style.display = "flex";
+        document.getElementById("pong-overlay-title").textContent = playerWon ? "🏆 Victoire !" : "😤 Défaite...";
+        document.getElementById("pong-overlay-sub").textContent = `${scorePlayer} - ${scoreAI}`;
+        const res = document.getElementById("pong-overlay-result");
+        res.style.display = "block";
+        res.textContent = `+${formatNum(reward)} Cuentas !`;
+        document.getElementById("pong-start-btn").textContent = "🔁 Rejouer";
+      }
+
+      resetBall(1);
+      pongAnim = requestAnimationFrame(update);
+    }
+
     // ── CLICKER FEVER ──
     let cfInterval = null, cfTimerInterval = null;
 
@@ -2832,13 +3021,12 @@
       document.getElementById("cf-score").textContent = "0";
       document.getElementById("cf-timer").textContent = "10";
 
-      // Clic sur la zone de jeu (fond = +1)
+      // Clic sur la zone de jeu (fond = +1, mais pas sur les cercles)
       area.onclick = (e) => {
-        if (e.target === area) {
-          score++;
-          document.getElementById("cf-score").textContent = score;
-          spawnClickEffect(e.clientX, e.clientY, "+1", "#86efac");
-        }
+        if (e.target !== area) return; // ignorer les clics sur les cercles
+        score++;
+        document.getElementById("cf-score").textContent = score;
+        spawnClickEffect(e.clientX, e.clientY, "+1", "#86efac");
       };
 
       function spawnZone() {
@@ -3292,6 +3480,29 @@
     </div>
   </div>
 
+  <!-- PANEL PONG -->
+  <div id="pong-panel">
+    <div id="pong-panel-inner">
+      <div id="pong-header">
+        <button onclick="closePong()" style="background:none;border:none;color:#a78bfa;font-size:1.2rem;cursor:pointer;">✕</button>
+        <span style="font-family:'Cinzel Decorative',cursive;font-size:0.9rem;color:#c084fc;">🏓 Pong vs Tomito</span>
+        <div id="pong-scores" style="font-size:0.9rem;font-weight:700;display:flex;gap:16px;">
+          <span style="color:#86efac;">Toi : <span id="pong-score-player">0</span></span>
+          <span style="color:#f87171;">Tomito : <span id="pong-score-ai">0</span></span>
+        </div>
+      </div>
+      <canvas id="pong-canvas" width="500" height="380"></canvas>
+      <div id="pong-overlay">
+        <div style="text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;">
+          <div id="pong-overlay-title" style="font-family:'Cinzel Decorative',cursive;font-size:1.2rem;color:#c084fc;text-shadow:0 0 16px #a855f7;">🏓 Pong vs Tomito</div>
+          <div id="pong-overlay-sub" style="font-size:0.85rem;color:#a78bfa;">Déplace ta raquette avec la souris ou le doigt</div>
+          <div id="pong-overlay-result" style="display:none;font-size:1rem;font-weight:700;color:#fbbf24;"></div>
+          <button id="pong-start-btn" onclick="startPong()" style="padding:10px 28px;background:linear-gradient(135deg,#7c3aed,#a855f7);border:none;border-radius:12px;color:#fff;font-family:'Cinzel Decorative',cursive;font-size:0.9rem;cursor:pointer;box-shadow:0 0 20px rgba(168,85,247,0.4);">▶ Jouer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- PANEL CLICKER FEVER -->
   <div id="cf-panel">
     <div id="cf-panel-inner">
@@ -3346,6 +3557,9 @@
         </div>
         <div class="mg-slot" onclick="openClickerFever()" title="Clicker Fever">
           <img src="minijeu/Clickerfever.png" alt="Clicker Fever" />
+        </div>
+        <div class="mg-slot" onclick="openPong()" title="Pong vs Tomito">
+          <img src="minijeu/Pong.png" alt="Pong" />
         </div>
         <div class="mg-slot empty"><span>Bientôt</span></div>
         <div class="mg-slot empty"><span>Bientôt</span></div>
